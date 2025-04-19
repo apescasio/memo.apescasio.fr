@@ -9,25 +9,33 @@ const inter = Inter({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://memo.apescasio.fr'),
-  title: "Mémoire d'un admin",
-  description: 'cd /docs',
-  keywords: ['mémoire', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook'],
-  openGraph: {
-    type: 'website',
-    url: '/',
-    title: "Mémoire d'un admin",
-    description: 'cd /docs',
-    siteName: "Mémoire d'un admin",
-    images: [
-      {
-        url: 'https://apescasio.fr/icon.png',
-        alt: "Mémoire d'un admin",
-      },
-    ],
-  },
-};
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = await params;
+
+  const isFrench = lang === 'fr';
+
+  return {
+    metadataBase: new URL('https://memo.apescasio.fr'),
+    title: isFrench ? "Mémoire d'un admin" : 'Handbook of an admin',
+    description: isFrench ? 'cd /docs' : 'cd /docs',
+    keywords: isFrench
+      ? ['mémoire', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook', 'apescasio']
+      : ['memory', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook', 'apescasio'],
+    openGraph: {
+      type: 'website',
+      url: '/',
+      title: isFrench ? "Mémoire d'un admin" : 'Handbook of an admin',
+      description: isFrench ? 'cd /docs' : 'cd /docs',
+      siteName: isFrench ? "memo.apescasio.fr" : 'memo.apescasio.fr',
+      images: [
+        {
+          url: 'https://apescasio.fr/icon.png',
+          alt: isFrench ? "Mémoire d'un admin" : 'Handbook of an admin',
+        },
+      ],
+    },
+  };
+}
 
 export default async function Layout({
   params,
