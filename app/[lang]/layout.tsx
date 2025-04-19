@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       siteName: isFrench ? "memo.apescasio.fr" : 'memo.apescasio.fr',
       images: [
         {
-          url: 'https://apescasio.fr/icon.png',
+          url: '/images/real_icon.svg',
           alt: isFrench ? "Mémoire d'un admin" : 'Handbook of an admin',
         },
       ],
