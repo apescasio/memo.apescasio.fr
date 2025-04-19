@@ -3,10 +3,31 @@ import 'fumadocs-ui/style.css';
 import { RootProvider } from 'fumadocs-ui/provider';
 import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
+import { Metadata } from 'next';
 
 const inter = Inter({
   subsets: ['latin'],
 });
+
+export const metadata: Metadata = {
+  metadataBase: new URL('https://memo.apescasio.fr'),
+  title: "Mémoire d'un admin",
+  description: 'cd /docs',
+  keywords: ['mémoire', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook'],
+  openGraph: {
+    type: 'website',
+    url: '/',
+    title: "Mémoire d'un admin",
+    description: 'cd /docs',
+    siteName: "Mémoire d'un admin",
+    images: [
+      {
+        url: 'https://apescasio.fr/icon.png',
+        alt: "Mémoire d'un admin",
+      },
+    ],
+  },
+};
 
 export default async function Layout({
   params,
