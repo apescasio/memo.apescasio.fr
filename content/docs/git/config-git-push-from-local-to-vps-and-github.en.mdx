@@ -73,8 +73,7 @@ ssh -i ~/.ssh/id_rsa_memo_github -T git@github.com
 
 I verified that my GitHub repository was correctly configured by running:
 
-```bash
-git remote -v
+```bash title="git remote -v"
 github  git@github.com:apescasio/memo.apescasio.fr.git (fetch)
 github  git@github.com:apescasio/memo.apescasio.fr.git (push)
 origin  /home/apecio/memo.apescasio.fr.git (fetch)
@@ -152,8 +151,7 @@ I pushed another file, `example2.txt`.
 
 To confirm the changes and track the deployment history, I used the `git log` command on my local PC. This command displays the commit history, including the author, date, and commit message.
 
-```bash
-git log
+```bash title="git log"
 commit 5f0364f1300208edf632d0bc8c26a6a9c640d094 (HEAD -> main, origin/main)
 Author: apescasio <apescasio92@gmail.com>
 Date:   Sat Apr 19 23:16:06 2025 +0200
@@ -167,7 +165,7 @@ Date:   Sat Apr 19 23:10:42 2025 +0200
     Added example.txt
 ```
 
-## Rollback `git checkout hash`
+## Rollback `git revert`
 
 To revert to the state before adding `example2.txt`, I used the following commands:
 
