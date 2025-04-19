@@ -1,0 +1,42 @@
+---
+title: Configure SSH on a VPS
+---
+## Context
+
+Instead of allowing password authentication on my VPS, I wanted to remove it and enforce SSH key authentication.
+
+## Local PC
+
+First, I generate an SSH key.
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+```
+
+I press the "Enter" key 3 times, then copy the full content of the generated `.pub` file.
+
+## VPS
+
+I connect to my server.
+
+```bash
+ssh username@Your_VPS_IPv4 -p PortNumber
+```
+
+I create the `~/.ssh/authorized_keys` file (if it doesn't already exist) and paste the content of the `.pub` file into it.
+
+```bash
+nano ~/.ssh/authorized_keys
+```
+
+Finally, I disable password authentication and restart the SSH service using this bash script.
+
+```bash title="update-sshdconfig.sh"
+sudo sed -i "s/^#PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
+sudo systemctl restart sshd
+```
+I reconnect to my server and normally no password will be asked.
+
+```bash
+ssh username@Your_VPS_IPv4 -p PortNumber
+```

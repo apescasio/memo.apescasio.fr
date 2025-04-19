@@ -1,0 +1,113 @@
+---
+title: Configurer un Azure Active Directory
+---
+## Azure : c’est quoi exactement ?
+
+**Azure** est la plateforme cloud de Microsoft, proposant des services d’infrastructure (IaaS), de plateforme (PaaS) et de logiciels (SaaS). Elle permet de déployer, gérer et superviser des ressources dans des datacenters répartis à l’échelle mondiale.
+
+Parmi les services les plus utilisés :
+- Machines virtuelles (VM),
+- Stockage (Blob, File Share),
+- Réseaux virtuels (VNet, VPN),
+- Bases de données managées (SQL, Cosmos DB),
+- Services d'identité et d’accès (Azure AD, RBAC),
+- Outils DevOps, monitorings, IA, etc.
+
+<Callout icon="💡" title="À retenir">
+Azure est un cloud public complet, capable de remplacer ou compléter une infrastructure on-premise.
+</Callout>
+
+---
+
+## Azure Active Directory (Azure AD)
+
+**Azure AD** est le service d’identité cloud de Microsoft. Il centralise :
+- L’authentification des utilisateurs (SSO, MFA, etc.),
+- La gestion des groupes, rôles et permissions,
+- L'intégration avec des milliers d'applications SaaS (ex : Office 365, Salesforce, GitHub),
+- Et la synchronisation avec un Active Directory local (via Azure AD Connect).
+
+Ce n’est **pas** un contrôleur de domaine traditionnel, mais plutôt un **annuaire cloud** basé sur des identités utilisateurs.  
+Il supporte les protocoles standards : **OAuth2, OpenID Connect, SAML, WS-Fed**.
+
+<Callout icon="💡" title="Cas d’usage courant">
+Authentifier des utilisateurs sur Office 365, gérer l’accès aux applications internes, ou mettre en place du MFA via Conditional Access.
+</Callout>
+
+---
+
+## Qu’est-ce qu’un tenant Azure ?
+
+Un **tenant Azure** est une instance isolée d’Azure Active Directory associée à une organisation.  
+Il sert de **contexte de sécurité** pour :
+- Les utilisateurs,
+- Les applications,
+- Les groupes,
+- Les rôles et stratégies de sécurité.
+
+Chaque tenant possède :
+- Un **nom de domaine** par défaut (`<nom>.onmicrosoft.com`),
+- Un **GUID unique** (`Directory (tenant) ID`),
+- Et peut être lié à plusieurs abonnements Azure (subscriptions).
+
+<Callout icon="💡" title="Important">
+Un abonnement Azure peut exister **dans** un tenant, mais un tenant peut exister **sans abonnement**. Les deux ne sont pas la même chose.
+</Callout>
+
+## Mise en place d'un Azure AD
+
+Tout d'abord, il faut créer un compte [Microsoft Azure AD](https:/.microsoft.com/fr-fr/free), ce qui a une option totalement gratuite.
+
+Ensuite, rendez-vous sur le portail [https://portal.azure.com](https://portal.azure.com) pour créer un nouveau "tenant" de type Azure AD.
+
+![Image 1](/images/azure/1.PNG)  
+![Image 2](/images/azure/2.PNG)  
+![Image 3](/images/azure/3.PNG)  
+
+Une fois dans le nouveau "tenant" sur le portail (si ce n'est pas déjà fait), créez un nouvel utilisateur. Ce compte sera utilisé pour synchroniser l'AD on-premise (local) avec le cloud "Azure AD".
+
+![Image 5](/images/azure/5.PNG)  
+![Image 6](/images/azure/6.PNG)  
+![Image 7](/images/azure/7.PNG)  
+
+Une fois l'utilisateur créé (cela prendra 1 à 2 minutes), copiez l'UPN de l'utilisateur. Par exemple : `apes@labapes.onmicrosoft.com`.
+
+Pour l'installation d'[Azure AD Connect](https://www.microsoft.com/en-US/download/details.aspx?id=47594), j'ai simplement utilisé les paramètres par défaut.
+
+![Image 8](/images/azure/8.PNG)  
+![Image 9](/images/azure/9.PNG)  
+![Image 10](/images/azure/10.PNG)  
+![Image 11](/images/azure/11.PNG)  
+![Image 12](/images/azure/12.PNG)  
+![Image 13](/images/azure/13.PNG)  
+![Image 14](/images/azure/14.PNG)  
+![Image 16](/images/azure/16.PNG)  
+![Image 17](/images/azure/17.PNG)  
+![Image 18](/images/azure/18.PNG)  
+![Image 19](/images/azure/19.PNG)  
+![Image 20](/images/azure/20.PNG)  
+![Image 21](/images/azure/21.PNG)  
+![Image 22](/images/azure/22.PNG)  
+![Image 23](/images/azure/23.PNG)  
+![Image 24](/images/azure/24.PNG)  
+![Image 25](/images/azure/25.PNG)  
+![Image 26](/images/azure/26.PNG)  
+![Image 27](/images/azure/27.PNG)  
+
+Une fois installé, lancez le logiciel "Synchronization Service" pour consulter les logs de synchronisation entre l'AD local et l'Azure AD.
+
+![Image 28](/images/azure/28.PNG)  
+
+Vous devriez y voir des opérations "success". Vous pouvez également vérifier dans le portail d'Azure que les utilisateurs ont bien été synchronisés.
+
+![Image 29](/images/azure/29.PNG)  
+![Image 30](/images/azure/30.PNG)  
+
+Après ces vérifications, vous pouvez tester la création d'un nouvel utilisateur dans l'AD local et forcer la synchronisation à l'aide de la commande `Start-ADSyncSyncCycle -PolicyType Delta`.
+
+![Image 31](/images/azure/31.PNG)  
+![Image 32](/images/azure/32.PNG)  
+![Image 33](/images/azure/33.PNG)  
+
+Tout fonctionne correctement, on voit bien le nouveau utilisateur !
+

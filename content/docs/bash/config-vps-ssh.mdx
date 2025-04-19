@@ -1,0 +1,42 @@
+---
+title: Configurer SSH sur un VPS
+---
+## Contexte
+
+Au lieu d'autoriser l'authentification par mot de passe dans mon VPS, j'ai voulu le retirer et forcer l'authentification par clé SSH.
+
+## PC Local
+
+Tout d'abord, je génère une clé SSH.
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "votre_email@example.com"
+```
+
+Je tape la touche "Entrer" 3x et puis je copie le contenu total du fichier `.pub` généré.
+
+## VPS
+
+Je me connecte dans mon serveur.
+
+```bash
+ssh nomdutilisateur@IPv4_de_votre_VPS -p NumPort
+```
+Je crée le fichier `~/.ssh/authorized_keys` (s'il n'existe pas) et je colle le contenu du fichier `.pub` dedans.
+
+```bash
+nano ~/.ssh/authorized_keys
+```
+
+Enfin, je retire l'authentification par mot de passe et je redémarre le service SSH via ce script bash.
+
+```bash title="update-sshdconfig.sh"
+sudo sed -i "s/^#PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
+sudo systemctl restart sshd
+```
+
+Je reconnecte dans mon serveur et normalement pas de mot de passe demandé.
+
+```bash
+ssh nomdutilisateur@IPv4_de_votre_VPS -p NumPort
+```

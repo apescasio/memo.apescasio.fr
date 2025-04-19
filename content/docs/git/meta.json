@@ -1,0 +1,6 @@
+{
+    "title": "Git",
+    "icon": "git",
+    "pages": ["index", "config-git", "config-deployment-system"],
+    "root": true
+  }

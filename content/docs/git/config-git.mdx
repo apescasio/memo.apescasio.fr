@@ -1,0 +1,116 @@
+---
+title: Configurer git sur un VPS et son PC
+---
+## Qu'est-ce que `git` / `GitHub` ?
+
+**Git** est un outil puissant qui agit comme une machine à remonter le temps pour vos projets. Il garde une trace de chaque modification que vous apportez à votre code, vous permettant de revenir à un état précédent si nécessaire. Imaginez-le comme un journal de bord ou un album photo pour votre projet, où chaque commit représente une étape importante ou une "photo" de l'évolution de votre travail.
+
+En plus de cela, Git est un "chef d'orchestre" pour le travail collaboratif. Lorsque plusieurs personnes travaillent sur le même projet, il s'assure que tout le monde peut contribuer sans écraser le travail des autres. Grâce à ses branches, il permet d'explorer différentes idées ou fonctionnalités sans risquer de casser le projet principal.
+
+**GitHub**, quant à lui, est une plateforme basée sur le cloud qui agit comme une bibliothèque pour vos projets Git. Elle permet de stocker, partager et collaborer sur du code avec d'autres développeurs, tout en offrant des outils pour suivre les contributions et gérer les projets efficacement.
+
+## Contexte
+
+J'ai un PC portable sous Windows 11 (mon local) et j'ai un VPS sous Debian 12 que je loue chez Netcup. 
+
+Il y a plusieurs entreprises qui font des locations comme OVH, Azure... j'ai choisi Netcup parce que pour 6€ par mois: j'ai 4 vCore et 4 GB de RAM. 
+
+Si je devais héberger un serveur allumé H24 chez moi, le coût de l'électricité irait de 15€ à 20€~ par mois, sans compter la maintenance qui serait un peu compliquée. 
+
+Cependant, je trouve que ce n'est pas parfait non plus, car je n'ai pas beaucoup de RAM/CPU. À chaque fois que je développe, je dois bien tout configurer en optimisant chaque application et package utilisé.
+
+Si vous trouvez une meilleure offre que Netcup 6€/mois, je suis preneur.
+
+## PC Local
+
+Sur mon PC local, j'ai installé git, VSCode comme IDE, nodejs et npm pour mon projet web via ce script PowerShell.
+
+```ps1 title="winget-projetweb.ps1"
+### Vérification et installation de Git ###
+
+if (-Not (Test-Path "C:\Program Files\Git")) {
+    Write-Host "Git n'est pas installé. Installation avec winget..."
+    winget install -e -id Git.Git
+} else {
+    Write-Host "Git est déjà installé."
+}
+
+### Vérification et installation de Visual Studio Code ###
+
+if (-Not (Test-Path "C:\Users\$env:USERNAME\AppData\Local\Programs\Microsoft VS Code")) {
+    Write-Host "Visual Studio Code n'est pas installé. Installation avec winget..."
+    winget install -e --id Microsoft.VisualStudioCode
+} else {
+    Write-Host "Visual Studio Code est déjà installé."
+}
+
+### Vérification et installation de Node.js et npm ###
+
+if (-Not (Get-Command "node" -ErrorAction SilentlyContinue)) {
+    Write-Host "Node.js et npm ne sont pas installés. Installation avec winget..."
+    winget install -e --id OpenJS.NodeJS
+} else {
+    Write-Host "Node.js et npm sont déjà installés."
+}
+```
+## VSCode Git Bash
+
+Une fois que VSCode est installé, pour afficher le terminal en 'git', il faut cliquer sur la petite fleche du bouton `+`.
+
+![PC Local VSCode Git Bash](/images/git/vscode-gitbash.png)
+
+## VPS
+
+Sur mon VPS, j'ai installé git, nodejs et npm pour mon projet web via ce script bash.
+
+```bash title="apt-projetweb.sh"
+#!/bin/bash
+
+### Mise à jour des paquets système ###
+
+echo "Mise à jour des paquets système..."
+sudo apt-get update
+
+### Vérification et installation de Git ###
+
+check_git() {
+    if command -v git > /dev/null 2>&1; then
+        echo "Git est déjà installé : $(git --version)"
+    else
+        echo "Git n'est pas installé. Installation en cours..."
+        sudo apt-get install -y git
+        if command -v git > /dev/null 2>&1; then
+            echo "Git installé avec succès : $(git --version)"
+        else
+            echo "Erreur lors de l'installation de Git."
+            exit 1
+        fi
+    fi
+}
+
+### Vérification et installation de Node.js ###
+
+check_node() {
+    if command -v node > /dev/null 2>&1; then
+        echo "Node.js est déjà installé : $(node --version)"
+    else
+        echo "Node.js n'est pas installé. Installation en cours..."
+        # Installation via NodeSource pour la dernière version LTS
+        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo bash -
+        sudo apt-get install -y nodejs
+        if command -v node > /dev/null 2>&1; then
+            echo "Node.js et npm installés avec succès : $(node --version), npm : $(npm --version)"
+        else
+            echo "Erreur lors de l'installation de Node.js."
+            exit 1
+        fi
+    fi
+}
+
+### Exécution des vérifications ###
+
+check_git
+check_node
+
+echo "Vérification terminée. Tous les outils nécessaires sont installés."
+```

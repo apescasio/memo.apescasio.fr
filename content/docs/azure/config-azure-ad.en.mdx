@@ -1,0 +1,112 @@
+---
+title: Configure an Azure Active Directory
+---
+## Azure: What Exactly Is It?
+
+**Azure** is Microsoft's cloud platform, offering Infrastructure as a Service (IaaS), Platform as a Service (PaaS), and Software as a Service (SaaS). It allows you to deploy, manage, and monitor resources in globally distributed datacenters.
+
+Among the most commonly used services:
+- Virtual Machines (VM),
+- Storage (Blob, File Share),
+- Virtual Networks (VNet, VPN),
+- Managed Databases (SQL, Cosmos DB),
+- Identity and Access Services (Azure AD, RBAC),
+- DevOps tools, monitoring, AI, etc.
+
+<Callout icon="💡" title="Key Takeaway">
+Azure is a comprehensive public cloud capable of replacing or complementing an on-premise infrastructure.
+</Callout>
+
+---
+
+## Azure Active Directory (Azure AD)
+
+**Azure AD** is Microsoft's cloud identity service. It centralizes:
+- User authentication (SSO, MFA, etc.),
+- Management of groups, roles, and permissions,
+- Integration with thousands of SaaS applications (e.g., Office 365, Salesforce, GitHub),
+- And synchronization with an on-premise Active Directory (via Azure AD Connect).
+
+It is **not** a traditional domain controller but rather a **cloud directory** based on user identities.  
+It supports standard protocols: **OAuth2, OpenID Connect, SAML, WS-Fed**.
+
+<Callout icon="💡" title="Common Use Case">
+Authenticating users on Office 365, managing access to internal applications, or implementing MFA via Conditional Access.
+</Callout>
+
+---
+
+## What Is an Azure Tenant?
+
+An **Azure tenant** is an isolated instance of Azure Active Directory associated with an organization.  
+It serves as a **security context** for:
+- Users,
+- Applications,
+- Groups,
+- Roles and security policies.
+
+Each tenant has:
+- A default **domain name** (`<name>.onmicrosoft.com`),
+- A **unique GUID** (`Directory (tenant) ID`),
+- And can be linked to multiple Azure subscriptions.
+
+<Callout icon="💡" title="Important">
+An Azure subscription can exist **within** a tenant, but a tenant can exist **without a subscription**. The two are not the same.
+</Callout>
+
+## Setting Up an Azure AD
+
+First, create a [Microsoft Azure AD](https://microsoft.com/en-us/free) account, which has a completely free option.
+
+Then, go to the portal [https://portal.azure.com](https://portal.azure.com) to create a new Azure AD tenant.
+
+![Image 1](/images/azure/1.PNG)  
+![Image 2](/images/azure/2.PNG)  
+![Image 3](/images/azure/3.PNG)  
+
+Once in the new tenant on the portal (if not already done), create a new user. This account will be used to synchronize the on-premise (local) AD with the Azure AD cloud.
+
+![Image 5](/images/azure/5.PNG)  
+![Image 6](/images/azure/6.PNG)  
+![Image 7](/images/azure/7.PNG)  
+
+Once the user is created (this will take 1 to 2 minutes), copy the user's UPN. For example: `apes@labapes.onmicrosoft.com`.
+
+For the installation of [Azure AD Connect](https://www.microsoft.com/en-US/download/details.aspx?id=47594), I simply used the default settings.
+
+![Image 8](/images/azure/8.PNG)  
+![Image 9](/images/azure/9.PNG)  
+![Image 10](/images/azure/10.PNG)  
+![Image 11](/images/azure/11.PNG)  
+![Image 12](/images/azure/12.PNG)  
+![Image 13](/images/azure/13.PNG)  
+![Image 14](/images/azure/14.PNG)  
+![Image 16](/images/azure/16.PNG)  
+![Image 17](/images/azure/17.PNG)  
+![Image 18](/images/azure/18.PNG)  
+![Image 19](/images/azure/19.PNG)  
+![Image 20](/images/azure/20.PNG)  
+![Image 21](/images/azure/21.PNG)  
+![Image 22](/images/azure/22.PNG)  
+![Image 23](/images/azure/23.PNG)  
+![Image 24](/images/azure/24.PNG)  
+![Image 25](/images/azure/25.PNG)  
+![Image 26](/images/azure/26.PNG)  
+![Image 27](/images/azure/27.PNG)  
+
+Once installed, launch the "Synchronization Service" software to check the synchronization logs between the local AD and Azure AD.
+
+![Image 28](/images/azure/28.PNG)  
+
+You should see "success" operations. You can also verify in the Azure portal that the users have been successfully synchronized.
+
+![Image 29](/images/azure/29.PNG)  
+![Image 30](/images/azure/30.PNG)  
+
+After these verifications, you can test creating a new user in the local AD and force synchronization using the command `Start-ADSyncSyncCycle -PolicyType Delta`.
+
+![Image 31](/images/azure/31.PNG)  
+![Image 32](/images/azure/32.PNG)  
+![Image 33](/images/azure/33.PNG)  
+
+Everything works correctly, and the new user is visible!

@@ -1,0 +1,6 @@
+{
+    "title": "Bash",
+    "icon": "bash",
+    "pages": ["index", "config-vps", "config-vps-ssh", "config-vps-nginx"],
+    "root": true
+  }
