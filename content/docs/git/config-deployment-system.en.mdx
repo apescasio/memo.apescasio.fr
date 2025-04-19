@@ -1,143 +1,248 @@
 ---
-title: Configure a deployment system for beginners
+title: Configure git to push from local PC to VPS & Github
 ---
+
 ## Context
 
-I wanted to create a development process for my docs/website project `memo.apescasio.fr`. I needed a way to work safely on my local PC while deploying changes quickly to my VPS. The old methods were: manually editing files inside VPS or using FTP to send files inside VPS (time consumer & overall a bad idea). I’d often forget which files I’d changed or accidentally overwrite recent updates.
+I wanted to create a development process for my documentation/website project `memo.apescasio.fr`. 
 
-## Local Git Configuration
+I needed a way to work safely on my local PC while quickly deploying changes to my VPS. 
 
-The first step was setting up Git on my local PC. Since it wasn’t installed, I used **Winget** to install it. After that, I generated a new SSH key pair using:
+The old methods were: manually modifying files on the VPS or using FTP to send files to the VPS (time-consuming and generally a bad idea). I often forgot which files I had modified or accidentally overwrote recent updates.
+
+## Creating a GitHub Repository
+
+I created my GitHub repository `memo.apescasio.fr` by going to https://github.com/new.
+
+## VPS SSH `.pub`
+
+I generated a new SSH key pair with:
 
 ```bash
 ssh-keygen -t rsa -b 4096
 ```
 
-I added the contents of public key `mykey.pub` to GitHub’s SSH settings, enabling me to be able to use git clone, git push commands from my local PC.
+I added the public key `.pub` to the SSH settings of my GitHub account so that I could, for example, perform `git push` securely and password-free between my VPS and GitHub.
 
-![Adding SSH Key to GitHub](/images/git/github_ssh_pub.png)
+![Adding the SSH key (VPS) to GitHub](/images/git/github_vps_ssh_key_pub.png)
 
-If ever, I want to be able to work on another local PC, I simply need to generate another ssh key and add the public key to Github once again.
+## Local PC SSH `.pub`
 
-## Why is Git important
+I generated another SSH key pair with:
 
-Git is a safety net for my code. It tracks every change I make, so if something breaks, I can instantly revert to a working version. It’s like having an infinite "undo" button for my entire project. Plus, with GitHub as a central repository, I can work from any computer and always have access to my latest code.
+```bash
+ssh-keygen -t rsa -b 4096
+```
 
-## First `git push`
+I also added the public key `.pub` to the SSH settings of my GitHub account.
 
-After setting up Git locally, I created a test file (`test.txt`) and pushed it to GitHub. However, when I checked my VPS, the file wasn’t there. That’s when I realized I needed to configure the VPS side of things.
+![Adding the SSH key (Local PC) to GitHub](/images/git/github_local_pc_ssh_key_pub.png)
 
-![First push from local PC](/images/git/github_1st_p.png)
+If I ever want to work on another local PC, I just need to generate another SSH key and add the public key to GitHub again.
 
-## Setting Up Git Hooks
+## VPS Initialization of a `bare git repository`
 
-On my VPS, I created a Git hook called `post-receive` in the `.git/hooks` directory. Initially, it didn’t work as expected. Although the hook was executable (`-rwxr-xr-x`), it wasn’t updating my files. After a few iterations, I simplified the script to fetch the latest changes from GitHub and reset the repository to match the `main` branch exactly.
+I created this bare git repository so that my VPS acts as the remote repository for my local PC, allowing me to centralize and synchronize changes between my local environment and the server.
 
-Here’s the final version of the `post-receive` hook:
+```bash
+mkdir -p ~/memo.apescasio.fr.git
+cd ~/memo.apescasio.fr.git
+git init --bare
+```
 
-```bash title=".git/hooks/post-receive"
-#!/bin/bash
-# filepath: ~/memo.apescasio.fr.git/hooks/post-receive
+## VPS Clone `working directory repository`
 
-### Load nvm and set Node.js version ###
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-nvm use 20.19.0
+I cloned the bare git repository, and the clone will serve as the working directory repository. You cannot put website files in a bare git repository.
 
-### Checkout the latest code into the working directory ###
+```bash
+git clone ~/memo.apescasio.fr.git ~/memo.apescasio.fr
+```
+
+I added my GitHub repository (created earlier) as a remote to the clone.
+
+```bash
+cd ~/memo.apescasio.fr
+git remote add github git@github.com:apescasio/memo.apescasio.fr.git
+```
+
+I tested the SSH connection from my VPS to GitHub, which worked fine after adding the `.pub` key to my GitHub account.
+
+```bash
+ssh -i ~/.ssh/id_rsa_memo_github -T git@github.com
+```
+
+I verified that my GitHub repository was correctly configured by running:
+
+```bash
+git remote -v
+github  git@github.com:apescasio/memo.apescasio.fr.git (fetch)
+github  git@github.com:apescasio/memo.apescasio.fr.git (push)
+origin  /home/apecio/memo.apescasio.fr.git (fetch)
+origin  /home/apecio/memo.apescasio.fr.git (push)
+```
+
+Once these steps were completed, the `post-receive` hook could push changes to GitHub as planned.
+
+## VPS Creating a git hook `post-receive` 
+
+I created this git hook called `post-receive` in the bare git repository (`~/memo.apescasio.fr.git/hooks/post-receive`).
+
+The deployment process is fully automated => as soon as a change is pushed to the bare git repository on the VPS, the code is automatically updated in the working directory repository (`/home/apecio/memo.apescasio.fr`), and then also in the GitHub repository, with logs tracked in `/tmp/deploy.log`.
+
+```bash
+### Fetch the latest code into the working directory ###
+
 GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git checkout -f main
 
 ### Navigate to the working directory ###
+
 cd /home/apecio/memo.apescasio.fr
 
 ### Ensure the working directory is clean and up-to-date ###
+
 echo "Ensuring the working directory is clean..."
 GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git fetch origin
 GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git reset --hard origin/main
 
-### Run npm build ###
-echo "Running npm build..."
-if ! npm install && npm run build; then
-    echo "Build failed. Check the logs for details." >> /tmp/deploy.log
-    exit 1
-fi
-
-### Restart the PM2 process ###
-echo "Restarting PM2 process..."
-if ! pm2 restart memo; then
-    echo "PM2 restart failed ! Check the logs for details." >> /tmp/deploy.log
-    exit 1
-fi
-
 ### Push changes to GitHub ###
+
 echo "Pushing changes to GitHub..."
 GIT_SSH_COMMAND="ssh -i /home/apecio/.ssh/id_rsa_memo_github" GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git push github main
 
 ### Log the deployment ###
+
 echo "Deployment completed at $(date)" >> /tmp/deploy.log
 ```
 
-This ensures my VPS always stays in sync with GitHub. The automation is a game-changer, I can work locally, test everything safely, and deploy with confidence.
+I made the git hook executable by running:
 
-## Second `git push`
+```bash
+chmod +x ~/memo.apescasio.fr.git/hooks/post-receive
+```
 
-To verify the setup, I created another test file (`test2.txt`) and pushed it to GitHub. Moments later, the file appeared on my VPS with the correct permissions and ownership. The entire process now works seamlessly.
+## Local PC `first git push`
 
-### Local PC - Adding test2.txt 
-![First push from local PC](/images/git/github_2nd_p.png)
+From my local PC, I navigated to my project folder and added the bare git repository on my VPS as a remote.
 
-### VPS - Seeing test2.txt 
+```bash
+cd $env:USERPROFILE/PC-Local/memo.apescasio.fr
+git init
+git remote add origin ssh://username@your-vps-ip:your-ssh-port-number/home/apecio/memo.apescasio.fr.git
 
-![test2.txt shows up in VPS](/images/git/vps_txt.png)
+### I prefer 'main' as the branch name ###
+
+git branch -M main
+```
+
+I created an `example.txt` file locally and then performed my first `git push`!
+
+![First git push from Local PC](/images/git/github_local_pc_firstgitpush.png)
+
+I could see the `example.txt` file in both my VPS and GitHub repository.
+
+![First git push from Local PC 2](/images/git/github_repo_vps_example.txt.png)
+
+## Local PC `second git push`
+
+I pushed another file, `example2.txt`.
+
+![Second git push from Local PC](/images/git/github_repo_vps_example2.txt.png)
 
 ## Check `git log`
 
-To confirm the changes and track the deployment history, I used the `git log` command on my local PC. This command shows the commit history, including the author, date, and commit message.
+To confirm the changes and track the deployment history, I used the `git log` command on my local PC. This command displays the commit history, including the author, date, and commit message.
 
-```bash title="git log"
-PS C:\Users\PESCASIO\gh\memo.apescasio.fr> git log
-commit 6df0bf184a9bccb6b6615d604eae2de1284b980e (HEAD -> main, origin/main, origin/HEAD)
-Author: apescasio <pescasioaaron92@gmail.com>
-Date:   Tue Apr 15 21:01:45 2025 +0200
+```bash
+git log
+commit 5f0364f1300208edf632d0bc8c26a6a9c640d094 (HEAD -> main, origin/main)
+Author: apescasio <apescasio92@gmail.com>
+Date:   Sat Apr 19 23:16:06 2025 +0200
 
-    Local PC - Adding test2.txt
+    Added example2.txt
 
-commit 5e07575179b9fc720a89a583b41e669ee9a94d3a
-Author: apescasio <pescasioaaron92@gmail.com>
-Date:   Tue Apr 15 20:57:51 2025 +0200
+commit 4016153605ddc6c14878b2fe4c80ea98f5f82590
+Author: apescasio <apescasio92@gmail.com>
+Date:   Sat Apr 19 23:10:42 2025 +0200
 
-    Local PC - Adding test.txt
-
-commit 8b19c6bcff7a1b75aaa7da1bc6210a1b0974dde1
-Author: apecio <pescasioaaron92@gmail.com>
-Date:   Tue Apr 15 19:56:04 2025 +0200
-
-    Added README and added meta links in page.tsx for discord
-
-commit ed2215e3c85ef4ab9d0f1d82037b64eb6e324acd
-Author: apecio <pescasioaaron92@gmail.com>
-Date:   Tue Apr 15 00:38:08 2025 +0200
-
-    Initial commit: Memo Fumadocs app
+    Added example.txt
 ```
+
 ## Rollback `git checkout hash`
 
-To revert to the state before adding `test.txt` and `test2.txt`, you would use the following command:
+To revert to the state before adding `example2.txt`, I used the following commands:
 
-```bash title="git checkout hash"
-### This hash specifically as it's the one before the commits of txt files ! ###
-
-git checkout 8b19c6bcff7a1b75aaa7da1bc6210a1b0974dde1
+```bash
+git revert 5f0364f1300208edf632d0bc8c26a6a9c640d094
+git push origin main
 ```
 
-## Key Advantages
+## Local PC `"final" git push`
 
-1. **Version Control**: Git tracks every single changes, allowing me to revert to a previous version if something breaks.
-2. **Automation**: My VPS automatically updates whenever I push changes to GitHub from a local PC.
-3. **Safety**: I can test changes locally before deploying them to production.
+Now that all my tests passed, I pushed the actual project code from my local PC to the VPS.
 
-It’s like having a personal assistant that handles all the tedious work of keeping my code in sync, freeing me to focus on writing better code.
+Since I use 'Fumadocs' as a template app, I needed these packages on the VPS: Node.js, npm, and pm2 to keep the website `memo.apescasio.fr` running 24/7.
 
----
+```bash
+npm install
+npm run build
+pm2 start npm --name memo -- run start
+```
 
-With this setup, I’ve transformed my workflow into a smooth, efficient pipeline. No more manual file copying or worrying about overwriting changes, just a reliable system that works.
+## Updating the git hook `post-receive`
+
+I updated the git hook to also run `npm run build` (to save changes) and `pm2 restart` to force the website to update with the new build.
+
+```bash
+### Load nvm and set Node.js version ###
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+nvm use 20.19.0
+ 
+### Checkout the latest code into the working directory ###
+
+GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git checkout -f main
+ 
+### Navigate to the working directory ###
+
+cd /home/apecio/memo.apescasio.fr
+ 
+### Ensure the working directory is clean and up-to-date ###
+
+echo "Ensuring the working directory is clean..."
+GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git fetch origin
+GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git reset --hard origin/main
+ 
+### Run npm build ###
+
+echo "Running npm build..."
+if ! npm run build; then
+    echo "Build failed. Check the logs for details." >> /tmp/deploy.log
+    exit 1
+fi
+ 
+### Restart the PM2 process ###
+
+echo "Restarting PM2 process..."
+if ! pm2 restart memo; then
+    echo "PM2 restart failed. Check the logs for details." >> /tmp/deploy.log
+    exit 1
+fi
+ 
+### Push changes to GitHub ###
+
+echo "Pushing changes to GitHub..."
+GIT_SSH_COMMAND="ssh -i /home/apecio/.ssh/id_rsa_memo_github" GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git push github main
+ 
+### Log the deployment ###
+
+echo "Deployment completed at $(date)" >> /tmp/deploy.log
+```
+
+## Advantages
+
+1. **Version Control**: Git tracks every change, allowing me to revert to a previous version if something breaks.
+2. **Automation**: My local PC pushes code to the VPS (bare repository), triggering the `post-receive` hook. This hook automatically updates the working directory on the VPS and synchronizes changes with the GitHub repository.
+3. **Security**: I can test changes locally before pushing them to the VPS, ensuring the code is production-ready.
+
+With this setup, I transformed my workflow into a smooth and efficient pipeline. No more manually copying files or worrying about overwriting changes—just a reliable system that works.

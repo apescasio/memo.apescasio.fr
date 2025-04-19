@@ -1,9 +1,13 @@
 ---
-title: Configurer un déploiement système
+title: Configurer git pour pousser depuis un PC local vers un VPS & GitHub
 ---
 ## Contexte
 
-Je voulais créer un processus de développement pour mon projet de documentation/site web `memo.apescasio.fr`. J’avais besoin d’un moyen de travailler en toute sécurité sur mon PC local tout en déployant rapidement les changements sur mon VPS. Les anciennes méthodes étaient : modifier manuellement les fichiers dans le VPS ou utiliser FTP pour envoyer des fichiers dans le VPS (chronophage et globalement une mauvaise idée). J’oubliais souvent quels fichiers j’avais modifiés ou écrasais accidentellement des mises à jour récentes.
+Je voulais créer un processus de développement pour mon projet de documentation/site web `memo.apescasio.fr`. 
+
+J’avais besoin d’un moyen de travailler en toute sécurité sur mon PC local tout en déployant rapidement les changements sur mon VPS. 
+
+Les anciennes méthodes étaient : modifier manuellement les fichiers dans le VPS ou utiliser FTP pour envoyer des fichiers dans le VPS (chronophage et globalement une mauvaise idée). J’oubliais souvent quels fichiers j’avais modifiés ou écrasais accidentellement des mises à jour récentes.
 
 ## Création d'un Github repository
 
@@ -80,28 +84,29 @@ J'ai créé ce hook git appelé `post-receive` dans le bare git repo (`~/memo.ap
 Le processus de déploiement est donc entièrement automatisé => dès qu'un changement est poussé vers le bare git repo du VPS, le code est automatiquement mis à jour dans le working directory repo (répertoire de travail = `/home/apecio/memo.apescasio.fr`), puis aussi dans le GitHub repo, avec un suivi dans `/tmp/deploy.log`.
 
 ```bash title="~/memo.apescasio.fr.git/hooks/post-receive"
-### Checkout the latest code into the working directory ###
+### Récupérer le dernier code dans le répertoire de travail ###
 
 GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git checkout -f main
 
-### Navigate to the working directory ###
+### Aller dans le répertoire de travail ###
 
 cd /home/apecio/memo.apescasio.fr
 
-### Ensure the working directory is clean and up-to-date ###
+### S'assurer que le répertoire de travail est propre et à jour ###
 
-echo "Ensuring the working directory is clean..."
+echo "Vérification que le répertoire de travail est propre..."
 GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git fetch origin
 GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git reset --hard origin/main
 
-### Push changes to GitHub ###
+### Pousser les modifications sur GitHub ###
 
-echo "Pushing changes to GitHub..."
+echo "Poussée des modifications vers GitHub..."
 GIT_SSH_COMMAND="ssh -i /home/apecio/.ssh/id_rsa_memo_github" GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git push github main
 
-### Log the deployment ###
+### Journaliser le déploiement ###
 
-echo "Deployment completed at $(date)" >> /tmp/deploy.log
+echo "Déploiement terminé à $(date)" >> /tmp/deploy.log
+
 ```
 
 J'ai rendu le git hook executable en faisant un :
@@ -166,54 +171,62 @@ git push origin main
 
 Maintenant que tous mes tests sont bien passés, j'ai poussé le code réel du projet de mon PC local vers le VPS.
 
+Vu que j'utilise 'Fumadocs' comme template app, je dois avoir ces packages sur le VPS: nodejs, npm et pm2 pour que le site web memo.apescasio.fr soit disponible H24.
+
+```bash
+npm install
+npm run build
+pm2 start npm --name memo -- run start 
+```
 ## Mettre à jour le git hook `post-receive`
 
-Vu que j'utilise 'Fumadocs' comme template app, je dois avoir du nodejs + npm et pm2 pour que le site web memo.apescasio.fr soit disponible H24.
+J'ai mis à jour ce git hook pour qu'il fasse de plus : `npm run build` (pour sauvegarder les modifications) et `pm2 restart` pour forcer le site web de se mettre à jour avec le nouveau build.
 ```bash title="~/memo.apescasio.fr.git/hooks/post-receive"
-### Load nvm and set Node.js version ###
+### Charger nvm et définir la version de Node.js ###
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 nvm use 20.19.0
  
-### Checkout the latest code into the working directory ###
+### Récupérer le dernier code dans le répertoire de travail ###
 
 GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git checkout -f main
  
-### Navigate to the working directory ###
+### Aller dans le répertoire de travail ###
 
 cd /home/apecio/memo.apescasio.fr
  
-### Ensure the working directory is clean and up-to-date ###
+### S'assurer que le répertoire de travail est propre et à jour ###
 
-echo "Ensuring the working directory is clean..."
+echo "Vérification que le répertoire de travail est propre..."
 GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git fetch origin
 GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git reset --hard origin/main
  
-### Run npm build ###
+### Lancer la commande npm build ###
 
-echo "Running npm build..."
+echo "Exécution de npm build..."
 if ! npm run build; then
-    echo "Build failed. Check the logs for details." >> /tmp/deploy.log
+    echo "Échec du build. Consultez les logs pour plus de détails." >> /tmp/deploy.log
     exit 1
 fi
  
-### Restart the PM2 process ###
+### Redémarrer le processus PM2 ###
 
-echo "Restarting PM2 process..."
+echo "Redémarrage du processus PM2..."
 if ! pm2 restart memo; then
-    echo "PM2 restart failed. Check the logs for details." >> /tmp/deploy.log
+    echo "Échec du redémarrage PM2. Consultez les logs pour plus de détails." >> /tmp/deploy.log
     exit 1
 fi
  
-### Push changes to GitHub ###
+### Pousser les modifications sur GitHub ###
 
-echo "Pushing changes to GitHub..."
+echo "Poussée des modifications vers GitHub..."
 GIT_SSH_COMMAND="ssh -i /home/apecio/.ssh/id_rsa_memo_github" GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git push github main
  
-### Log the deployment ###
+### Journaliser le déploiement ###
 
-echo "Deployment completed at $(date)" >> /tmp/deploy.log
+echo "Déploiement terminé à $(date)" >> /tmp/deploy.log
+
 ```
 
 
