@@ -1,56 +1,13 @@
 import ToDocsBtn from '@/components/to-docs-btn';
 import { DOCS } from '@/consts';
-import Head from 'next/head';
-
-// Metadata generation for SEO and link previews
-export async function generateMetadata({ params }: { params: Promise<{ lang?: string }> }) {
-  const { lang } = await params;
-  const title = lang === 'fr' ? "Mémoire d'un admin" : 'Handbook of an admin';
-  const description = lang === 'fr' ? 'cd /docs' : 'cd /docs';
-  const image = 'https://apescasio.fr/memo-128.png';
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      images: [
-        {
-          url: image,
-          width: 256,
-          height: 256,
-          alt: title,
-        },
-      ],
-      url: `https://memo.apescasio.fr/${lang}`,
-      type: 'website',
-    },
-  };
-}
 
 export default async function HomePage({ params }: { params: Promise<{ lang?: string }> }) {
   const { lang = 'en' } = await params;
   const title = lang === 'fr' ? "Mémoire d'un admin" : 'Handbook of an admin';
   const description = 'cd /docs';
-  const image = 'https://apescasio.fr/memo-128.png';
-  const url = `https://memo.apescasio.fr/${lang}`;
 
   return (
     <>
-      <Head>
-        <title>{title}</title>
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:image" content={image} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={url} />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={title} />
-        <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={image} />
-      </Head>
-
       <main className="container flex flex-col gap-8 py-8 lg:gap-16 lg:py-16 max-w-7xl">
         {/* Hero */}
         <div className="flex flex-col items-center text-center">
