@@ -4,7 +4,11 @@ import { DOCS } from '@/consts';
 export default async function HomePage({ params }: { params: Promise<{ lang?: string }> }) {
   const { lang = 'en' } = await params;
   const title = lang === 'fr' ? "Mémoire d'un admin" : 'Handbook of an admin';
-  const description = 'cd /docs';
+  const description = (
+    <a href={`/${lang}/docs/home`} >
+      cd /docs
+    </a>
+  );
 
   return (
     <>
