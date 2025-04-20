@@ -16,8 +16,8 @@ However, a problem arises if you’ve already created cloud-only users in Azure 
 
 The solution is first to delete duplicate users and keep the originals. In this case, the original user is "apes", so the other one must be removed.
 
-![Image 34](/images/azure/34.png)
-![Image 35](/images/azure/35.png)
+![Image 34](/images/azure/34.PNG)
+![Image 35](/images/azure/35.PNG)
 
 Next, I run this PowerShell script to perform the sync.
 
@@ -144,20 +144,20 @@ Get-PSSession | Remove-PSSession
 
 In the first window, select the local AD user "apes".
 
-![Image 36](/images/azure/36.png)
+![Image 36](/images/azure/36.PNG)
 
 Then in the second window, choose the Azure AD user you wish to sync with.
 
-![Image 37](/images/azure/37.png)
+![Image 37](/images/azure/37.PNG)
 
 After syncing, the script will ask if you want to continue linking other users.
 
-![Image 38](/images/azure/38.png)
+![Image 38](/images/azure/38.PNG)
 
 If you type "N", a window will simply display users with their "ImmutableId".
 
-![Image 40](/images/azure/40.png)
+![Image 40](/images/azure/40.PNG)
 
 As you can see in Azure AD, the user "apes" is now synced. Yes!
 
-![Image 39](/images/azure/39.png)
+![Image 39](/images/azure/39.PNG)

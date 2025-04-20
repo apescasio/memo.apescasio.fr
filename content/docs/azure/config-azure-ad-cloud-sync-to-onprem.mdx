@@ -16,8 +16,8 @@ Cependant, un problème survient si vous avez déjà créé des utilisateurs clo
 
 La solution consiste tout d'abord à supprimer les doublons d'utilisateurs et à conserver les originaux. Dans ce cas, l'utilisateur original est "apes", donc l'autre doit être supprimé.
 
-![Image 34](/images/azure/34.png)
-![Image 35](/images/azure/35.png)
+![Image 34](/images/azure/34.PNG)
+![Image 35](/images/azure/35.PNG)
 
 Ensuite, j'execute ce script script PowerShell pour effectuer la synchronisation.
 
@@ -142,20 +142,20 @@ Get-PSSession | Remove-PSSession
 ## Execution du script
 Dans la première fenêtre, sélectionnez l'utilisateur de l'AD local "apes".
 
-![Image 36](/images/azure/36.png)
+![Image 36](/images/azure/36.PNG)
 
 Puis dans la deuxième fenêtre, choisissez l'utilisateur de l'Azure AD avec lequel vous souhaitez le synchroniser.
 
-![Image 37](/images/azure/37.png)
+![Image 37](/images/azure/37.PNG)
 
 Après la synchronisation, le script vous demandera si vous souhaitez continuer à synchroniser d'autres utilisateurs ou non.
 
-![Image 38](/images/azure/38.png)
+![Image 38](/images/azure/38.PNG)
 
 Si vous entrez "N", une fenêtre affichera simplement les utilisateurs avec leurs "ImmutableId".
 
-![Image 40](/images/azure/40.png)
+![Image 40](/images/azure/40.PNG)
 
 Comme vous pouvez le constater dans l'Azure AD, l'utilisateur "apes" est maintenant synchronisé. **Yes**!
 
-![Image 39](/images/azure/39.png)
+![Image 39](/images/azure/39.PNG)
