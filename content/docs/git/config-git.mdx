@@ -1,13 +1,6 @@
 ---
 title: Configurer git sur un VPS et son PC
 ---
-## Qu'est-ce que `git` / `GitHub` ?
-
-**Git** est un outil puissant qui agit comme une machine à remonter le temps pour vos projets. Il garde une trace de chaque modification que vous apportez à votre code, vous permettant de revenir à un état précédent si nécessaire. Imaginez-le comme un journal de bord ou un album photo pour votre projet, où chaque commit représente une étape importante ou une "photo" de l'évolution de votre travail.
-
-En plus de cela, Git est un "chef d'orchestre" pour le travail collaboratif. Lorsque plusieurs personnes travaillent sur le même projet, il s'assure que tout le monde peut contribuer sans écraser le travail des autres. Grâce à ses branches, il permet d'explorer différentes idées ou fonctionnalités sans risquer de casser le projet principal.
-
-**GitHub**, quant à lui, est une plateforme basée sur le cloud qui agit comme une bibliothèque pour vos projets Git. Elle permet de stocker, partager et collaborer sur du code avec d'autres développeurs, tout en offrant des outils pour suivre les contributions et gérer les projets efficacement.
 
 ## Contexte
 
@@ -26,13 +19,13 @@ Si vous trouvez une meilleure offre que Netcup 6€/mois, je suis preneur.
 Sur mon PC local, j'ai installé git, VSCode comme IDE, nodejs et npm pour mon projet web via ce script PowerShell.
 
 ```ps1 title="winget-projetweb.ps1"
-### Vérification et installation de Git ###
+### Vérification et installation de git ###
 
-if (-Not (Test-Path "C:\Program Files\Git")) {
-    Write-Host "Git n'est pas installé. Installation avec winget..."
-    winget install -e -id Git.Git
+if (-Not (Test-Path "C:\Program Files\git")) {
+    Write-Host "git n'est pas installé. Installation avec winget..."
+    winget install -e -id git.git
 } else {
-    Write-Host "Git est déjà installé."
+    Write-Host "git est déjà installé."
 }
 
 ### Vérification et installation de Visual Studio Code ###
@@ -71,18 +64,18 @@ Sur mon VPS, j'ai installé git, nodejs et npm pour mon projet web via ce script
 echo "Mise à jour des paquets système..."
 sudo apt-get update
 
-### Vérification et installation de Git ###
+### Vérification et installation de git ###
 
 check_git() {
     if command -v git > /dev/null 2>&1; then
-        echo "Git est déjà installé : $(git --version)"
+        echo "git est déjà installé : $(git --version)"
     else
-        echo "Git n'est pas installé. Installation en cours..."
+        echo "git n'est pas installé. Installation en cours..."
         sudo apt-get install -y git
         if command -v git > /dev/null 2>&1; then
-            echo "Git installé avec succès : $(git --version)"
+            echo "git installé avec succès : $(git --version)"
         else
-            echo "Erreur lors de l'installation de Git."
+            echo "Erreur lors de l'installation de git."
             exit 1
         fi
     fi

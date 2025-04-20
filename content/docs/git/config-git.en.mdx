@@ -1,14 +1,6 @@
 ---
 title: Configure git on a VPS and PC
 ---
-## What is `git` / `GitHub`?
-
-**Git** is a powerful tool that acts like a time machine for your projects. It keeps track of every change you make to your code, allowing you to revert to a previous state if needed. Think of it like a logbook or a photo album for your project, where each commit represents an important milestone or a "snapshot" of your work's progress.
-
-On top of that, Git is a "conductor" for collaborative work. When multiple people work on the same project, it ensures everyone can contribute without overwriting each other’s work. Thanks to its branching feature, it allows you to explore different ideas or features without risking the main project.
-
-**GitHub**, on the other hand, is a cloud-based platform that acts as a library for your Git projects. It allows you to store, share, and collaborate on code with other developers while providing tools to track contributions and manage projects efficiently.
-
 ## Context
 
 I have a laptop running Windows 11 (my local machine) and a VPS running Debian 12 that I rent from Netcup.
@@ -23,16 +15,16 @@ If you find a better offer than Netcup €6/month, I’m all ears.
 
 ## Local PC
 
-On my local PC, I installed Git, VSCode as the IDE, Node.js and npm for my web project using this PowerShell script:
+On my local PC, I installed git, VSCode as the IDE, Node.js and npm for my web project using this PowerShell script:
 
 ```ps1 title="winget-webproject.ps1"
-### Check and install Git ###
+### Check and install git ###
 
-if (-Not (Test-Path "C:\Program Files\Git")) {
-    Write-Host "Git is not installed. Installing via winget..."
-    winget install -e -id Git.Git
+if (-Not (Test-Path "C:\Program Files\git")) {
+    Write-Host "git is not installed. Installing via winget..."
+    winget install -e -id git.git
 } else {
-    Write-Host "Git is already installed."
+    Write-Host "git is already installed."
 }
 
 ### Check and install Visual Studio Code ###
@@ -62,7 +54,7 @@ Once VSCode is installed, to display the terminal in 'git bash' mode, click the 
 
 ## VPS
 
-On my VPS, I installed Git, Node.js, and npm for my web project using this bash script:
+On my VPS, I installed git, Node.js, and npm for my web project using this bash script:
 
 ```bash title="apt-webproject.sh"
 #!/bin/bash
@@ -72,18 +64,18 @@ On my VPS, I installed Git, Node.js, and npm for my web project using this bash 
 echo "Updating system packages..."
 sudo apt-get update
 
-### Check and install Git ###
+### Check and install git ###
 
 check_git() {
     if command -v git > /dev/null 2>&1; then
-        echo "Git is already installed: $(git --version)"
+        echo "git is already installed: $(git --version)"
     else
-        echo "Git is not installed. Installing..."
+        echo "git is not installed. Installing..."
         sudo apt-get install -y git
         if command -v git > /dev/null 2>&1; then
-            echo "Git successfully installed: $(git --version)"
+            echo "git successfully installed: $(git --version)"
         else
-            echo "Error installing Git."
+            echo "Error installing git."
             exit 1
         fi
     fi

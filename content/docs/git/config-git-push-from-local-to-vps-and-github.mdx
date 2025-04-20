@@ -9,7 +9,7 @@ J’avais besoin d’un moyen de travailler en toute sécurité sur mon PC local
 
 Les anciennes méthodes étaient : modifier manuellement les fichiers dans le VPS ou utiliser FTP pour envoyer des fichiers dans le VPS (chronophage et globalement une mauvaise idée). J’oubliais souvent quels fichiers j’avais modifiés ou écrasais accidentellement des mises à jour récentes.
 
-## Création d'un Github repository
+## Création d'un GitHub repository
 
 J'ai créé mon github repository `memo.apescasio.fr` en allant dans https://github.com/new.
 
@@ -37,6 +37,7 @@ J’ai également ajouté le contenu de la clé publique `.pub` aux paramètres 
 
 Si jamais je veux travailler sur un autre PC local, il me suffit de générer une autre clé SSH et d’ajouter la clé publique à GitHub à nouveau.
 
+Mon VPS autorise seulement l'authentification par clé SSH, donc le contenu de la clé publique (PC local) est aussi présent dans le `~/.ssh/authorized_keys` de mon VPS.
 ## VPS Initialisation `bare git repository`
 
 J'ai créé ce bare git repository pour que mon VPS soit comme le dépot distant pour mon PC local, ce qui permet de centraliser et de synchroniser les changements entre mon environnement local et le serveur.
@@ -54,20 +55,20 @@ J'ai cloné le bare git repo et le clone servira de working directory repo (rép
 git clone ~/memo.apescasio.fr.git ~/memo.apescasio.fr
 ```
 
-J'ajoute mon Github repository (que j'ai créé au début) comme remote sur le clone.
+J'ajoute mon GitHub repository (que j'ai créé au début) comme remote sur le clone.
 
 ```bash
 cd ~/memo.apescasio.fr
 git remote add github git@github.com:apescasio/memo.apescasio.fr.git
 ```
 
-Je teste la connexion SSH de mon VPS vers Github, cela passe bien après avoir ajouté le `.pub` dans mon compte Github.
+Je teste la connexion SSH de mon VPS vers GitHub, cela passe bien après avoir ajouté le `.pub` dans mon compte GitHub.
 
 ```bash
 ssh -i ~/.ssh/id_rsa_memo_github -T git@github.com
 ```
 
-Je vérifie que mon Github repository est bien configuré en faisant un :
+Je vérifie que mon GitHub repository est bien configuré en faisant un :
 
 ```bash title="git remote -v"
 github  git@github.com:apescasio/memo.apescasio.fr.git (fetch)
@@ -131,7 +132,7 @@ Je crée un `example.txt` de mon local et puis je fais mon premier `git push` !
 
 ![Premier git push depuis PC local](/images/git/github_local_pc_firstgitpush.png)
 
-Je vois bien le fichier exemple.txt dans mon VPS et dans Github repo.
+Je vois bien le fichier exemple.txt dans mon VPS et dans GitHub repo.
 
 ![Premier git push depuis PC local 2](/images/git/github_repo_vps_example.txt.png)
 

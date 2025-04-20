@@ -1,5 +1,5 @@
 ---
-title: Configure git to push from local PC to VPS & Github
+title: Configure git to push from local PC to VPS & GitHub
 ---
 
 ## Context
@@ -39,6 +39,8 @@ I also added the public key `.pub` to the SSH settings of my GitHub account.
 ![Adding the SSH key (Local PC) to GitHub](/images/git/github_local_pc_ssh_key_pub.png)
 
 If I ever want to work on another local PC, I just need to generate another SSH key and add the public key to GitHub again.
+
+My VPS only allows authentication via SSH key, so the content of the public key (local PC) is also present in the `~/.ssh/authorized_keys` on my VPS.
 
 ## VPS Initialization of a `bare git repository`
 

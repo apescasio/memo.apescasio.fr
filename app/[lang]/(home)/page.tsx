@@ -7,7 +7,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang?: st
   const { lang } = await params;
   const title = lang === 'fr' ? "Mémoire d'un admin" : 'Handbook of an admin';
   const description = lang === 'fr' ? 'cd /docs' : 'cd /docs';
-  const image = 'https://apescasio.fr/icon.png';
+  const image = 'https://apescasio.fr/memo-128.png';
 
   return {
     title,
@@ -33,7 +33,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
   const { lang = 'en' } = await params;
   const title = lang === 'fr' ? "Mémoire d'un admin" : 'Handbook of an admin';
   const description = 'cd /docs';
-  const image = 'https://apescasio.fr/icon.png';
+  const image = 'https://apescasio.fr/memo-128.png';
   const url = `https://memo.apescasio.fr/${lang}`;
 
   return (
