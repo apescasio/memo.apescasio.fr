@@ -103,7 +103,7 @@ export const DOCS = {
   intune: {
     title: 'Intune',
     label: 'Intune',
-    path: '',
+    path: '/docs/intune',
     icon: IconIntune,
   },
   git: {

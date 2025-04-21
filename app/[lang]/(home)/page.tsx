@@ -16,7 +16,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
         {/* Hero */}
         <div className="flex flex-col items-center text-center">
           <div className="bg-fd-card mb-4 aspect-square rounded-full border p-6 lg:p-6">
-            <img src="/images/real_icon.svg" alt="Tech Stack Icon" className="size-32 shrink-0 lg:size-32 icon-adjust" />
+            <img src="/images/real_iconsym2.svg" alt="memo.apescasio.fr" className="size-32 shrink-0 lg:size-32 icon-adjust" />
           </div>
           <h1 className="text-2xl font-semibold lg:text-4xl">{title}</h1>
           <p className="text-fd-muted-foreground lg:text-lg">{description}</p>
@@ -53,6 +53,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
             .custom-grid-2 > * {
               transform: scale(1.1);
             }
+              
           }
         `}</style>
       </main>
