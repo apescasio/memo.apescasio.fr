@@ -75,6 +75,12 @@ foreach ($phrase in $phrases) {
 
 ## Script Execution
 
-Before running the script, I made sure to enable the Windows clipboard by pressing "Windows + V".
+Before running the script, I made sure to enable the Windows clipboard by pressing "Windows + V."
 
-Then once the script was executed, I could see all my phrases.
+![Enable Windows Clipboard](/images/powershell/clipboard-enable.PNG)
+
+Once the script is executed, the phrases appear correctly in the clipboard. Unfortunately, according to Microsoft, it is not possible to automate the pinning of phrases. Therefore, they must be pinned manually, one by one.
+
+![Pinning Frequent Phrases](/images/powershell/clipboard-phrases.PNG)
+
+If the phrases are pinned, they remain available even after restarting the PC or clearing the clipboard. It is therefore not necessary to re-run the script.
