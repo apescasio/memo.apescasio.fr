@@ -5,8 +5,16 @@
  width="640.000000pt" height="629.000000pt" viewBox="0 0 640.000000 629.000000"
  preserveAspectRatio="xMidYMid meet">
 
-<g transform="translate(0.000000,629.000000) scale(0.100000,-0.100000)"
-fill="#000000" stroke="none">
+<style>
+  :root {
+    color: black; /* Default color for light mode */
+  }
+  html[style*="color-scheme: dark"] {
+    color: white; /* Override color for dark mode */
+  }
+</style>
+
+<g transform="translate(0.000000,629.000000) scale(0.100000,-0.100000)" fill="currentColor" stroke="none">
 <path d="M2457 4534 c-7 -13 13 -59 405 -953 488 -1112 606 -1379 639 -1442
 56 -105 201 -223 314 -254 59 -16 314 -29 333 -17 10 7 -90 238 -407 944 -662
 1477 -675 1503 -749 1574 -64 62 -156 112 -239 129 -85 18 -288 31 -296 19z"/>
