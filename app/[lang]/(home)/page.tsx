@@ -1,13 +1,12 @@
 import ToDocsBtn from '@/components/to-docs-btn';
 import { DOCS } from '@/consts';
+import { MemoIcon } from '@/components/icons/memo'; // Adjust path based on where you save MemoIcon.tsx
 
 export default async function HomePage({ params }: { params: Promise<{ lang?: string }> }) {
   const { lang = 'en' } = await params;
   const title = lang === 'fr' ? "Mémoire d'un admin" : 'Handbook of an admin';
   const description = (
-    <a href={`/${lang}/docs/home`} >
-      cd /docs
-    </a>
+    <a href={`/${lang}/docs/home`}>cd /docs</a>
   );
 
   return (
@@ -16,7 +15,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
         {/* Hero */}
         <div className="flex flex-col items-center text-center">
           <div className="bg-fd-card mb-4 aspect-square rounded-full border p-6 lg:p-6">
-            <img src="/images/real_iconsym2.svg" alt="memo.apescasio.fr" className="size-32 shrink-0 lg:size-32 icon-adjust" />
+            <MemoIcon className="size-32 shrink-0 lg:size-32 icon-adjust" aria-label="memo.apescasio.fr" />
           </div>
           <h1 className="text-2xl font-semibold lg:text-4xl">{title}</h1>
           <p className="text-fd-muted-foreground lg:text-lg">{description}</p>
@@ -53,7 +52,6 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
             .custom-grid-2 > * {
               transform: scale(1.1);
             }
-              
           }
         `}</style>
       </main>
