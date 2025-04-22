@@ -19,8 +19,8 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     title: isFrench ? "Mémoire d'un admin" : 'Handbook of an admin',
     description: isFrench ? 'cd /docs' : 'cd /docs',
     keywords: isFrench
-      ? ['mémoire', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook', 'apescasio']
-      : ['memory', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook', 'apescasio'],
+      ? ['mémoire', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook', 'system', 'network', 'azure', 'intune', 'admin-sys', 'apescasio']
+      : ['memory', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook',  'system', 'network', 'azure', 'intune', 'admin-sys', 'apescasio'],
     openGraph: {
       type: 'website',
       url: '/',

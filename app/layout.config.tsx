@@ -2,6 +2,7 @@ import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { i18n } from '@/lib/i18n';
 import IconLinkedin from '@/components/icons/linkedin';
 import IconMemov2 from '@/components/icons/memov2'; // Corrected import
+import { GithubInfo } from 'fumadocs-ui/components/github-info';
 
 export function baseOptions(locale: string): BaseLayoutProps {
   return {
@@ -19,6 +20,7 @@ export function baseOptions(locale: string): BaseLayoutProps {
         </>
       ),
     },
+    githubUrl: 'https://github.com/apescasio/memo.apescasio.fr',
     links: [
       {
         type: 'main',
@@ -31,12 +33,13 @@ export function baseOptions(locale: string): BaseLayoutProps {
         text: 'LinkedIn',
         url: 'https://www.linkedin.com/in/aaron-pescasio',
         icon: (
-          <span style={{ transform: 'scale(1.1)' }}>
+          <span style={{ transform: 'scale(1.3)' }}>
             <IconLinkedin />
           </span>
         ),
         external: true,
       },
+      
     ],
   };
 }
