@@ -43,10 +43,11 @@ const TRANSLATIONS = {
   },
   intune: {
     en: {
-      desc: 'A cloud-based service for managing mobile devices, PCs, and applications.',
+      desc: 'A complete cloud solution from Microsoft that allows you to manage and secure your organization\'s devices and applications.',
+    
     },
     fr: {
-      desc: 'Un service basé sur le cloud pour la gestion des appareils mobiles, des PC et des applications.',
+      desc: 'Une solution cloud complète de Microsoft qui permet de gérer et sécuriser les appareils et applications de votre organisation.',
     },
   },
   git: {
