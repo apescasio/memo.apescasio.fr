@@ -15,7 +15,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
         {/* Hero */}
         <div className="flex flex-col items-center text-center">
           <div className="bg-fd-card mb-4 aspect-square rounded-full border p-6 lg:p-6">
-            <MemoIcon className="size-32 shrink-0 lg:size-32 icon-adjust" aria-label="memo.apescasio.fr" />
+            <MemoIcon className="size-36 shrink-0 lg:size-32 icon-adjust" aria-label="memo.apescasio.fr" />
           </div>
           <h1 className="text-2xl font-semibold lg:text-4xl">{title}</h1>
           <p className="text-fd-muted-foreground lg:text-lg">{description}</p>
@@ -43,6 +43,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
           .icon-adjust {
             margin-left: -0.5px;
             margin-bottom: -4px;
+            transform: scale(1.1);
           }
           @media (min-width: 1024px) {
             .custom-grid-2 {

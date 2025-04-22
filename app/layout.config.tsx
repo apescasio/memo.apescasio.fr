@@ -1,6 +1,7 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { i18n } from '@/lib/i18n';
 import IconLinkedin from '@/components/icons/linkedin';
+import { MemoIcon } from '@/components/icons/memo'; // Import MemoIcon
 
 export function baseOptions(locale: string): BaseLayoutProps {
   return {
@@ -8,9 +9,9 @@ export function baseOptions(locale: string): BaseLayoutProps {
     nav: {
       title: (
         <>
-          <img 
-            src="/images/real_icon.svg" 
-            alt="Logo" 
+          <MemoIcon 
+            className="size-10 shrink-0" 
+            aria-label="Memo Icon" 
             width={34} 
             height={34} 
           />
