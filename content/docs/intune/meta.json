@@ -2,5 +2,5 @@
     "title": "Intune",
     "icon": "intune",
     "root": true,
-    "pages": ["index", "intune-basics"]
+    "pages": ["index", "intune-basics", "config-hyper-v"]
   }
