@@ -25,8 +25,15 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
         <div className="flex flex-col items-center gap-8">
           <div className="grid grid-cols-2 items-start gap-4 custom-grid-2">
             {Object.values(DOCS).map(({ label, path, icon: Icon }) => {
-              return <ToDocsBtn key={label} title={label} href={path} icon={<Icon className="size-6 shrink-0 lg:size-4" />} />;
-            })}
+            return (
+              <ToDocsBtn
+                key={label}
+                title={label}
+                href={path ? `/${lang}${path}` : path} // Add /${lang} only if path is not empty
+                icon={<Icon className="size-6 shrink-0 lg:size-4" />}
+              />
+            );
+          })}
           </div>
           <br />
           <br />

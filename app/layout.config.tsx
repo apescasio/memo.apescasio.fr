@@ -1,8 +1,7 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { i18n } from '@/lib/i18n';
 import IconLinkedin from '@/components/icons/linkedin';
-import IconMemov2 from '@/components/icons/memov2'; // Corrected import
-import { GithubInfo } from 'fumadocs-ui/components/github-info';
+import IconMemov2 from '@/components/icons/memov2';
 
 export function baseOptions(locale: string): BaseLayoutProps {
   return {
@@ -11,14 +10,15 @@ export function baseOptions(locale: string): BaseLayoutProps {
       title: (
         <>
           <IconMemov2
-            className="size-10 shrink-0" 
-            aria-label="Memo Icon" 
-            width={34} 
-            height={34} 
+            className="size-10 shrink-0"
+            aria-label="Memo Icon"
+            width={34}
+            height={34}
           />
           Memo
         </>
       ),
+      url: `/${locale}`, // Add this to point to /${lang}
     },
     githubUrl: 'https://github.com/apescasio/memo.apescasio.fr',
     links: [
@@ -27,7 +27,6 @@ export function baseOptions(locale: string): BaseLayoutProps {
         text: locale === 'en' ? 'Aaron PESCASIO' : 'Aaron PESCASIO',
         url: 'https://apescasio.fr',
       },
-      // Add LinkedIn link with icon in the top-right corner
       {
         type: 'icon',
         text: 'LinkedIn',
@@ -39,7 +38,6 @@ export function baseOptions(locale: string): BaseLayoutProps {
         ),
         external: true,
       },
-      
     ],
   };
 }
