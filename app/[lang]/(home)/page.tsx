@@ -5,8 +5,23 @@ import IconMemov2 from '@/components/icons/memov2'; // Corrected import
 export default async function HomePage({ params }: { params: Promise<{ lang?: string }> }) {
   const { lang = 'en' } = await params;
   const title = lang === 'fr' ? "Mémoire d'un admin" : 'Handbook of an admin';
+  const paragraph = lang === 'fr' ? (
+    <>
+      « Je n'ai aucun talent. »<br />
+      « Sans talent, pour atteindre les sommets, il faut être prêt à mourir même le soir. »<br />
+    </>
+  ) : (
+    <>
+      « I have no talent. »<br />
+      « Without talent, in order to reach high places, one must be willing to die even in the evening. »<br />
+    </>
+  );
   const description = (
-    <a href={`/${lang}/docs/home`}>cd /docs</a>
+    <>
+      <a href={`/${lang}/docs/home`}>cd /docs</a>
+      <br /><br />
+      <span className="text-sm">{paragraph}</span>
+    </>
   );
 
   return (
@@ -35,8 +50,6 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
             );
           })}
           </div>
-          <br />
-          <br />
           <p suppressHydrationWarning className="text-fd-muted-foreground -mt-4 text-center text-sm lg:text-base">
             {`© ${new Date().getFullYear()} Aaron Pescasio / `}
             <a href="https://apescasio.fr/" target="_blank" className="hover:text-fd-accent-foreground underline">
