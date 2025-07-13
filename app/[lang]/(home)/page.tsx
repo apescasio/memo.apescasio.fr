@@ -4,7 +4,7 @@ import IconMemov2 from '@/components/icons/memov2'; // Corrected import
 
 export default async function HomePage({ params }: { params: Promise<{ lang?: string }> }) {
   const { lang = 'en' } = await params;
-  const title = lang === 'fr' ? "Mémoire d'un admin" : 'Handbook of an admin';
+  const title = lang === 'fr' ? "Mémoire d'un admin." : 'Handbook of an admin.';
   const paragraph = lang === 'fr' ? (
     <>
       « Je n'ai aucun talent. »<br />

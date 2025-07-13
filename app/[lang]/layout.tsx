@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 
   return {
     metadataBase: new URL('https://memo.apescasio.fr'),
-    title: isFrench ? "Mémoire d'un admin" : 'Handbook of an admin',
+    title: isFrench ? "Mémoire d'un admin." : 'Handbook of an admin.',
     description: isFrench ? 'cd /docs' : 'cd /docs',
     keywords: isFrench
       ? ['mémoire', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook', 'system', 'network', 'azure', 'intune', 'admin-sys', 'apescasio']
@@ -24,13 +24,13 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     openGraph: {
       type: 'website',
       url: '/',
-      title: isFrench ? "Mémoire d'un admin" : 'Handbook of an admin',
+      title: isFrench ? "Mémoire d'un admin." : 'Handbook of an admin.',
       description: isFrench ? 'cd /docs' : 'cd /docs',
       siteName: isFrench ? "memo.apescasio.fr" : 'memo.apescasio.fr',
       images: [
         {
           url: '/images/memo-128.png',
-          alt: isFrench ? "Mémoire d'un admin" : 'Handbook of an admin',
+          alt: isFrench ? "Mémoire d'un admin." : 'Handbook of an admin.',
         },
       ],
     },

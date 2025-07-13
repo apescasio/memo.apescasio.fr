@@ -11,7 +11,7 @@ import IconDocker from './components/icons/docker';
 const TRANSLATIONS = {
   home: {
     en: {
-      desc: 'Handbook of an admin.',
+      desc: 'Handbook of an admin..',
     },
     fr: {
       desc: 'Mémoire d\'un admin.',
