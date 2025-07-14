@@ -6,6 +6,10 @@ import IconIntune from './components/icons/intune';
 import IconGit from '@/components/icons/git';
 import IconSQL from '@/components/icons/sql';
 import IconDocker from './components/icons/docker';
+import IconYouTube from './components/icons/youtube';
+import IconCopilot from './components/icons/copilot';
+import IconPython from './components/icons/python';
+import IconNodeJS from './components/icons/nodejs';
 
 // Translation object for descriptions
 const TRANSLATIONS = {
@@ -44,7 +48,7 @@ const TRANSLATIONS = {
   intune: {
     en: {
       desc: 'A complete cloud solution from Microsoft that allows you to manage and secure your organization\'s devices and applications.',
-    
+
     },
     fr: {
       desc: 'Une solution cloud complète de Microsoft qui permet de gérer et sécuriser les appareils et applications de votre organisation.',
@@ -56,6 +60,38 @@ const TRANSLATIONS = {
     },
     fr: {
       desc: 'Un système de contrôle de version distribué pour suivre les modifications dans le code source.',
+    },
+  },
+  youtube: {
+    en: {
+      desc: 'My YouTube Channel.',
+    },
+    fr: {
+      desc: 'Ma chaine YouTube.',
+    },
+  },
+  copilot: {
+    en: {
+      desc: 'AI-powered productivity assistant integrated into Microsoft 365 apps to help with writing, analysis, and automation.',
+    },
+    fr: {
+      desc: 'Assistant de productivité alimenté par l\'IA intégré dans les applications Microsoft 365 pour aider avec la rédaction, l\'analyse et l\'automatisation.',
+    },
+  },
+  python: {
+    en: {
+      desc: 'A high-level, interpreted programming language known for its simplicity and versatility, widely used for web development, data analysis, artificial intelligence, and automation.',
+    },
+    fr: {
+      desc: 'Un langage de programmation interprété de haut niveau connu pour sa simplicité et sa polyvalence, largement utilisé pour le développement web, l\'analyse de données, l\'intelligence artificielle et l\'automatisation.',
+    },
+  },
+  nodejs: {
+    en: {
+      desc: 'A JavaScript runtime built on Chrome\'s V8 JavaScript engine that allows you to run JavaScript on the server side.',
+    },
+    fr: {
+      desc: 'Un environnement d\'exécution JavaScript basé sur le moteur JavaScript V8 de Chrome qui permet d\'exécuter du JavaScript côté serveur.',
     },
   },
   sql: {
@@ -112,6 +148,30 @@ export const DOCS = {
     label: 'Git',
     path: '/docs/git',
     icon: IconGit,
+  },
+  youtube: {
+    title: 'YouTube',
+    label: 'YouTube',
+    path: 'https://youtube.com/@apescasio',
+    icon: IconYouTube,
+  },
+  copilot: {
+    title: 'Copilot',
+    label: 'Copilot',
+    path: '/docs/copilot',
+    icon: IconCopilot,
+  },
+  python: {
+    title: 'Python',
+    label: 'Python',
+    path: '',
+    icon: IconPython,
+  },
+  nodejs: {
+    title: 'NodeJS',
+    label: 'NodeJS',
+    path: '',
+    icon: IconNodeJS,
   },
   sql: {
     title: 'SQL (Postgres)',

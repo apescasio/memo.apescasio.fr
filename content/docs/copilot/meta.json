@@ -1,0 +1,6 @@
+{
+    "title": "Copilot",
+    "icon": "copilot",
+    "pages": ["index", "copilot-basics"],
+    "root": true
+  }

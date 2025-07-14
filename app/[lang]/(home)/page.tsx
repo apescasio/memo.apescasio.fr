@@ -44,7 +44,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
               <ToDocsBtn
                 key={label}
                 title={label}
-                href={path ? `/${lang}${path}` : path} // Add /${lang} only if path is not empty
+                href={path ? (path.startsWith('http') ? path : `/${lang}${path}`) : path} // Handle external URLs
                 icon={<Icon className="size-6 shrink-0 lg:size-4" />}
               />
             );
