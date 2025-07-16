@@ -248,8 +248,8 @@ export const DOCS = {
     icon: IconNodeJS,
   },
   sql: {
-    title: 'SQL (Postgres)',
-    label: 'SQL (Postgres)',
+    title: 'SQL',
+    label: 'SQL',
     path: '',
     icon: IconSQL,
   },
