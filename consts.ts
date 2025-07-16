@@ -248,8 +248,8 @@ export const DOCS = {
     icon: IconNodeJS,
   },
   sql: {
-    title: 'SQL',
-    label: 'SQL',
+    title: 'SQL (MariaDB)',
+    label: 'SQL (MariaDB)',
     path: '',
     icon: IconSQL,
   },
