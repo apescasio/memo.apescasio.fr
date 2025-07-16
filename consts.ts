@@ -211,18 +211,19 @@ export const DOCS = {
     path: '/docs/git',
     icon: IconGit,
   },
-  youtube: {
-    title: 'YouTube',
-    label: 'YouTube',
-    path: 'https://youtube.com/@apescasio',
-    icon: IconYouTube,
-  },
   copilot: {
     title: 'Copilot',
     label: 'Copilot',
     path: '/docs/copilot',
     icon: IconCopilot,
   },
+  youtube: {
+    title: 'YouTube',
+    label: 'YouTube',
+    path: 'https://youtube.com/@apescasio',
+    icon: IconYouTube,
+  },
+
   cli: {
     title: 'CLI',
     label: 'CLI',
