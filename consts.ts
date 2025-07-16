@@ -4,12 +4,16 @@ import IconBash from './components/icons/bash';
 import IconAzure from './components/icons/azure';
 import IconIntune from './components/icons/intune';
 import IconGit from '@/components/icons/git';
-import IconSQL from '@/components/icons/sql';
-import IconDocker from './components/icons/docker';
 import IconYouTube from './components/icons/youtube';
 import IconCopilot from './components/icons/copilot';
+import IconCli from './components/icons/cli';
+import IconBbb from './components/icons/bbb';
 import IconPython from './components/icons/python';
 import IconNodeJS from './components/icons/nodejs';
+import IconSQL from '@/components/icons/sql';
+import IconDocker from './components/icons/docker';
+import IconNetwork from './components/icons/network';
+import IconSecurity from './components/icons/security';
 
 // Learning cycle configuration
 export const LEARNING_CYCLE = {
@@ -103,6 +107,23 @@ const TRANSLATIONS = {
       desc: 'Assistant de productivité alimenté par l\'IA intégré dans les applications Microsoft 365 pour aider avec la rédaction, l\'analyse et l\'automatisation.',
     },
   },
+  cli: {
+    en: {
+      desc: 'Welcome to my portfolio website with an interactive terminal.',
+    },
+    fr: {
+      desc: 'Bienvenue sur mon site portfolio avec un terminal interactif.',
+    },
+  },
+  bbb: {
+    en: {
+      desc: 'My fuel.',
+    },
+    fr: {
+      desc: 'Mon carburant.',
+    },
+  },
+
   python: {
     en: {
       desc: 'A high-level, interpreted programming language known for its simplicity and versatility, widely used for web development, data analysis, artificial intelligence, and automation.',
@@ -133,6 +154,22 @@ const TRANSLATIONS = {
     },
     fr: {
       desc: 'Une plateforme pour développer, expédier et exécuter des applications dans des conteneurs.',
+    },
+  },
+  network: {
+    en: {
+      desc: 'My notes on networking (IPI Paris).',
+    },
+    fr: {
+      desc: 'Mes notes sur le réseau (IPI Paris).',
+    },
+  },
+  security: {
+    en: {
+      desc: 'My notes on security (IPI Paris).',
+    },
+    fr: {
+      desc: 'Mes notes sur la sécurité (IPI Paris).',
     },
   },
 };
@@ -186,6 +223,18 @@ export const DOCS = {
     path: '/docs/copilot',
     icon: IconCopilot,
   },
+  cli: {
+    title: 'CLI',
+    label: 'CLI',
+    path: 'https://cli.apescasio.fr',
+    icon: IconCli,
+  },
+  bbb: {
+    title: 'BBB',
+    label: 'BBB',
+    path: 'https://bbb.apescasio.fr',
+    icon: IconBbb,
+  },
   python: {
     title: 'Python',
     label: 'Python',
@@ -209,6 +258,18 @@ export const DOCS = {
     label: 'Docker',
     path: '',
     icon: IconDocker,
+  },
+  network: {
+    title: 'Network',
+    label: 'Network',
+    path: '',
+    icon: IconNetwork,
+  },
+  security: {
+    title: 'Security',
+    label: 'Security',
+    path: '',
+    icon: IconSecurity,
   },
 };
 
