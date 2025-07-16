@@ -55,6 +55,10 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
             <a href="https://apescasio.fr/" target="_blank" className="hover:text-fd-accent-foreground underline">
               apescasio.fr
             </a>
+            {` + `}
+            <a href="https://sh2a.org/" target="_blank" className="hover:text-fd-accent-foreground underline">
+              sh2a.org
+            </a>
           </p>
         </div>
 
