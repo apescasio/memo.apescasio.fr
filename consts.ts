@@ -11,6 +11,31 @@ import IconCopilot from './components/icons/copilot';
 import IconPython from './components/icons/python';
 import IconNodeJS from './components/icons/nodejs';
 
+// Learning cycle configuration
+export const LEARNING_CYCLE = {
+  current: 4,
+  label: {
+    en: 'Repetition = Mother of Learning',
+    fr: 'Répétition = Mère de l\'Apprentissage'
+  },
+  currentText: {
+    en: 'currently in',
+    fr: 'actuellement dans le'
+  },
+  cycleText: {
+    en: 'cycle',
+    fr: 'cycle'
+  },
+  ordinals: {
+    en: ['st', 'nd', 'rd', 'th'],
+    fr: ['er', 'ème', 'ème', 'ème']
+  },
+  callout: {
+    en: 'Once a month, I break everything (my own PC + my own lab tenant) to rebuild back everything. Whether it be installing apps on my PC via PowerShell, or redoing Intune Autopilot Profile and Copilot AI Agents.',
+    fr: 'Une fois par mois, je casse tout (mon propre PC + mon propre tenant de lab) pour tout reconstruire. Que ce soit l\'installation d\'applications sur mon PC via PowerShell, ou refaire le profil Intune Autopilot et les agents IA Copilot.'
+  }
+};
+
 // Translation object for descriptions
 const TRANSLATIONS = {
   home: {
