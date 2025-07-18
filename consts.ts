@@ -254,7 +254,7 @@ export const DOCS = {
   lhc: {
     title: 'LHC',
     label: 'LHC',
-    path: 'https://lethimcook.fr',
+    path: 'https://lethimcook.fr/en',
     icon: IconLhc,
   },
   python: {
