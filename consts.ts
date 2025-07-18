@@ -36,8 +36,8 @@ export const LEARNING_CYCLE = {
     fr: ['er', 'ème', 'ème', 'ème']
   },
   callout: {
-    en: 'Once a month, I break everything (my own PC + my own lab tenant) to rebuild back everything. Whether it be installing apps on my PC via PowerShell, or redoing Intune Autopilot Profile and Copilot AI Agents.',
-    fr: 'Une fois par mois, je casse tout (mon propre PC + mon propre tenant de lab) pour tout reconstruire. Que ce soit l\'installation d\'applications sur mon PC via PowerShell, ou refaire le profil Intune Autopilot et les agents IA Copilot.'
+    en: 'Once a month, I break everything (my own PC + my own lab tenant) to rebuild back everything « brick by brick ». Whether it be installing apps on my PC via PowerShell, or redoing Intune Autopilot Profile and Copilot AI Agents.',
+    fr: 'Une fois par mois, je casse tout (mon propre PC + mon propre tenant de lab) pour tout reconstruire « brick by brick ». Que ce soit l\'installation d\'applications sur mon PC via PowerShell, ou refaire le profil Intune Autopilot et les agents IA Copilot.'
   }
 };
 
@@ -92,14 +92,7 @@ const TRANSLATIONS = {
       desc: 'Un système de contrôle de version distribué pour suivre les modifications dans le code source.',
     },
   },
-  youtube: {
-    en: {
-      desc: 'My YouTube Channel.',
-    },
-    fr: {
-      desc: 'Ma chaine YouTube.',
-    },
-  },
+
   copilot: {
     en: {
       desc: 'AI-powered productivity assistant integrated into Microsoft 365 apps to help with writing, analysis, and automation.',
@@ -108,30 +101,7 @@ const TRANSLATIONS = {
       desc: 'Assistant de productivité alimenté par l\'IA intégré dans les applications Microsoft 365 pour aider avec la rédaction, l\'analyse et l\'automatisation.',
     },
   },
-  cli: {
-    en: {
-      desc: 'Welcome to my portfolio website with an interactive terminal.',
-    },
-    fr: {
-      desc: 'Bienvenue sur mon site portfolio avec un terminal interactif.',
-    },
-  },
-  bbb: {
-    en: {
-      desc: 'My fuel.',
-    },
-    fr: {
-      desc: 'Mon carburant.',
-    },
-  },
-  lhc: {
-    en: {
-      desc: 'Let him cook.',
-    },
-    fr: {
-      desc: 'Let him cook.',
-    },
-  },
+
 
   python: {
     en: {
@@ -179,6 +149,38 @@ const TRANSLATIONS = {
     },
     fr: {
       desc: 'Mes notes sur la sécurité (IPI Paris).',
+    },
+  },
+    youtube: {
+    en: {
+      desc: 'My YouTube Channel.',
+    },
+    fr: {
+      desc: 'Ma chaine YouTube.',
+    },
+  },
+    cli: {
+    en: {
+      desc: 'Welcome to my portfolio website with an interactive terminal.',
+    },
+    fr: {
+      desc: 'Bienvenue sur mon site portfolio avec un terminal interactif.',
+    },
+  },
+  bbb: {
+    en: {
+      desc: 'My fuel.',
+    },
+    fr: {
+      desc: 'Mon carburant.',
+    },
+  },
+  lhc: {
+    en: {
+      desc: 'Let him cook.',
+    },
+    fr: {
+      desc: 'Let him cook.',
     },
   },
 };
@@ -232,31 +234,7 @@ export const DOCS = {
     path: '',
     icon: IconSecurity,
   },
-  youtube: {
-    title: 'YouTube',
-    label: 'YouTube',
-    path: 'https://youtube.com/@apescasio',
-    icon: IconYouTube,
-  },
-
-  cli: {
-    title: 'CLI',
-    label: 'CLI',
-    path: 'https://cli.apescasio.fr',
-    icon: IconCli,
-  },
-  bbb: {
-    title: 'BBB',
-    label: 'BBB',
-    path: 'https://bbb.apescasio.fr',
-    icon: IconBbb,
-  },
-  lhc: {
-    title: 'LHC',
-    label: 'LHC',
-    path: 'https://lethimcook.fr/en',
-    icon: IconLhc,
-  },
+ 
   python: {
     title: 'Python',
     label: 'Python',
@@ -280,6 +258,31 @@ export const DOCS = {
     label: 'Docker',
     path: '',
     icon: IconDocker,
+  },
+   youtube: {
+    title: 'YouTube',
+    label: 'YouTube',
+    path: 'https://youtube.com/@apescasio',
+    icon: IconYouTube,
+  },
+
+  cli: {
+    title: 'CLI',
+    label: 'CLI',
+    path: 'https://cli.apescasio.fr',
+    icon: IconCli,
+  },
+  bbb: {
+    title: 'BBB',
+    label: 'BBB',
+    path: 'https://bbb.apescasio.fr',
+    icon: IconBbb,
+  },
+  lhc: {
+    title: 'LHC',
+    label: 'LHC',
+    path: 'https://lethimcook.fr/en',
+    icon: IconLhc,
   },
 
 
