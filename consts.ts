@@ -234,32 +234,7 @@ export const DOCS = {
     path: '',
     icon: IconSecurity,
   },
- 
-  python: {
-    title: 'Python',
-    label: 'Python',
-    path: '',
-    icon: IconPython,
-  },
-  nodejs: {
-    title: 'NodeJS',
-    label: 'NodeJS',
-    path: '',
-    icon: IconNodeJS,
-  },
-  sql: {
-    title: 'SQL (MariaDB)',
-    label: 'SQL (MariaDB)',
-    path: '',
-    icon: IconSQL,
-  },
-  docker: {
-    title: 'Docker',
-    label: 'Docker',
-    path: '',
-    icon: IconDocker,
-  },
-   youtube: {
+    youtube: {
     title: 'YouTube',
     label: 'YouTube',
     path: 'https://youtube.com/@apescasio',
@@ -284,6 +259,31 @@ export const DOCS = {
     path: 'https://lethimcook.fr/en',
     icon: IconLhc,
   },
+  python: {
+    title: 'Python',
+    label: 'Python',
+    path: '',
+    icon: IconPython,
+  },
+  nodejs: {
+    title: 'NodeJS',
+    label: 'NodeJS',
+    path: '',
+    icon: IconNodeJS,
+  },
+  sql: {
+    title: 'SQL (MariaDB)',
+    label: 'SQL (MariaDB)',
+    path: '',
+    icon: IconSQL,
+  },
+  docker: {
+    title: 'Docker',
+    label: 'Docker',
+    path: '',
+    icon: IconDocker,
+  },
+
 
 
 };
