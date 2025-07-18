@@ -1,0 +1,6 @@
+{
+    "title": "Security",
+    "icon": "security",
+    "pages": ["index", "custom-domain-names-tenant"],
+    "root": true
+  }

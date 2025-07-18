@@ -36,8 +36,8 @@ export const LEARNING_CYCLE = {
     fr: ['er', 'ème', 'ème', 'ème']
   },
   callout: {
-    en: 'Once a month, I break everything (my own PC + my own lab tenant) to rebuild back everything « brick by brick ». Whether it be installing apps on my PC via PowerShell, or redoing Intune Autopilot Profile and Copilot AI Agents.',
-    fr: 'Une fois par mois, je casse tout (mon propre PC + mon propre tenant de lab) pour tout reconstruire « brick by brick ». Que ce soit l\'installation d\'applications sur mon PC via PowerShell, ou refaire le profil Intune Autopilot et les agents IA Copilot.'
+    en: 'Once a month, I break everything (my own PC + my own lab tenant) to rebuild back everything « brick by brick ». Whether it be installing apps on my PC via PowerShell, or recreating Copilot AI Agents or Intune Full Cloud Autopilot profiles.',
+    fr: 'Une fois par mois, je casse tout (mon propre PC + mon propre lab tenant) pour tout reconstruire « brick by brick ». Que ce soit l\'installation d\'applications sur mon PC via PowerShell, ou recréer les agents Copilot IA Studio ou les profils Intune Full Cloud Autopilot.'
   }
 };
 
@@ -137,21 +137,21 @@ const TRANSLATIONS = {
   },
   network: {
     en: {
-      desc: 'My notes on networking (IPI Paris).',
+      desc: 'My notes on networking (IPI Paris School).',
     },
     fr: {
-      desc: 'Mes notes sur le réseau (IPI Paris).',
+      desc: 'Mes notes sur le réseau (IPI Paris School).',
     },
   },
   security: {
     en: {
-      desc: 'My notes on security (IPI Paris).',
+      desc: 'My notes on everything security-related on my lab tenant to simulate real work scenarios.',
     },
     fr: {
-      desc: 'Mes notes sur la sécurité (IPI Paris).',
+      desc: 'Mes notes sur tout ce qui concerne la sécurité sur mon lab tenant pour simuler des scénarios de travail réels.',
     },
   },
-    youtube: {
+  youtube: {
     en: {
       desc: 'My YouTube Channel.',
     },
@@ -159,7 +159,7 @@ const TRANSLATIONS = {
       desc: 'Ma chaine YouTube.',
     },
   },
-    cli: {
+  cli: {
     en: {
       desc: 'Welcome to my portfolio website with an interactive terminal.',
     },
@@ -231,10 +231,10 @@ export const DOCS = {
   security: {
     title: 'Security',
     label: 'Security',
-    path: '',
+    path: '/docs/security',
     icon: IconSecurity,
   },
-    youtube: {
+  youtube: {
     title: 'YouTube',
     label: 'YouTube',
     path: 'https://youtube.com/@apescasio',
