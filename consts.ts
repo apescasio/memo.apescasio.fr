@@ -8,6 +8,7 @@ import IconYouTube from './components/icons/youtube';
 import IconCopilot from './components/icons/copilot';
 import IconCli from './components/icons/cli';
 import IconBbb from './components/icons/bbb';
+import IconLhc from './components/icons/lhc';
 import IconPython from './components/icons/python';
 import IconNodeJS from './components/icons/nodejs';
 import IconSQL from '@/components/icons/sql';
@@ -123,6 +124,14 @@ const TRANSLATIONS = {
       desc: 'Mon carburant.',
     },
   },
+  lhc: {
+    en: {
+      desc: 'Let him cook.',
+    },
+    fr: {
+      desc: 'Let him cook.',
+    },
+  },
 
   python: {
     en: {
@@ -217,6 +226,12 @@ export const DOCS = {
     path: '/docs/copilot',
     icon: IconCopilot,
   },
+  security: {
+    title: 'Security',
+    label: 'Security',
+    path: '',
+    icon: IconSecurity,
+  },
   youtube: {
     title: 'YouTube',
     label: 'YouTube',
@@ -235,6 +250,12 @@ export const DOCS = {
     label: 'BBB',
     path: 'https://bbb.apescasio.fr',
     icon: IconBbb,
+  },
+  lhc: {
+    title: 'LHC',
+    label: 'LHC',
+    path: 'https://lethimcook.fr',
+    icon: IconLhc,
   },
   python: {
     title: 'Python',
@@ -260,18 +281,8 @@ export const DOCS = {
     path: '',
     icon: IconDocker,
   },
-  network: {
-    title: 'Network',
-    label: 'Network',
-    path: '',
-    icon: IconNetwork,
-  },
-  security: {
-    title: 'Security',
-    label: 'Security',
-    path: '',
-    icon: IconSecurity,
-  },
+
+
 };
 
 // Utility function to get translated description
