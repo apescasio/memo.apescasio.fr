@@ -1,20 +1,24 @@
 import IconHome from './components/icons/home';
+import IconCycles from './components/icons/cycles';
 import IconPowershell from './components/icons/powershell';
 import IconBash from './components/icons/bash';
 import IconAzure from './components/icons/azure';
 import IconIntune from './components/icons/intune';
 import IconGit from '@/components/icons/git';
-import IconYouTube from './components/icons/youtube';
 import IconCopilot from './components/icons/copilot';
+import IconYouTube from './components/icons/youtube';
 import IconCli from './components/icons/cli';
 import IconBbb from './components/icons/bbb';
 import IconLhc from './components/icons/lhc';
+import IconNovels from './components/icons/novels';
+import IconSecurity from './components/icons/security';
 import IconPython from './components/icons/python';
 import IconNodeJS from './components/icons/nodejs';
 import IconSQL from '@/components/icons/sql';
 import IconDocker from './components/icons/docker';
 import IconNetwork from './components/icons/network';
-import IconSecurity from './components/icons/security';
+import IconPowerBI from './components/icons/powerbi';
+import { Inspiration } from 'next/font/google';
 
 // Learning cycle configuration
 export const LEARNING_CYCLE = {
@@ -36,8 +40,8 @@ export const LEARNING_CYCLE = {
     fr: ['er', 'ème', 'ème', 'ème']
   },
   callout: {
-    en: 'Once a month, I break everything (my own PC + my own lab tenant) to rebuild back everything « brick by brick ». Whether it be installing apps on my PC via PowerShell, or recreating Copilot AI Agents or Intune Full Cloud Autopilot profiles.',
-    fr: 'Une fois par mois, je casse tout (mon propre PC + mon propre lab tenant) pour tout reconstruire « brick by brick ». Que ce soit l\'installation d\'applications sur mon PC via PowerShell, ou recréer les agents Copilot IA Studio ou les profils Intune Full Cloud Autopilot.'
+    en: 'Once a month, I break everything (my own PC and my lab tenant) to rebuild it all back « brick by brick ». Whether it be installing apps on my PC via PowerShell, or recreating Copilot AI Agents or Intune Full Cloud Autopilot profiles.',
+    fr: 'Une fois par mois, je casse tout (mon propre PC et mon lab tenant) pour tout reconstruire « brick by brick ». Que ce soit l\'installation d\'applications sur mon PC via PowerShell, ou recréer les agents Copilot IA Studio ou les profils Intune Full Cloud Autopilot.'
   }
 };
 
@@ -49,6 +53,14 @@ const TRANSLATIONS = {
     },
     fr: {
       desc: 'Mémoire d\'un admin.',
+    },
+  },
+  cycles: {
+    en: {
+      desc: 'Origin of why I do what I do: learning through repetition.',
+    },
+    fr: {
+      desc: 'Origine de ce que je fais : apprendre par la répétition.',
     },
   },
   powershell: {
@@ -103,6 +115,55 @@ const TRANSLATIONS = {
   },
 
 
+  youtube: {
+    en: {
+      desc: 'My YouTube Channel.',
+    },
+    fr: {
+      desc: 'Ma chaine YouTube.',
+    },
+  },
+  cli: {
+    en: {
+      desc: 'Welcome to my portfolio website with an interactive terminal.',
+    },
+    fr: {
+      desc: 'Bienvenue sur mon site portfolio avec un terminal interactif.',
+    },
+  },
+  bbb: {
+    en: {
+      desc: 'My fuel.',
+    },
+    fr: {
+      desc: 'Mon carburant.',
+    },
+  },
+  lhc: {
+    en: {
+      desc: 'Let him cook.',
+    },
+    fr: {
+      desc: 'Let him cook.',
+    },
+  },
+
+  novels: {
+    en: {
+      desc: 'My sources of inspiration.',
+    },
+    fr: {
+      desc: 'Mes sources d\'inspiration.',
+    },
+  },
+  security: {
+    en: {
+      desc: 'My notes on everything security-related on my lab tenant to simulate real work scenarios.',
+    },
+    fr: {
+      desc: 'Mes notes sur tout ce qui concerne la sécurité sur mon lab tenant pour simuler des scénarios de travail réels.',
+    },
+  },
   python: {
     en: {
       desc: 'A high-level, interpreted programming language known for its simplicity and versatility, widely used for web development, data analysis, artificial intelligence, and automation.',
@@ -143,46 +204,15 @@ const TRANSLATIONS = {
       desc: 'Mes notes sur le réseau (IPI Paris School).',
     },
   },
-  security: {
+  powerbi: {
     en: {
-      desc: 'My notes on everything security-related on my lab tenant to simulate real work scenarios.',
+      desc: 'My notes on Power BI (IPI Paris School).',
     },
     fr: {
-      desc: 'Mes notes sur tout ce qui concerne la sécurité sur mon lab tenant pour simuler des scénarios de travail réels.',
+      desc: 'Mes notes sur Power BI (IPI Paris School).',
     },
   },
-  youtube: {
-    en: {
-      desc: 'My YouTube Channel.',
-    },
-    fr: {
-      desc: 'Ma chaine YouTube.',
-    },
-  },
-  cli: {
-    en: {
-      desc: 'Welcome to my portfolio website with an interactive terminal.',
-    },
-    fr: {
-      desc: 'Bienvenue sur mon site portfolio avec un terminal interactif.',
-    },
-  },
-  bbb: {
-    en: {
-      desc: 'My fuel.',
-    },
-    fr: {
-      desc: 'Mon carburant.',
-    },
-  },
-  lhc: {
-    en: {
-      desc: 'Let him cook.',
-    },
-    fr: {
-      desc: 'Let him cook.',
-    },
-  },
+
 };
 
 export const DOCS = {
@@ -191,6 +221,12 @@ export const DOCS = {
     label: 'Home',
     path: '/docs/home',
     icon: IconHome,
+  },
+  cycles: {
+    title: 'Cycles',
+    label: 'Cycles',
+    path: '/docs/cycles',
+    icon: IconCycles,
   },
   powershell: {
     title: 'PowerShell',
@@ -228,12 +264,7 @@ export const DOCS = {
     path: '/docs/copilot',
     icon: IconCopilot,
   },
-  security: {
-    title: 'Security',
-    label: 'Security',
-    path: '/docs/security',
-    icon: IconSecurity,
-  },
+
   youtube: {
     title: 'YouTube',
     label: 'YouTube',
@@ -259,6 +290,18 @@ export const DOCS = {
     path: 'https://lethimcook.fr/en',
     icon: IconLhc,
   },
+  novels: {
+    title: 'Novels',
+    label: 'Novels',
+    path: '/docs/novels',
+    icon: IconNovels,
+  },
+  security: {
+    title: 'Security',
+    label: 'Security',
+    path: '/docs/security',
+    icon: IconSecurity,
+  },
   python: {
     title: 'Python',
     label: 'Python',
@@ -283,8 +326,18 @@ export const DOCS = {
     path: '',
     icon: IconDocker,
   },
-
-
+  network: {
+    title: 'Network',
+    label: 'Network',
+    path: '',
+    icon: IconNetwork,
+  },
+  powerbi: {
+    title: 'Power BI',
+    label: 'Power BI',
+    path: '',
+    icon: IconPowerBI,
+  },
 
 };
 

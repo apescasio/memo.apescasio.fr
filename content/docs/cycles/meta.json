@@ -1,0 +1,6 @@
+{
+    "title": "Cycles",
+    "icon": "cycles",
+    "pages": ["index", "timeline-of-cycles"],
+    "root": true
+  }

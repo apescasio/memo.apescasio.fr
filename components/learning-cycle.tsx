@@ -1,5 +1,6 @@
 import { LEARNING_CYCLE } from '../consts';
 import { Callout } from 'fumadocs-ui/components/callout';
+import Link from 'next/link';
 
 interface LearningCycleProps {
   lang?: string;
@@ -25,7 +26,9 @@ export default function LearningCycle({ lang = 'en' }: LearningCycleProps) {
   return (
     <>
       <h2>
-        {label} ({currentText} {LEARNING_CYCLE.current}{getOrdinal(LEARNING_CYCLE.current)} {cycleText})
+        <Link href={`/${lang}/docs/cycles`} className="hover:underline">
+          {label} ({currentText} {LEARNING_CYCLE.current}{getOrdinal(LEARNING_CYCLE.current)} {cycleText})
+        </Link>
       </h2>
       <Callout type="warn">
         {calloutText}

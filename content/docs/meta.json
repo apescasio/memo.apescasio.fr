@@ -1,15 +1,14 @@
 {
     "pages": [
       "home",
+      "cycles",
       "powershell",
       "bash",
       "azure",
-      "git",
       "intune",
+      "git",
       "copilot",
-      "security",
-      "cli",
-      "bbb",
-      "lhc"
+      "novels",
+      "security"
     ]
   }
