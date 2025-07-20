@@ -5,11 +5,13 @@ import { HomeIcon } from 'lucide-react';
 
 ## Context
 
-I wanted an account that has a domain instead of the default : « @LabOfApes.onmicrosoft.com ». 
+I wanted an account that has a domain instead of the default : 
+
+« @LabOfApes.onmicrosoft.com », A => first letter of my name and PES => first three letters of my family name.
 
 I rent the domain names : apescasio.fr + lethimcook.fr from Netcup DE, I chose this company as I have a friend who works there.
 
-Although I rent from Netcup DE, I'm using [Cloudflare's DNS](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/) instead of Netcup's because I think it's much better. 
+Although I rent from Netcup DE, I'm using [Cloudflare's DNS](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/) instead of Netcup DE's because I think it's much better. 
 
 It's completely free to switch over to Cloudflare, and I also get excellent analytics and firewall protection at no cost. This idea was given to me by my tutor at work and years later, I don't regret switching at all.
 
@@ -34,6 +36,10 @@ First, I need to add my custom domain to the Azure tenant. Navigate to the Azure
 Once the domain is verified, I can create user accounts using my custom domain instead of the default onmicrosoft.com domain.
 
 ![Create account step 1](/images/security/custom-domain-names-azure-create-account-1.png)
+
+My dream is to personally thank one of my role models, Kdot, face to face.
+
+![Kdot SZA Paris Concert 1](/images/security/kdot-sza-paris.jpg)
 
 ![Create account step 2](/images/security/custom-domain-names-azure-create-account-2.png)
 
@@ -66,8 +72,6 @@ Now I need to configure the SPF (Sender Policy Framework) and MX (Mail Exchange)
 ![SPF MX setup step 4](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-4.png)
 
 ![SPF MX setup step 5](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-5.png)
-
-![SPF MX setup step 6](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-6.png)
 
 ### Step 5: Setting up DKIM
 
