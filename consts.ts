@@ -18,7 +18,6 @@ import IconSQL from '@/components/icons/sql';
 import IconDocker from './components/icons/docker';
 import IconNetwork from './components/icons/network';
 import IconPowerBI from './components/icons/powerbi';
-import { Inspiration } from 'next/font/google';
 
 // Learning cycle configuration
 export const LEARNING_CYCLE = {
@@ -42,6 +41,31 @@ export const LEARNING_CYCLE = {
   callout: {
     en: 'Once a month, I break everything (my own PC and my lab tenant) to rebuild it all back « brick by brick ». Whether it be installing apps on my PC via PowerShell, or recreating Copilot AI Agents or Intune Full Cloud Autopilot profiles.',
     fr: 'Une fois par mois, je casse tout (mon propre PC et mon lab tenant) pour tout reconstruire « brick by brick ». Que ce soit l\'installation d\'applications sur mon PC via PowerShell, ou recréer les agents Copilot IA Studio ou les profils Intune Full Cloud Autopilot.'
+  }
+};
+
+// Culture configuration
+export const CULTURE_CYCLE = {
+  openSource: {
+    text: {
+      en: 'My freedom',
+      fr: 'Ma liberté'
+    },
+    link: 'https://github.com/apescasio'
+  },
+  callout: {
+    title: {
+      en: '',
+      fr: ''
+    },
+    content: {
+      en: 'Quote from HakitaDev => « Culture shouldn\'t exist only for those who can afford it. »\n\nNothing worthwhile would\'ve truly existed if we didn\'t have « easy » access.',
+      fr: 'Quote from HakitaDev => « La culture ne devrait pas être un luxe réservé aux plus fortunés. »\n\nRien de valable n’aurait vraiment existé sans un accès « facile ».'
+    }
+  },
+  description: {
+    en: 'This is my culture, my open source contributions, and my passion for sharing knowledge.',
+    fr: 'Ceci est ma culture, mes contributions open source et ma passion pour le partage des connaissances.'
   }
 };
 
