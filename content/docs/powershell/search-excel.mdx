@@ -57,7 +57,7 @@ Une fois la recherche terminée, tous les fichiers Excel copiés dans le dossier
 $username23 = "$env:USERDOMAIN\$env:USERNAME"
 $date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
 $log23 = "$username23 a executé le script: trouver_inventaireExcel.bat le $date23"
-Add-Content -Path "\\adds01\LOGI_DRV\logi\ap_script\ap_script_logs\trouver_inventaireExcel.log" -Value $log23
+Add-Content -Path "\\adds01\soft\ap_script\ap_script_logs\trouver_inventaireExcel.log" -Value $log23
 
 ### Demander à l'utilisateur la valeur à chercher ###
 
