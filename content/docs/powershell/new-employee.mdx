@@ -95,7 +95,7 @@ $date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
 $log23 = "$username23 a executé le script: prep_pcintegration.bat le $date23"
 Add-Content -Path "\\adds01\Integration\prep_pcintegration.log" -Value $log23
 
-### Demander à l'utilisateur : le nom et prenom de nouvel employe et prends seulement la 1ère lettre du prénom suivi du nom de famille et ajoutez "P-" tout au début du nom de PC qui signifie "PARIS" ###
+### Demander à l'utilisateur : le nom et prenom de nouvel employe et prends seulement la 1ère lettre du prénom suivi du nom de famille pour le nom du PC ###
 
 $global:prenom = Read-Host `n, "Enter the first name of the employee "
 $global:nom = Read-Host `n, "Enter the last name of the employee "
@@ -106,9 +106,9 @@ $global:prenomsplit = $prenom.Split(" ")
 $global:premierelettre = $prenomsplit | ForEach-Object { $_.Substring(0, 1) }
 $global:premierelettre_fin = $premierelettre -join ""
 }
-$pc_nom = "P-" + $premierelettre_fin + $nom_pas_espace
+$pc_nom = $premierelettre_fin + $nom_pas_espace
 
-### Si le nom complet dépasse 15 caracteres, prend seulement les 15 premiers caracteres, ex d'un nom PC complet ("P-APESCASIO") ###
+### Si le nom complet dépasse 15 caracteres, prend seulement les 15 premiers caracteres, ex d'un nom PC complet ("APESCASIO") ###
 
 if ($pc_nom.length -gt 15) {
 $pc_nom15 = $pc_nom.substring(0, 15)

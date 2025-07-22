@@ -82,11 +82,11 @@ Lit la liste des imprimantes depuis le fichier `.csv` et les ajoute une par une 
 $username23 = "$env:USERDOMAIN\$env:USERNAME"
 $date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
 $log23 = "$username23 a executé le script: export_ancienPC.bat le $date23"
-Add-Content -Path "\\adds01\LOGI\ap_script\ap_script_logs\export_ancienPC.log" -Value $log23
+Add-Content -Path "\\adds01\soft\ap_script\ap_script_logs\export_ancienPC.log" -Value $log23
 
 ### Si le dossier MigrationP5_identifiant n'existe pas => Creez le mais si ça existe déjà tu me l'écris ###
 
-if (!(Test-Path -Path "\\adds01\users-data\$env:USERNAME\MIGRATIONP5_$env:USERNAME" -PathType Container)) {
+if (!(Test-Path -Path "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME" -PathType Container)) {
     New-Item -Type Directory "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME"
 } else {
     Write-Output "Dossier 'MigrationP5_$env:USERNAME' existe deja"
@@ -131,7 +131,7 @@ get-printer "\\imprimant.share.loc\*" | Select-Object Name | Export-Csv -Path "\
 $username23 = "$env:USERDOMAIN\$env:USERNAME"
 $date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
 $log23 = "$username23 a executé le script: import_nouveauPC.bat le $date23"
-Add-Content -Path "\\adds01\LOGI\ap_script\ap_script_logs\import_nouveauPC.log" -Value $log23
+Add-Content -Path "\\adds01\soft\ap_script\ap_script_logs\import_nouveauPC.log" -Value $log23
 
 ### Import Favoris => Chrome ###
 
