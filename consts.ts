@@ -40,7 +40,7 @@ export const LEARNING_CYCLE = {
   },
   callout: {
     en: 'Once a month, I break everything (my own PC and my lab tenant) to rebuild it all back « brick by brick ». Whether it be installing apps on my PC via PowerShell, or recreating Copilot AI Agents or Intune Full Cloud Autopilot profiles.',
-    fr: 'Une fois par mois, je casse tout (mon propre PC et mon lab tenant) pour tout reconstruire « brick by brick ». Que ce soit l\'installation d\'applications sur mon PC via PowerShell, ou recréer les agents Copilot IA Studio ou les profils Intune Full Cloud Autopilot.'
+    fr: 'Une fois par mois, je casse tout (mon propre PC et mon lab tenant) pour tout reconstruire « brique par brique ». Que ce soit l\'installation d\'applications sur mon PC via PowerShell, ou recréer les agents Copilot IA Studio ou les profils Intune Full Cloud Autopilot.'
   }
 };
 
@@ -60,7 +60,7 @@ export const CULTURE_CYCLE = {
     },
     content: {
       en: 'Quote from HakitaDev => « Culture shouldn\'t exist only for those who can afford it. »\n\nNothing worthwhile would\'ve truly existed if we didn\'t have « easy » access.',
-      fr: 'Quote from HakitaDev => « La culture ne devrait pas être un luxe réservé aux plus fortunés. »\n\nRien de valable n’aurait vraiment existé sans un accès « facile ».'
+      fr: 'Quote from HakitaDev => « La culture ne devrait pas être un luxe réservé aux plus fortunés. »\n\nRien de valable n’aurait vraiment existé sans un accès « facile. »'
     }
   },
   description: {
