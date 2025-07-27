@@ -1,0 +1,6 @@
+{
+    "title": "Future",
+    "icon": "future",
+    "pages": ["index"],
+    "root": true
+  }

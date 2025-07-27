@@ -18,6 +18,7 @@ import IconSQL from '@/components/icons/sql';
 import IconDocker from './components/icons/docker';
 import IconNetwork from './components/icons/network';
 import IconPowerBI from './components/icons/powerbi';
+import IconFuture from './components/icons/future';
 
 // Learning cycle configuration
 export const LEARNING_CYCLE = {
@@ -236,6 +237,14 @@ const TRANSLATIONS = {
       desc: 'Mes notes sur Power BI (IPI Paris School).',
     },
   },
+  future: {
+    en: {
+      desc: 'A message to the next generation from an insignificant student.',
+    },
+    fr: {
+      desc: 'Un message à la prochaine génération venant d\'un étudiant insignifiant.',
+    },
+  },
 
 };
 
@@ -361,6 +370,12 @@ export const DOCS = {
     label: 'Power BI',
     path: '',
     icon: IconPowerBI,
+  },
+  future: {
+    title: 'Future',
+    label: 'Future / Human',
+    path: '/docs/future',
+    icon: IconFuture,
   },
 
 };

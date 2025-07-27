@@ -40,15 +40,15 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
         <div className="flex flex-col items-center gap-8">
           <div className="grid grid-cols-2 items-start gap-4 custom-grid-2">
             {Object.values(DOCS).map(({ label, path, icon: Icon }) => {
-            return (
-              <ToDocsBtn
-                key={label}
-                title={label}
-                href={path ? (path.startsWith('http') ? path : `/${lang}${path}`) : path} // Handle external URLs
-                icon={<Icon className="size-6 shrink-0 lg:size-4" />}
-              />
-            );
-          })}
+              return (
+                <ToDocsBtn
+                  key={label}
+                  title={label}
+                  href={path ? (path.startsWith('http') ? path : `/${lang}${path}`) : path} // Handle external URLs
+                  icon={<Icon className="size-6 shrink-0 lg:size-4" />}
+                />
+              );
+            })}
           </div>
           <p suppressHydrationWarning className="text-fd-muted-foreground -mt-4 text-center text-sm lg:text-base">
             {`© ${new Date().getFullYear()} Aaron Pescasio / `}
@@ -69,6 +69,10 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
             margin-bottom: -4px;
             transform: scale(1.1);
           }
+          .custom-grid-2 > *:last-child:nth-child(odd) {
+            grid-column: 1 / -1;
+            justify-self: center;
+          }
           @media (min-width: 1024px) {
             .custom-grid-2 {
               grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
@@ -77,9 +81,12 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
             .custom-grid-2 > * {
               transform: scale(1.1);
             }
+            .custom-grid-2 > *:last-child:nth-child(odd) {
+              grid-column: 2 / 4;
+              justify-self: center;
+            }
           }
-        `}</style>
-      </main>
+        `}</style>      </main>
     </>
   );
 }
