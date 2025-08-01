@@ -372,7 +372,7 @@ export const DOCS = {
     icon: IconPowerBI,
   },
   future: {
-    title: 'Future',
+    title: 'Future / Human',
     label: 'Future / Human',
     path: '/docs/future',
     icon: IconFuture,
