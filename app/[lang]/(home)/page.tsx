@@ -77,19 +77,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
     transform: scale(1.1);
   }
 
-  /* Center 1 item */
+  /* Center 1 item (mobile) */
   .custom-grid-2 > *:last-child:nth-child(odd) {
     grid-column: 1 / -1;
-    justify-self: center;
-  }
-
-  /* Center 2 items on the last row */
-  .custom-grid-2 > *:nth-last-child(2):nth-child(odd) {
-    grid-column: 2 / span 1;
-    justify-self: center;
-  }
-  .custom-grid-2 > *:last-child:nth-child(even):nth-last-child(1) {
-    grid-column: 3 / span 1;
     justify-self: center;
   }
 
@@ -98,17 +88,18 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
       grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
       gap: 1.5rem !important;
     }
+
     .custom-grid-2 > * {
       transform: scale(1.1);
     }
 
-    /* Center 1 item on desktop */
+    /* Center 1 item (desktop) */
     .custom-grid-2 > *:last-child:nth-child(odd) {
       grid-column: 2 / 4;
       justify-self: center;
     }
 
-    /* Center 2 items on desktop */
+    /* Center 2 items (desktop only) */
     .custom-grid-2 > *:nth-last-child(2):nth-child(odd) {
       grid-column: 2;
       justify-self: center;
@@ -119,6 +110,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
     }
   }
 `}</style>
+
      </main>
     </>
   );
