@@ -32,7 +32,7 @@ Le script demande les informations d'identification administratives et se connec
 
 <Step>
 ### Désactivation temporaire de la synchronisation d'annuaire ###
-La synchronisation entre Azure AD et l'Active Directory local est désactivée pour éviter tout conflit pendant la liaison des utilisateurs. Le script vérifie que la désactivation est effective avant de continuer *(~5 secondes)*.
+La synchronisation entre Azure AD et l'Active Directory on-premise est désactivée pour éviter tout conflit pendant la liaison des utilisateurs. Le script vérifie que la désactivation est effective avant de continuer *(~5 secondes)*.
 </Step>
 
 <Step>
@@ -59,7 +59,7 @@ Le script ferme toutes les sessions PowerShell ouvertes pour libérer les ressou
 </DynamicCallout>
 ## PowerShell Script
 ```ps1 title="SyncCloudOnlyToAD.ps1"
-### © Aaron Pescasio / www.apescasio.fr ###
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
 
 ### Script pour synchroniser les utilisateurs cloud only avec l'AD on-premise ###
 

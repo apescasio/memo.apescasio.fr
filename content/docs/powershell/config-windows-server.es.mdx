@@ -1,0 +1,192 @@
+---
+title: Configurar un Windows Server
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Contexto
+
+En casi todas las clases sobre Windows Server en IPI, tenía que reinstalar manualmente un Windows Server con AD DS, DNS, DHCP en VMWare Workstation. Así que decidí crear este script para automatizar todo el proceso con configuraciones de IP preconfiguradas.
+
+## Step-by-step Script Breakdown
+
+<DynamicCallout>
+<Steps>
+<Step>
+### Renombrando el Servidor ###
+Solicitar al usuario que ingrese un nuevo nombre para el servidor, luego renombrar la máquina *(~5 segundos)*.
+</Step>
+
+<Step>
+### Configuración de Red ###
+Configurar la dirección IP estática, máscara de subred, puerta de enlace predeterminada y dirección del servidor DNS con valores predefinidos *(~3 segundos)*.
+</Step>
+
+<Step>
+### Habilitando Autoinicio de Sesión ###
+Configurar el autoinicio de sesión para que el usuario inicie sesión automáticamente después de un reinicio, guardando su contraseña en el registro *(~3 segundos)*.
+</Step>
+
+<Step>
+### Creando la Carpeta de Scripts ###
+Crear una carpeta para almacenar scripts adicionales requeridos para la configuración *(~5 segundos)*.
+</Step>
+
+<Step>
+### Creando y Ejecutando el Primer Script (`2adds.ps1`) ###
+Crear el script para instalar y configurar Active Directory Domain Services (AD DS), luego programar su ejecución después de un reinicio *(~5 segundos)*.
+</Step>
+
+<Step>
+### Configurando DNS y DHCP (`3dns.ps1`) ###
+Crear el script para configurar la zona DNS e instalar el servicio DHCP, luego programar su ejecución después de un reinicio *(~5 segundos)*.
+</Step>
+
+<Step>
+### Reiniciando el Servidor ###
+Reiniciar el servidor para aplicar los cambios, asegurando que las tareas programadas se reanuden después del reinicio *(~180 segundos)*.
+</Step>
+
+<Step>
+### Deshabilitando Autoinicio de Sesión y Limpieza ###
+Deshabilitar el autoinicio de sesión y limpiar las credenciales en el registro después de que los scripts terminen *(~5 segundos)*.
+</Step>
+</Steps>
+</DynamicCallout>
+<Callout type="warn">
+Este script debe ejecutarse una vez que la máquina virtual de Windows Server esté recién instalada.
+</Callout>
+
+## PowerShell Script
+```ps1 {title="config-wserver.ps1"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Script para automatizar/simplificar la configuración de un Windows Server con AD DS, DNS, DHCP preconfigurados ###
+
+### Definir la ruta absoluta del script (para almacenar el script en una carpeta al final) ###
+
+$ScriptPath = Convert-Path -Path $MyInvocation.MyCommand.Path
+
+### Solicitar al usuario el nuevo nombre del PC ###
+
+$nom = ""
+while ($nom -eq "") {
+    $nom = Read-Host "`nIngrese el nuevo nombre del PC (no puede estar vacío)"
+}
+Rename-Computer $nom
+
+### Configurar la dirección IP del servidor ###
+
+New-NetIPAddress -InterfaceAlias "Ethernet0" -IPAddress 192.168.31.10 -PrefixLength 24 -DefaultGateway 192.168.31.254 | Out-Null
+
+### Configurar el DNS del servidor ###
+
+Set-DnsClientServerAddress -InterfaceAlias "Ethernet0" -ServerAddresses 192.168.31.10 | Out-Null
+
+### Solicitar al usuario la contraseña ###
+
+$Password = Read-Host -Prompt "Por favor ingrese su contraseña"
+
+### Modificar el registro para habilitar Autoinicio de Sesión ###
+
+$RegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+Set-ItemProperty $RegistryPath 'AutoAdminLogon' -Value "1" -Type String
+Set-ItemProperty $RegistryPath 'DefaultUsername' -Value "$env:USERNAME" -Type String
+Set-ItemProperty $RegistryPath 'DefaultPassword' -Value "$Password" -Type String
+
+### Crear la carpeta para scripts ###
+
+New-Item -ItemType Directory -Path "C:\ap_script" -Force
+
+### Crear el script "2adds.ps1" para instalar AD DS ###
+
+New-Item -ItemType File -Path "C:\ap_script\2adds.ps1" -Force | Out-Null
+Set-Content -Path "C:\ap_script\2adds.ps1" -Value @"
+###
+### Script para crear AD DS con "apes.loc" como nombre de dominio y "APES" como nombre NETBIOS ###
+###
+
+Install-WindowsFeature -name AD-Domain-Services –IncludeManagementTools
+Install-ADDSForest `
+-CreateDnsDelegation:\$false `
+-SafeModeAdministratorPassword:(ConvertTo-SecureString -String "${Password}" -AsPlainText -Force) `
+-DatabasePath "C:\Windows\NTDS" `
+-DomainMode "WinThreshold" `
+-DomainName "apes.loc" `
+-DomainNetbiosName "APES" `
+-ForestMode "WinThreshold" `
+-InstallDns:\$true `
+-LogPath "C:\Windows\NTDS" `
+-NoRebootOnCompletion:\$false `
+-SysvolPath "C:\Windows\SYSVOL" `
+-Force:\$true
+
+### Eliminar la tarea programada "2adds" para evitar errores ###
+
+schtasks /delete /tn "2adds" /f
+
+### Crear la tarea programada para ejecutar "3dns.ps1" al iniciar sesión ###
+
+schtasks /create /tn "3dns" /tr "powershell.exe -ExecutionPolicy Bypass -File C:\ap_script\3dns.ps1" /rl highest /sc onlogon
+
+### Agregar DefaultDomainName en el registro para Autoinicio de Sesión ###
+
+Set-ItemProperty -Path "${RegistryPath}" 'DefaultDomainName' -Value "apes.loc" -Type String
+
+### Reiniciar la máquina ###
+
+Restart-Computer -Force
+"@
+
+### Crear el script "3dns.ps1" para configurar DNS y DHCP ###
+
+New-Item -ItemType File -Path "C:\ap_script\3dns.ps1" -Force | Out-Null
+Set-Content -Path "C:\ap_script\3dns.ps1" -Value @"
+###
+### Script para configurar la zona DNS, registro PTR, DHCP... ###
+###
+
+Add-DnsServerPrimaryZone -NetworkId "192.168.31.0/24" -ReplicationScope 'Domain'
+
+\$IP = (Get-NetIPAddress -InterfaceAlias "Ethernet0" -AddressFamily 'IPv4').IPV4Address
+\$PTRIP = \$IP.Split('.',6)[3]
+\$fqdn = (Get-ADComputer \$(hostname)).DNSHostName
+
+Add-DnsServerResourceRecordPtr -Name "\$PTRIP" -ZoneName "31.168.192.in-addr.arpa" -PtrDomainName "\$fqdn"
+
+Set-DnsClientServerAddress -InterfaceAlias "Ethernet0" -ServerAddresses 192.168.31.10, 127.0.0.1
+
+### Instalar y configurar el rol DHCP ###
+
+Install-WindowsFeature DHCP -IncludeManagementTools
+\$DNSName = "\$env:COMPUTERNAME.apes.loc"
+Add-DHCPServerInDC -DNSName \$DNSName
+
+Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
+
+Set-DhcpServerv4OptionValue -DNSServer 192.168.31.10 -DNSDomain apes.loc -Router 192.168.31.254
+Add-DhcpServerv4Scope -Name "RangoPCs" -StartRange 192.168.31.100 -EndRange 192.168.31.200 -SubnetMask 255.255.255.0 -Description "Rango DHCP para computadoras del dominio APES"
+
+### Eliminar la tarea programada ###
+
+schtasks /delete /tn "3dns" /f
+
+### Deshabilitar Autoinicio de Sesión y limpiar el registro ###
+
+Set-ItemProperty -Path "${RegistryPath}" 'AutoAdminLogon' -Value "0" -Type String
+Set-ItemProperty -Path "${RegistryPath}" 'DefaultUsername' -Value "No" -Type String
+Set-ItemProperty -Path "${RegistryPath}" 'DefaultPassword' -Value "No" -Type String
+
+### Mover el script original a la carpeta ap_script ###
+
+Copy-Item "${ScriptPath}" C:\ap_script\1ip.ps1
+Remove-Item "${ScriptPath}"
+"@
+
+### Crear la tarea programada para ejecutar el script 2adds.ps1 ###
+
+schtasks /create /tn "2adds" /tr "powershell.exe -ExecutionPolicy Bypass -File C:\ap_script\2adds.ps1" /rl highest /sc onlogon
+
+### Reiniciar la máquina ###
+
+Restart-Computer -Force

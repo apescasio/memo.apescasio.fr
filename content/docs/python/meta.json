@@ -1,0 +1,6 @@
+{
+    "title": "Python",
+    "icon": "python",
+    "pages": ["index", "python-basics", "train-wpm-memory-python-app"],
+    "root": true
+  }

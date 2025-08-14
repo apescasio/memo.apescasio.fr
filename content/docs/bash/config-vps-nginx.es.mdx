@@ -1,0 +1,161 @@
+---
+title: Configurar NGINX en un VPS
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Context
+
+Para practicar con Linux, creé este script para simplificar la configuración de un servidor NGINX en un VPS con el fin de alojar un sitio web.
+
+## Step-by-step Script Breakdown
+
+<DynamicCallout>
+<Steps>
+<Step>
+### Instalar NGINX ###
+
+Instalar el servidor web `nginx`, esencial para alojar un sitio web estático *(~10 segundos)*.
+</Step>
+
+<Step>
+### Definir Nombre de Dominio ###
+
+Elegir el nombre de dominio que se utilizará para la configuración del sitio web *(~1 segundo)*.
+</Step>
+
+<Step>
+### Establecer Permisos del Directorio Web ###
+
+Otorgar permisos al usuario actual para gestionar el contenido del sitio web *(~1 segundo)*.
+</Step>
+
+<Step>
+### Crear Estructura de Directorio del Sitio Web ###
+
+Crear la estructura `/var/www/nombredominio/public` para alojar los archivos del sitio web *(~2 segundos)*.
+</Step>
+
+<Step>
+### Agregar una Página de Prueba ###
+
+Agregar un archivo de prueba `index.html` para verificar que el sitio esté funcionando *(~1 segundo)*.
+</Step>
+
+<Step>
+### Eliminar Configuraciones Predeterminadas ###
+
+Eliminar los archivos de configuración predeterminados de NGINX para evitar conflictos *(~2 segundos)*.
+</Step>
+
+<Step>
+### Crear una Configuración Personalizada de NGINX ###
+
+Escribir un bloque de servidor personalizado para el nombre de dominio que apunte al directorio correcto *(~3 segundos)*.
+</Step>
+
+<Step>
+### Habilitar la Configuración ###
+
+Crear un enlace simbólico en `sites-enabled`, luego probar y recargar NGINX *(~3 segundos)*.
+</Step>
+
+<Step>
+### Instalar Certbot ###
+
+Instalar `certbot` con soporte para NGINX para generar un certificado SSL *(~10 segundos)*.
+</Step>
+
+<Step>
+### Generar Certificado SSL ###
+
+Ejecutar `certbot` para generar y aplicar automáticamente un certificado HTTPS de Let's Encrypt *(~30 segundos)*.
+</Step>
+
+<Step>
+### Probar Renovación ###
+
+Mostrar un mensaje informativo y ejecutar una prueba para la renovación automática del certificado *(~5 segundos)*.
+</Step>
+</Steps>
+</DynamicCallout>
+
+## Bash Script
+
+```bash {title="config-nginx-vps.sh"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Script para alojar un sitio web usando NGINX y asegurarlo con HTTPS mediante Certbot ###
+
+### Instalar servidor web NGINX ###
+
+sudo apt install nginx -y
+
+### Establecer el nombre de dominio a usar para el sitio ###
+
+domain_name='apescasio.fr'
+
+### Asignar propiedad de /var/www al usuario actual ###
+
+sudo chown $USER:$USER /var/www -R
+
+### Navegar al directorio base para contenido web ###
+
+cd /var/www
+
+### Crear los directorios del sitio: raíz + carpeta pública ###
+
+mkdir $domain_name && mkdir $domain_name/public
+
+### Navegar al directorio público del sitio ###
+
+cd $domain_name/public
+
+### Crear un archivo índice de prueba para verificar que el sitio esté en línea ###
+
+echo 'Prueba' >> index.html
+
+### Eliminar archivos de configuración predeterminados de NGINX ###
+
+sudo rm /etc/nginx/sites-available/default
+sudo rm /etc/nginx/sites-enabled/default
+
+### Crear un nuevo archivo de configuración de NGINX para el sitio ###
+
+sudo sh -c "echo 'server {
+listen 80;
+server_name $domain_name www.$domain_name;
+
+root /var/www/$domain_name/public;
+index index.html;
+
+location / {
+try_files \$uri \$uri/ =404;
+error_page 404 /404/index.html;
+}
+}' > /etc/nginx/sites-available/$domain_name.conf"
+
+### Habilitar la configuración del sitio NGINX mediante un enlace simbólico ###
+
+sudo ln -s /etc/nginx/sites-available/$domain_name.conf /etc/nginx/sites-enabled/
+
+### Probar la configuración de NGINX y recargar si es válida ###
+
+sudo nginx -t && sudo systemctl reload nginx
+
+### Instalar Certbot para obtener un certificado SSL mediante NGINX ###
+
+sudo apt-get install python3-certbot-nginx -y
+
+### Generar certificado SSL de Let's Encrypt y configurar automáticamente NGINX ###
+
+sudo certbot --nginx -d $domain_name -d www.$domain_name
+
+### Mensaje informativo sobre la validez del certificado SSL ###
+
+echo "El certificado SSL de Let's Encrypt solo es válido por 90 días. Probando el proceso de renovación del certificado SSL."
+
+### Probar el proceso de renovación automática del certificado ###
+
+sudo certbot renew --dry-run
+```

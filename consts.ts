@@ -17,7 +17,8 @@ import IconNodeJS from './components/icons/nodejs';
 import IconSQL from '@/components/icons/sql';
 import IconDocker from './components/icons/docker';
 import IconNetwork from './components/icons/network';
-import IconPowerBI from './components/icons/powerbi';
+import IconPowerBi from './components/icons/powerbi';
+import IconMundo from './components/icons/mundo';
 import IconFuture from './components/icons/future';
 
 // Learning cycle configuration
@@ -25,23 +26,33 @@ export const LEARNING_CYCLE = {
   current: 4,
   label: {
     en: 'Repetition = Mother of Learning',
-    fr: 'Répétition = Mère de l\'Apprentissage'
+    fr: 'Répétition = Mère de l\'Apprentissage',
+    es: 'Repetición = Madre del Aprendizaje'
+
   },
   currentText: {
     en: 'currently in',
-    fr: 'actuellement dans le'
+    fr: 'actuellement dans le',
+    es: 'actualmente en el'
+
   },
   cycleText: {
     en: 'cycle',
-    fr: 'cycle'
+    fr: 'cycle',
+    es: 'ciclo'
+
   },
   ordinals: {
     en: ['st', 'nd', 'rd', 'th'],
-    fr: ['er', 'ème', 'ème', 'ème']
+    fr: ['er', 'ème', 'ème', 'ème'],
+    es: ['º', 'º', 'º', 'º']
+
   },
   callout: {
     en: 'Once a month, I break everything (my own PC and my lab tenant) to rebuild it all back « brick by brick ». Whether it be installing apps on my PC via PowerShell, or recreating Copilot AI Agents or Intune Full Cloud Autopilot profiles.',
-    fr: 'Une fois par mois, je casse tout (mon propre PC et mon lab tenant) pour tout reconstruire « brique par brique ». Que ce soit l\'installation d\'applications sur mon PC via PowerShell, ou recréer les agents Copilot IA Studio ou les profils Intune Full Cloud Autopilot.'
+    fr: 'Une fois par mois, je casse tout (mon propre PC et mon lab tenant) pour tout reconstruire « brique par brique ». Que ce soit l\'installation d\'applications sur mon PC via PowerShell, ou recréer les agents Copilot IA Studio ou les profils Intune Full Cloud Autopilot.',
+    es: 'Una vez al mes, rompo todo (mi propia PC y mi lab tenant) para reconstruirlo todo « ladrillo por ladrillo ». Ya sea instalando aplicaciones en mi PC vía PowerShell, o recreando Agentes de IA Copilot o perfiles de Intune Full Cloud Autopilot.'
+
   }
 };
 
@@ -50,23 +61,27 @@ export const CULTURE_CYCLE = {
   openSource: {
     text: {
       en: 'My freedom',
-      fr: 'Ma liberté'
+      fr: 'Ma liberté',
+      es: 'Mi libertad'
     },
     link: 'https://github.com/apescasio'
   },
   callout: {
     title: {
       en: '',
-      fr: ''
+      fr: '',
+      es: ''
     },
     content: {
       en: 'Quote from HakitaDev => « Culture shouldn\'t exist only for those who can afford it. »\n\nNothing worthwhile would\'ve truly existed if we didn\'t have « easy » access.',
-      fr: 'Quote from HakitaDev => « La culture ne devrait pas être un luxe réservé aux plus fortunés. »\n\nRien de valable n’aurait vraiment existé sans un accès « facile. »'
+      fr: 'Quote from HakitaDev => « La culture ne devrait pas être un luxe réservé aux plus fortunés. »\n\nRien de valable n’aurait vraiment existé sans un accès « facile. »',
+      es: 'Quote from HakitaDev => « La cultura no debería ser un lujo reservado para los más ricos. »\n\nNada valioso habría existido realmente sin un acceso « fácil. »'
     }
   },
   description: {
-    en: 'This is my culture, my open source contributions, and my passion for sharing knowledge.',
-    fr: 'Ceci est ma culture, mes contributions open source et ma passion pour le partage des connaissances.'
+    en: 'This is my culture, my open-source contributions, and my passion for sharing knowledge.',
+    fr: 'Ceci est ma culture, mes contributions open-source et ma passion pour le partage des connaissances.',
+    es: 'Esta es mi cultura, mis contribuciones open-source y mi pasión por compartir conocimiento.'
   }
 };
 
@@ -79,6 +94,9 @@ const TRANSLATIONS = {
     fr: {
       desc: 'Mémoire d\'un admin.',
     },
+    es: {
+      desc: 'Manual del admin.',
+    },
   },
   cycles: {
     en: {
@@ -86,6 +104,9 @@ const TRANSLATIONS = {
     },
     fr: {
       desc: 'Origine de ce que je fais : apprendre par la répétition.',
+    },
+    es: {
+      desc: 'Origen de lo que hago: aprender a través de la repetición.',
     },
   },
   powershell: {
@@ -95,6 +116,9 @@ const TRANSLATIONS = {
     fr: {
       desc: 'Un framework d’automatisation des tâches et de gestion de configuration ainsi qu’un langage de script de Microsoft.',
     },
+    es: {
+      desc: 'Un marco de automatización de tareas y gestión de configuración, así como un lenguaje de scripting de Microsoft.',
+    },
   },
   bash: {
     en: {
@@ -103,6 +127,9 @@ const TRANSLATIONS = {
     fr: {
       desc: 'Un shell Unix et un langage de commande utilisé comme shell par défaut sur de nombreux systèmes Linux.',
     },
+    es: {
+      desc: 'Un shell Unix y un lenguaje de comandos utilizado como shell predeterminado en muchos sistemas Linux.',
+    },
   },
   azure: {
     en: {
@@ -110,6 +137,9 @@ const TRANSLATIONS = {
     },
     fr: {
       desc: 'La plateforme cloud de Microsoft offrant une gamme complète de services (200+) pour concevoir, déployer et gérer des applications, infrastructures et solutions, avec une flexibilité, une scalabilité et une sécurité adaptées aux besoins modernes.',
+    },
+    es: {
+      desc: 'La plataforma en la cloud de Microsoft que ofrece una gama completa de servicios (200+) para diseñar, implementar y gestionar aplicaciones, infraestructuras y soluciones, con flexibilidad, escalabilidad y seguridad adaptadas a las necesidades modernas.',
     },
   },
   intune: {
@@ -120,6 +150,9 @@ const TRANSLATIONS = {
     fr: {
       desc: 'Une solution cloud complète de Microsoft qui permet de gérer et sécuriser les appareils et applications de votre organisation.',
     },
+    es: {
+      desc: 'Una solución completa en la cloud de Microsoft que permite gestionar y asegurar los dispositivos y aplicaciones de tu organización.',
+    },
   },
   git: {
     en: {
@@ -128,8 +161,10 @@ const TRANSLATIONS = {
     fr: {
       desc: 'Un système de contrôle de version distribué pour suivre les modifications dans le code source.',
     },
+    es: {
+      desc: 'Un sistema de control de versiones distribuido para rastrear cambios en el código fuente.',
+    },
   },
-
   copilot: {
     en: {
       desc: 'AI-powered productivity assistant integrated into Microsoft 365 apps to help with writing, analysis, and automation.',
@@ -137,15 +172,19 @@ const TRANSLATIONS = {
     fr: {
       desc: 'Assistant de productivité alimenté par l\'IA intégré dans les applications Microsoft 365 pour aider avec la rédaction, l\'analyse et l\'automatisation.',
     },
+    es: {
+      desc: 'Asistente de productividad impulsado por IA integrado en las aplicaciones de Microsoft 365 para ayudar con la redacción, el análisis y la automatización.',
+    },
   },
-
-
   youtube: {
     en: {
       desc: 'My YouTube Channel.',
     },
     fr: {
       desc: 'Ma chaine YouTube.',
+    },
+    es: {
+      desc: 'Mi canal de YouTube.',
     },
   },
   cli: {
@@ -155,6 +194,9 @@ const TRANSLATIONS = {
     fr: {
       desc: 'Bienvenue sur mon site portfolio avec un terminal interactif.',
     },
+    es: {
+      desc: 'Bienvenido a mi sitio web de portafolio con una terminal interactiva.',
+    },
   },
   bbb: {
     en: {
@@ -162,6 +204,9 @@ const TRANSLATIONS = {
     },
     fr: {
       desc: 'Mon carburant.',
+    },
+    es: {
+      desc: 'Mi combustible.',
     },
   },
   lhc: {
@@ -171,14 +216,19 @@ const TRANSLATIONS = {
     fr: {
       desc: 'Let him cook.',
     },
+    es: {
+      desc: 'Let him cook.',
+    },
   },
-
   novels: {
     en: {
       desc: 'My sources of inspiration.',
     },
     fr: {
       desc: 'Mes sources d\'inspiration.',
+    },
+    es: {
+      desc: 'Mis fuentes de inspiración.',
     },
   },
   security: {
@@ -188,6 +238,9 @@ const TRANSLATIONS = {
     fr: {
       desc: 'Mes notes sur tout ce qui concerne la sécurité sur mon lab tenant pour simuler des scénarios de travail réels.',
     },
+    es: {
+      desc: 'Mis notas sobre todo lo relacionado con la seguridad en mi lab tenant para simular escenarios de trabajo reales.',
+    },
   },
   python: {
     en: {
@@ -195,6 +248,9 @@ const TRANSLATIONS = {
     },
     fr: {
       desc: 'Un langage de programmation interprété de haut niveau connu pour sa simplicité et sa polyvalence, largement utilisé pour le développement web, l\'analyse de données, l\'intelligence artificielle et l\'automatisation.',
+    },
+    es: {
+      desc: 'Un lenguaje de programación interpretado de alto nivel conocido por su simplicidad y versatilidad, ampliamente utilizado para el desarrollo web, análisis de datos, inteligencia artificial y automatización.',
     },
   },
   nodejs: {
@@ -204,6 +260,9 @@ const TRANSLATIONS = {
     fr: {
       desc: 'Un environnement d\'exécution JavaScript basé sur le moteur JavaScript V8 de Chrome qui permet d\'exécuter du JavaScript côté serveur.',
     },
+    es: {
+      desc: 'Un entorno de ejecución de JavaScript basado en el motor V8 de Chrome que permite ejecutar JavaScript del lado del servidor.',
+    },
   },
   sql: {
     en: {
@@ -211,6 +270,9 @@ const TRANSLATIONS = {
     },
     fr: {
       desc: 'Un système de gestion de bases de données relationnelles puissant et open-source.',
+    },
+    es: {
+      desc: 'Un sistema de gestión de bases de datos relacional potente y de open-source.',
     },
   },
   docker: {
@@ -220,6 +282,9 @@ const TRANSLATIONS = {
     fr: {
       desc: 'Une plateforme pour développer, expédier et exécuter des applications dans des conteneurs.',
     },
+    es: {
+      desc: 'Una plataforma para desarrollar, enviar y ejecutar aplicaciones en contenedores.',
+    },
   },
   network: {
     en: {
@@ -227,6 +292,9 @@ const TRANSLATIONS = {
     },
     fr: {
       desc: 'Mes notes sur le réseau (IPI Paris School).',
+    },
+    es: {
+      desc: 'Mis notas sobre redes (IPI Paris School).',
     },
   },
   powerbi: {
@@ -236,6 +304,20 @@ const TRANSLATIONS = {
     fr: {
       desc: 'Mes notes sur Power BI (IPI Paris School).',
     },
+    es: {
+      desc: 'Mis notas sobre Power BI (IPI Paris School).',
+    },
+  },
+  mundo: {
+    en: {
+      desc: 'Sharing my journey as an insignificant traveler through a clickable 3D world map—one tweet, one country, one city, one culture.',
+    },
+    fr: {
+      desc: 'Partageant mon voyage en tant que voyageur insignifiant à travers une carte mondiale 3D cliquable : un tweet, un pays, une ville, une culture.',
+    },
+    es: {
+      desc: 'Compartiendo mi viaje como un viajero insignificante a través de un mapa mundial 3D interactivo: un tweet, un país, una ciudad, una cultura.',
+    },
   },
   future: {
     en: {
@@ -243,6 +325,9 @@ const TRANSLATIONS = {
     },
     fr: {
       desc: 'Un message à la prochaine génération venant d\'un étudiant insignifiant.',
+    },
+    es: {
+      desc: 'Un mensaje a la próxima generación de un estudiante insignificante.',
     },
   },
 
@@ -338,13 +423,13 @@ export const DOCS = {
   python: {
     title: 'Python',
     label: 'Python',
-    path: '',
+    path: '/docs/python',
     icon: IconPython,
   },
   nodejs: {
     title: 'NodeJS',
     label: 'NodeJS',
-    path: '',
+    path: '/docs/nodejs',
     icon: IconNodeJS,
   },
   sql: {
@@ -366,10 +451,16 @@ export const DOCS = {
     icon: IconNetwork,
   },
   powerbi: {
-    title: 'Power BI',
-    label: 'Power BI',
+    title: 'PowerBi',
+    label: 'PowerBi',
     path: '',
-    icon: IconPowerBI,
+    icon: IconPowerBi,
+  },
+  mundo: {
+    title: 'Mundo / Culture',
+    label: 'Mundo / Culture',
+    path: 'https://mundo.apescasio.fr',
+    icon: IconMundo,
   },
   future: {
     title: 'Future / Human',

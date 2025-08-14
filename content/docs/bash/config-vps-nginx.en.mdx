@@ -82,36 +82,45 @@ Show an informational message and run a test for automatic certificate renewal *
 ## Bash Script
 
 ```bash {title="config-nginx-vps.sh"}
-### © Aaron Pescasio / www.apescasio.fr ###
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
 
 ### Script to host a website using NGINX and secure it with HTTPS via Certbot ###
 
 ### Install NGINX web server ###
+
 sudo apt install nginx -y
 
 ### Set the domain name to use for the site ###
+
 domain_name='apescasio.fr'
 
 ### Assign ownership of /var/www to the current user ###
+
 sudo chown $USER:$USER /var/www -R
 
 ### Navigate to the base directory for web content ###
+
 cd /var/www
 
 ### Create the site directories: root + public folder ###
+
 mkdir $domain_name && mkdir $domain_name/public
 
 ### Navigate to the site's public directory ###
+
 cd $domain_name/public
 
 ### Create a test index file to verify the site is online ###
+
 echo 'Test' >> index.html
 
 ### Remove default NGINX configuration files ###
+
 sudo rm /etc/nginx/sites-available/default
 sudo rm /etc/nginx/sites-enabled/default
 
 ### Create a new NGINX configuration file for the site ###
+
 sudo sh -c "echo 'server {
 listen 80;
 server_name $domain_name www.$domain_name;
@@ -126,19 +135,26 @@ error_page 404 /404/index.html;
 }' > /etc/nginx/sites-available/$domain_name.conf"
 
 ### Enable the NGINX site configuration via a symbolic link ###
+
 sudo ln -s /etc/nginx/sites-available/$domain_name.conf /etc/nginx/sites-enabled/
 
 ### Test NGINX configuration and reload if valid ###
+
 sudo nginx -t && sudo systemctl reload nginx
 
 ### Install Certbot to obtain an SSL certificate via NGINX ###
+
 sudo apt-get install python3-certbot-nginx -y
 
 ### Generate Let's Encrypt SSL certificate and auto-configure NGINX ###
+
 sudo certbot --nginx -d $domain_name -d www.$domain_name
 
 ### Informational message about SSL certificate validity ###
+
 echo "Let's Encrypt SSL certificate is only valid for 90 days. Testing SSL certificate renewal process."
 
 ### Test the automatic certificate renewal process ###
+
 sudo certbot renew --dry-run
+```

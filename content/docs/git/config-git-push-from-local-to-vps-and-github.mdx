@@ -85,7 +85,7 @@ J'ai créé ce hook git appelé `post-receive` dans le bare git repo (`~/memo.ap
 Le processus de déploiement est donc entièrement automatisé => dès qu'un changement est poussé vers le bare git repo du VPS, le code est automatiquement mis à jour dans le working directory repo (répertoire de travail = `/home/apecio/memo.apescasio.fr`), puis aussi dans le GitHub repo, avec un suivi dans `/tmp/deploy.log`.
 
 ```bash title="~/memo.apescasio.fr.git/hooks/post-receive"
-### © Aaron Pescasio / www.apescasio.fr ###
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
 
 ### Récupérer le dernier code dans le répertoire de travail ###
 
@@ -185,7 +185,7 @@ pm2 start npm --name memo -- run start
 
 J'ai mis à jour ce git hook pour qu'il fasse de plus : `npm run build` (pour sauvegarder les modifications) et `pm2 restart` pour forcer le site web de se mettre à jour avec le nouveau build.
 ```bash title="~/memo.apescasio.fr.git/hooks/post-receive"
-### © Aaron Pescasio / www.apescasio.fr ###
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
 
 ### Charger nvm et définir la version de Node.js ###
 

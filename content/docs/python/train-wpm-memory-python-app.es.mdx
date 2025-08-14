@@ -1,0 +1,195 @@
+---
+title: Entrenar mis PPM y mi memoria
+---
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
+## Contexto
+
+En mis días de instituto, solía reescribir **una y otra vez** mis apuntes de Histoire Géo y otras clases en el teclado.
+
+Años después, creé esta aplicación para entrenar mis palabras por minuto y mi memoria.
+
+Escribo tan rápido como puedo y mientras escribo, repito cada frase en mi cerebro.
+
+## Aplicación Python
+
+La base del código viene de [Tech with Tim](https://www.youtube.com/watch?v=NQ5i1kJAA6Y), a quien recomiendo encarecidamente ver para proyectos de Python que crear.
+
+El código de Tim está disponible en su [GitHub](https://github.com/techwithtim/WPM_Typing_Test).
+
+Los cambios que hice al código fueron:
+
+- Eliminar la selección aleatoria de frases en el archivo txt
+- Posibilidad de escapar después de cada frase
+- Hacer seguimiento de cada ciclo
+- Tener un promedio de PPM después de cada ciclo
+
+## Estructura de Carpetas
+
+<Files>
+  <Folder name="C:\wpm_notes_train" defaultOpen>
+    <File name="inputs.txt" />
+    <File name="train.py" />
+  </Folder>
+</Files>
+
+## Ejecución de la Aplicación Python
+
+Si aún no has instalado Python, instálalo con este comando de PowerShell.
+
+```ps1 title="install-python"
+winget install --id Python.Python.3.12 -e
+```
+
+Necesitarás tener pip y el módulo `windows-curses` instalados.
+
+```ps1 title="install-pip"
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+pip --version
+pip install windows-curses
+```
+
+Luego, crea un nuevo archivo de Python y llénalo con este código.
+
+```py title="train.py"
+import curses
+from curses import wrapper
+import time
+import random
+
+def start_screen(stdscr):
+    stdscr.clear()
+    stdscr.addstr("¡Bienvenido a la Prueba de Velocidad de Escritura!")
+    stdscr.addstr("\n¡Presiona cualquier tecla para comenzar!")
+    stdscr.refresh()
+    stdscr.getkey()
+
+def display_text(stdscr, target, current, wpm=0):
+    stdscr.addstr(target)
+    stdscr.addstr(1, 0, f"PPM: {wpm}")
+
+    for i, char in enumerate(current):
+        correct_char = target[i]
+        color = curses.color_pair(1)
+        if char != correct_char:
+            color = curses.color_pair(2)
+
+        stdscr.addstr(0, i, char, color)
+
+def load_text(line_index=0):
+    with open("inputs.txt", "r") as f:
+        lines = f.readlines()
+        ### Eliminar líneas vacías ###
+        lines = [line.strip() for line in lines if line.strip()]
+        if not lines:
+            return "No se encontró texto en inputs.txt", 0
+        ### Retornar la línea en el índice actual y el número total de líneas ###
+        return lines[line_index % len(lines)], len(lines)
+
+def wpm_test(stdscr, line_index=0, cycle=1):
+    target_text, total_lines = load_text(line_index)
+    current_text = []
+    wpm = 0
+    start_time = time.time()
+    stdscr.nodelay(True)
+
+    while True:
+        time_elapsed = max(time.time() - start_time, 1)
+        wpm = round((len(current_text) / (time_elapsed / 60)) / 5)
+
+        stdscr.clear()
+        display_text(stdscr, target_text, current_text, wpm)
+        current_line = (line_index % total_lines) + 1
+        stdscr.addstr(2, 0, f"Ciclo {cycle} - Línea {current_line} de {total_lines}")
+        stdscr.refresh()
+
+        if "".join(current_text) == target_text:
+            stdscr.nodelay(False)
+            ### Calcular PPM final para esta frase ###
+            final_time = time.time() - start_time
+            final_wpm = round((len(target_text) / (final_time / 60)) / 5)
+            break
+
+        try:
+            key = stdscr.getkey()
+        except:
+            continue
+
+        if ord(key) == 27:
+            final_wpm = 0  # Si se escapó, no se registran PPM
+            break
+
+        if key in ("KEY_BACKSPACE", '\b', "\x7f"):
+            if len(current_text) > 0:
+                current_text.pop()
+        elif len(current_text) < len(target_text):
+            current_text.append(key)
+
+    return line_index + 1, cycle, final_wpm
+
+
+def main(stdscr):
+    curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLACK)
+
+    start_screen(stdscr)
+    line_index = 0
+    cycle = 1
+    wpm_results = []  ### Almacenar PPM para cada frase en el ciclo actual ###
+    cycle_averages = []  ### Almacenar promedio de PPM para cada ciclo completado ###
+
+    ### Obtener el número total de líneas para saber cuándo incrementar el ciclo ###
+    _, total_lines = load_text(0)
+    
+    while True:
+        line_index, cycle, phrase_wpm = wpm_test(stdscr, line_index, cycle)
+        wpm_results.append(phrase_wpm)
+
+        ### Verificar si hemos completado todas las líneas y necesitamos iniciar un nuevo ciclo ###
+        if line_index >= total_lines:
+            ### Calcular promedio para este ciclo ###
+            if wpm_results:
+                cycle_average = round(sum(wpm_results) / len(wpm_results))
+                cycle_averages.append(cycle_average)
+            
+            line_index = 0
+            cycle += 1
+            wmp_results = []  ### Reiniciar para nuevo ciclo ###
+
+        stdscr.clear()
+        stdscr.addstr(0, 0, "¡Completaste el texto! Presiona cualquier tecla para continuar...")
+        stdscr.addstr(1, 0, "Presiona ESC para salir.")
+
+        ### Mostrar promedios de ciclos si hemos completado al menos un ciclo ###
+        
+        if cycle_averages:
+            stdscr.addstr(3, 0, "Promedios de Ciclos (PPM):")
+            for i, avg in enumerate(cycle_averages):
+                stdscr.addstr(4 + i, 0, f"  Ciclo {i + 1}: {avg} PPM")
+        
+        stdscr.refresh()
+        key = stdscr.getkey()
+        
+        if ord(key) == 27:
+            break
+
+wrapper(main)
+
+```
+
+También necesitarás tener un archivo `inputs.txt` (que contenga las frases) dentro de la misma carpeta.
+
+```txt title="inputs.txt"
+Hola Mundo.
+Uno debe imaginar a Sísifo feliz.
+La repetición es simplemente la Madre del Aprendizaje.
+Esta es mi cultura, mis contribuciones open-source y mi pasión por compartir conocimiento.
+```
+
+Por último, aquí tienes una prueba de la aplicación.
+
+Convertí el archivo .mkv a .gif ya que el tamaño del archivo mkv es demasiado grande.
+
+![Entrenar PPM y Memoria - Aplicación Python](/images/python/wpm_memory_train.gif)

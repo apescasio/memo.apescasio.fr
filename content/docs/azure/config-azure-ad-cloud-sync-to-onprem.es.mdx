@@ -1,0 +1,165 @@
+---
+title: Sincronizar cuenta solo en la cloud de Azure con Active Directory on-premise
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Contexto
+
+Azure AD Connect actúa como una puerta de enlace entre el Active Directory on-premise y el **tenant de Azure**.
+
+Si aún no has creado la cuenta para la persona X en la cloud, la configuración solo tomará 5 minutos máximo (crear la cuenta AD local y realizar una sincronización delta).
+
+Sin embargo, surge un problema si ya has creado usuarios solo en la cloud en Azure y quieres sincronizarlos con tu AD local.
+
+## Solución
+
+La solución es primero eliminar usuarios duplicados y mantener los originales. En este caso, el usuario original es "apes", por lo que el otro debe ser eliminado.
+
+![Imagen 34](/images/azure/34.PNG)
+![Imagen 35](/images/azure/35.PNG)
+
+A continuación, ejecuto este PowerShell Script para realizar la sincronización.
+
+## Step-by-step Script Breakdown
+<DynamicCallout>
+<Steps>
+
+<Step>
+### Conectar a Office 365 Admin ###
+El script solicita credenciales de administrador y se conecta al servicio Microsoft Online (Office 365) usando el módulo `MsOnline`. Esto permite el acceso a usuarios en la cloud para modificaciones posteriores *(~30 segundos)*.
+</Step>
+
+<Step>
+### Deshabilitar Temporalmente la Sincronización de Directorio ###
+La sincronización de directorio entre Azure AD y el Active Directory on-premise se deshabilita para evitar conflictos durante la vinculación de usuarios. El script confirma que la sincronización está efectivamente deshabilitada antes de continuar *(~5 segundos)*.
+</Step>
+
+<Step>
+### Selección y Vinculación de Usuario ###
+El script muestra una cuadrícula interactiva para seleccionar un usuario AD local, convierte su `ObjectGUID` a `ImmutableID`, luego te permite seleccionar un usuario en la cloud para vincular. El `ImmutableID` se aplica entonces al usuario en la cloud para establecer la coincidencia. Este proceso se repite mientras desees vincular más cuentas *(~60 segundos)*.
+</Step>
+
+<Step>
+### Verificar ImmutableIDs ###
+Una vez completada la vinculación, el script muestra una cuadrícula listando todos los usuarios en la cloud con su `ImmutableID` para verificación visual *(~10 segundos)*.
+</Step>
+
+<Step>
+### Reactivar Sincronización ###
+La sincronización de directorio se reactiva y se activa una sincronización delta para aplicar los cambios en Azure AD. Esto asegura que las vinculaciones se propaguen correctamente *(~15 segundos)*.
+</Step>
+
+<Step>
+### Limpieza y Cierre ###
+El script cierra todas las sesiones de PowerShell abiertas para liberar recursos. *(~3 segundos)*.
+</Step>
+
+</Steps>
+</DynamicCallout>
+
+## PowerShell Script
+```ps1 title="SyncCloudOnlyToAD.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Script para sincronizar usuarios solo en la cloud con AD local ###
+
+$credential = Get-Credential
+
+### Importar el módulo de Microsoft Online Services para gestionar Office 365 ###
+
+Import-Module MsOnline
+
+### Conectar a Microsoft Online (Office 365) con las credenciales proporcionadas ###
+
+Connect-MsolService -Credential $credential
+
+### Deshabilitar temporalmente la sincronización de directorio ###
+
+Set-MsolDirSyncEnabled -EnableDirSync $false
+
+### Verificar si la sincronización de directorio está deshabilitada ###
+
+$IsDirSyncEnabled = (Get-MsolCompanyInformation).DirectorySynchronizationEnabled
+
+### Confirmar que la sincronización está deshabilitada y mostrar mensaje ###
+
+If($IsDirSyncEnabled -eq $false) {Write-Host "Sincronización de directorio deshabilitada - ¡Listo para continuar!"}
+else {Write-Host "Por favor deshabilita la sincronización de directorio y espera antes de salir"}
+
+### Pausa de 5 segundos para asegurar que la sincronización esté efectivamente deshabilitada ###
+
+Start-Sleep -Seconds 5
+
+### Bucle para vincular usuarios AD locales con usuarios solo en la cloud ###
+do{
+    ### Obtener todos los usuarios AD locales y mostrar una cuadrícula de selección ###
+
+    $ADGuidUser = Get-ADUser -Filter * | Select Name,ObjectGUID | Sort-Object Name | Out-GridView -Title "Selecciona el usuario AD local para obtener su Immutable ID" -PassThru
+
+    ### Convertir el ObjectGUID del usuario seleccionado a ImmutableID ###
+
+    $UserimmutableID = [System.Convert]::ToBase64String($ADGuidUser.ObjectGUID.tobytearray())
+
+    ### Obtener usuarios en la cloud y mostrar una cuadrícula de selección ###
+
+    $OnlineUser = Get-MsolUser | Select UserPrincipalName,DisplayName,ProxyAddresses,ImmutableID | Sort-Object DisplayName | Out-GridView -Title "Selecciona el usuario de Office 365 para vincular con el usuario AD" -PassThru
+
+    ### Vincular el usuario solo en la cloud con el usuario AD local estableciendo el ImmutableID ###
+
+    Set-MSOLuser -UserPrincipalName $OnlineUser.UserPrincipalName -ImmutableID $UserimmutableID
+
+    ### Preguntar si el usuario quiere vincular otra cuenta ###
+
+    $Repeat = read-host "¿Quieres seleccionar otro usuario? Y o N" 
+} while ($Repeat -eq "Y")
+
+### Mostrar todos los usuarios con sus ImmutableIDs ###
+
+Get-MsolUser | Select DisplayName,ImmutableID | Sort-Object DisplayName | Out-GridView -Title "Lista de usuarios con ImmutableID mostrado"
+
+### Reactivar la sincronización de directorio ###
+
+Set-MsolDirSyncEnabled -EnableDirSync $true
+
+### Activar una sincronización delta para aplicar los cambios ###
+
+Start-ADSyncSyncCycle -PolicyType Delta
+
+### Pausa de 5 segundos para permitir que el proceso de sincronización se complete ###
+
+Start-Sleep -Seconds 5
+
+### Cerrar todas las sesiones de PowerShell abiertas ###
+
+Get-PSSession | Remove-PSSession
+
+### Si recibes un email diciendo "Password Hash Synchronization heartbeat was skipped in last 120 minutes", ejecuta este comando ###
+### Restart-Service -Name "ADSync" : Reinicia el servicio Azure AD Connect ###
+### 3> $null : Suprime las salidas de error ###
+# Restart-Service -Name "ADSync" 3> $null
+
+### Alternativa: Reiniciar el servicio "Microsoft Azure AD Sync" a través de la consola de Servicios ###
+# Abrir "services.msc" y reiniciar el servicio "Microsoft Azure AD Sync"
+```
+## Ejecución del Script
+
+En la primera ventana, selecciona el usuario AD local "apes".
+
+![Imagen 36](/images/azure/36.PNG)
+
+Luego en la segunda ventana, elige el usuario de Azure AD que deseas sincronizar.
+
+![Imagen 37](/images/azure/37.PNG)
+
+Después de sincronizar, el script preguntará si quieres continuar vinculando otros usuarios.
+
+![Imagen 38](/images/azure/38.PNG)
+
+Si escribes "N", una ventana simplemente mostrará usuarios con su "ImmutableId".
+
+![Imagen 40](/images/azure/40.PNG)
+
+Como puedes ver en Azure AD, el usuario "apes" ahora está sincronizado. ¡Sí!
+
+![Imagen 39](/images/azure/39.PNG)

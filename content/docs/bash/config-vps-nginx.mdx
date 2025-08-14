@@ -82,36 +82,45 @@ Affichage d’un message d’info et exécution d’un test de renouvellement au
 ## Bash Script
 
 ```sh {title="config-nginx-vps.sh"}
-### © Aaron Pescasio / www.apescasio.fr ###
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
 
 ### Script pour héberger un site web avec NGINX et le sécuriser avec HTTPS via Certbot ###
 
 ### Installation de NGINX, le serveur web ###
+
 sudo apt install nginx -y
 
 ### Définition du nom de domaine à utiliser pour le site ###
+
 domain_name='apescasio.fr'
 
 ### Attribution des droits d'accès à l'utilisateur actuel sur /var/www ###
+
 sudo chown $USER:$USER /var/www -R
 
 ### Déplacement dans le répertoire de base des sites web ###
+
 cd /var/www
 
 ### Création des dossiers pour héberger le site : racine + dossier public ###
+
 mkdir $domain_name && mkdir $domain_name/public
 
 ### Déplacement dans le dossier public du site ###
+
 cd $domain_name/public
 
 ### Création d'un fichier index de test pour vérifier que le site est en ligne ###
+
 echo 'Test' >> index.html
 
 ### Suppression des configurations NGINX par défaut ###
+
 sudo rm /etc/nginx/sites-available/default
 sudo rm /etc/nginx/sites-enabled/default
 
 ### Création du fichier de configuration NGINX pour le site web ###
+
 sudo sh -c "echo 'server {
 listen 80;
 server_name $domain_name www.$domain_name;
@@ -126,21 +135,26 @@ error_page 404 /404/index.html;
 }' > /etc/nginx/sites-available/$domain_name.conf"
 
 ### Activation de la configuration NGINX du site via un lien symbolique ###
+
 sudo ln -s /etc/nginx/sites-available/$domain_name.conf /etc/nginx/sites-enabled/
 
 ### Test de la configuration NGINX et rechargement si tout est correct ###
+
 sudo nginx -t && sudo systemctl reload nginx
 
 ### Installation de Certbot pour obtenir un certificat SSL via NGINX ###
+
 sudo apt-get install python3-certbot-nginx -y
 
 ### Génération du certificat SSL Let's Encrypt et configuration automatique dans NGINX ###
+
 sudo certbot --nginx -d $domain_name -d www.$domain_name
 
 ### Message d'information sur la durée de validité du certificat SSL ###
+
 echo "Certificat SSL Let's Encrypt est seulement valable pour 90 jours, test de renouvellement de certificat SSL"
 
 ### Test du processus de renouvellement automatique du certificat SSL ###
-sudo certbot renew --dry-run
 
+sudo certbot renew --dry-run
 ```

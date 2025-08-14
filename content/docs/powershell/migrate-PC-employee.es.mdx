@@ -1,0 +1,167 @@
+---
+title: Migrar PC antigua a nueva PC de un empleado
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Contexto
+
+Durante mi primer aprendizaje de trabajo/estudio, tuve que migrar alrededor de treinta PC de empleados de máquinas antiguas a nuevas.
+
+Así que decidí crear estos scripts para simplificar y automatizar todo el proceso.
+
+## Step-by-step Script Breakdown
+
+<DynamicCallout>
+<Steps>
+
+<Step>
+### Registro de Ejecución (PC Antigua) ###
+Crea una entrada de registro con el nombre de usuario y la fecha de ejecución para mantener un registro de la migración *(~2 segundos)*.
+</Step>
+
+<Step>
+### Crear Carpeta de Migración en Red ###
+Verifica si existe una carpeta personal de migración en el recurso compartido de red. Si no existe, la crea automáticamente *(~3 segundos)*.
+</Step>
+
+<Step>
+### Exportar Marcadores de Chrome ###
+Verifica si existe el archivo de marcadores de Chrome. Si existe, lo copia a la carpeta de migración *(~2 segundos)*.
+</Step>
+
+<Step>
+### Exportar Marcadores de Edge ###
+Mismo principio que Chrome: los marcadores de Edge se copian si existen *(~2 segundos)*.
+</Step>
+
+<Step>
+### Exportar Firmas de Outlook ###
+Si la carpeta de firmas existe, su contenido se guarda en la carpeta de red *(~3 segundos)*.
+</Step>
+
+<Step>
+### Exportar Lista de Impresoras ###
+Obtiene las impresoras instaladas en la PC antigua y las exporta a un archivo `.csv` *(~2 segundos)*.
+</Step>
+
+<Step>
+### Registro de Ejecución (PC Nueva) ###
+Se crea una segunda entrada de registro cuando el script se ejecuta en la PC nueva para asegurar la trazabilidad *(~2 segundos)*.
+</Step>
+
+<Step>
+### Importar Marcadores de Chrome ###
+Restaura los marcadores de Chrome desde la carpeta de red al directorio local correcto *(~2 segundos)*.
+</Step>
+
+<Step>
+### Importar Marcadores de Edge ###
+Mismo procedimiento que Chrome: copia los marcadores de Edge al directorio del usuario *(~2 segundos)*.
+</Step>
+
+<Step>
+### Importar Firmas de Outlook ###
+Crea la carpeta de firmas si aún no existe, luego importa los archivos guardados *(~3 segundos)*.
+</Step>
+
+<Step>
+### Reinstalar Impresoras ###
+Lee la lista de impresoras del archivo `.csv` e instala cada una si no está ya instalada *(~4 segundos)*.
+</Step>
+
+</Steps>
+</DynamicCallout>
+
+## PowerShell Script
+```ps1 {title="export_oldPC.ps1"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Un script de "exportación" para ejecutar en la PC antigua para exportar: firmas de Outlook, impresoras, marcadores de Chrome/Edge... y copiarlos en la carpeta de almacenamiento personal en red del usuario ###
+
+$username23 = "$env:USERDOMAIN\$env:USERNAME"
+$date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
+$log23 = "$username23 ejecutó el script: export_ancienPC.bat el $date23"
+Add-Content -Path "\\adds01\soft\ap_script\ap_script_logs\export_ancienPC.log" -Value $log23
+
+### Si la carpeta MigrationP5_username no existe => Crearla, pero si ya existe, registrar un mensaje ###
+
+if (!(Test-Path -Path "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME" -PathType Container)) {
+    New-Item -Type Directory "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME"
+} else {
+    Write-Output "La carpeta 'MigrationP5_$env:USERNAME' ya existe"
+}
+
+### Si el archivo de Marcadores (Chrome) no existe => Registrar un mensaje, pero si existe, copiarlo en la carpeta de almacenamiento personal en red ###
+
+if (!(Test-Path -Path "$env:localappdata\Google\Chrome\User Data\Default\Bookmarks")) {
+    Write-Output "Los marcadores de Google Chrome no existen"
+} else {
+    Copy-Item "$env:localappdata\Google\Chrome\User Data\Default\Bookmarks" "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Bookmarks_ch" -Force
+}
+
+### Si el archivo de Marcadores (Edge) no existe => Registrar un mensaje, pero si existe, copiarlo en la carpeta de almacenamiento personal en red ###
+
+if (!(Test-Path -Path "$env:localappdata\Microsoft\Edge\User Data\Default\Bookmarks")) {
+    Write-Output "Los marcadores de Microsoft Edge no existen"
+} else {
+    Copy-Item "$env:localappdata\Microsoft\Edge\User Data\Default\Bookmarks" "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Bookmarks_ms" -Force
+}
+
+### Si no hay firmas de Outlook => Registrar un mensaje, pero si existen, copiarlas en la carpeta de almacenamiento personal en red ###
+
+if (!(Test-Path -Path "$env:appdata\Microsoft\Signatures" -PathType Container)) {
+    Write-Output "Las firmas de Outlook no existen"
+} else {
+    Copy-Item "$env:appdata\Microsoft\Signatures" "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\" -Recurse -Force
+}
+
+### Exportar impresoras (copiar la lista de impresoras de la PC antigua, luego pegarla en la carpeta de almacenamiento personal en red) ###
+
+get-printer "\\imprimant.share.loc\*" | Select-Object Name | Export-Csv -Path "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\ecoleprinters.csv" -NoTypeInformation
+
+```
+
+## PowerShell Script 2
+```ps1 {title="import_oldPC.ps1"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Script (para ejecutar en la PC nueva) para importar: firmas de Outlook, impresoras, marcadores de Chrome/Edge... ¡en el disco de la nueva PC! ###
+
+$username23 = "$env:USERDOMAIN\$env:USERNAME"
+$date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
+$log23 = "$username23 ejecutó el script: import_nouveauPC.bat el $date23"
+Add-Content -Path "\\adds01\soft\ap_script\ap_script_logs\import_nouveauPC.log" -Value $log23
+
+### Importar Marcadores => Chrome ###
+
+Copy-Item "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Bookmarks_ch" "$env:localappdata\Google\Chrome\User Data\Default\Bookmarks" -Force
+
+### Importar Marcadores => Edge ###
+
+Copy-Item "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Bookmarks_ms" "$env:localappdata\Microsoft\Edge\User Data\Default\Bookmarks" -Force
+
+### Importar Firmas de Outlook ###
+
+if (!(Test-Path -Path "$env:appdata\Microsoft\Signatures" -PathType Container)) {
+    New-Item -Type Directory "$env:appdata\Microsoft\Signatures"
+    Copy-Item "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Signatures\*" "$env:appdata\Microsoft\Signatures" -Force
+} else {
+    Copy-Item "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Signatures\*" "$env:appdata\Microsoft\Signatures" -Force
+}
+
+### Importar impresoras en la PC nueva ###
+
+$Printers = Import-Csv -Path "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\ecoleprinters.csv"
+foreach ($Printer in $Printers)
+{
+    $PrinterName = $Printer.Name
+    if (Get-Printer -Name $PrinterName 2>$null)
+    {
+        Write-Host "¡La impresora $PrinterName ya está instalada!"
+    } else {
+        Add-Printer -ConnectionName $PrinterName
+    }
+}
+
+```

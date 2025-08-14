@@ -1,0 +1,6 @@
+{
+    "title": "NodeJS",
+    "icon": "nodejs",
+    "pages": ["index", "nodejs-basics"],
+    "root": true
+  }

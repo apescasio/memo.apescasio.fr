@@ -4,11 +4,18 @@ import IconMemov2 from '@/components/icons/memov2'; // Corrected import
 
 export default async function HomePage({ params }: { params: Promise<{ lang?: string }> }) {
   const { lang = 'en' } = await params;
-  const title = lang === 'fr' ? "Mémoire d'un admin." : 'Handbook of an admin.';
+  const title = lang === 'fr' ? "Mémoire d'un admin." : 
+                lang === 'es' ? "Manual del admin." : 
+                'Handbook of an admin.';
   const paragraph = lang === 'fr' ? (
     <>
       « Je n'ai aucun talent. »<br />
       « Sans talent, pour atteindre les sommets, il faut être prêt à mourir même le soir. »<br />
+    </>
+  ) : lang === 'es' ? (
+    <>
+      « No tengo talento. »<br />
+      « Sin talento, para alcanzar grandes alturas, uno debe estar dispuesto a morir incluso al caer la tarde. »<br />
     </>
   ) : (
     <>
@@ -51,7 +58,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
             })}
           </div>
           <p suppressHydrationWarning className="text-fd-muted-foreground -mt-4 text-center text-sm lg:text-base">
-            {`© ${new Date().getFullYear()} Aaron Pescasio / `}
+            {`© ${new Date().getFullYear()} Aaron (Iso) Pescasio / `}
             <a href="https://apescasio.fr/" target="_blank" className="hover:text-fd-accent-foreground underline">
               apescasio.fr
             </a>
@@ -64,29 +71,55 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
 
         {/* Global CSS */}
         <style>{`
-          .icon-adjust-memo {
-            margin-left: -0.5px;
-            margin-bottom: -4px;
-            transform: scale(1.1);
-          }
-          .custom-grid-2 > *:last-child:nth-child(odd) {
-            grid-column: 1 / -1;
-            justify-self: center;
-          }
-          @media (min-width: 1024px) {
-            .custom-grid-2 {
-              grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-              gap: 1.5rem !important;
-            }
-            .custom-grid-2 > * {
-              transform: scale(1.1);
-            }
-            .custom-grid-2 > *:last-child:nth-child(odd) {
-              grid-column: 2 / 4;
-              justify-self: center;
-            }
-          }
-        `}</style>      </main>
+  .icon-adjust-memo {
+    margin-left: -0.5px;
+    margin-bottom: -4px;
+    transform: scale(1.1);
+  }
+
+  /* Center 1 item */
+  .custom-grid-2 > *:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+
+  /* Center 2 items on the last row */
+  .custom-grid-2 > *:nth-last-child(2):nth-child(odd) {
+    grid-column: 2 / span 1;
+    justify-self: center;
+  }
+  .custom-grid-2 > *:last-child:nth-child(even):nth-last-child(1) {
+    grid-column: 3 / span 1;
+    justify-self: center;
+  }
+
+  @media (min-width: 1024px) {
+    .custom-grid-2 {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 1.5rem !important;
+    }
+    .custom-grid-2 > * {
+      transform: scale(1.1);
+    }
+
+    /* Center 1 item on desktop */
+    .custom-grid-2 > *:last-child:nth-child(odd) {
+      grid-column: 2 / 4;
+      justify-self: center;
+    }
+
+    /* Center 2 items on desktop */
+    .custom-grid-2 > *:nth-last-child(2):nth-child(odd) {
+      grid-column: 2;
+      justify-self: center;
+    }
+    .custom-grid-2 > *:last-child:nth-child(even):nth-last-child(1) {
+      grid-column: 3;
+      justify-self: center;
+    }
+  }
+`}</style>
+     </main>
     </>
   );
 }

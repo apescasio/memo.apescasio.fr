@@ -1,0 +1,88 @@
+---
+title: Configurar un portapapeles
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Contexto
+
+Al comienzo de mi segundo aprendizaje dentro de una compañía internacional de venta al por menor de viajes, rápidamente me di cuenta de que algunas tareas eran recurrentes, especialmente escribir las mismas frases para cerrar "tickets".
+
+Ya fuera para indicar que se había agregado una licencia a una cuenta, que se había añadido un usuario a un buzón de correo, o para notificar que una impresora se había configurado exitosamente, estos mensajes repetitivos eran parte de mi rutina diaria.
+
+Después de repetir estas acciones muchas veces, busqué una solución para ahorrar tiempo y evitar errores de escritura. Así es como nació la idea de este PowerShell Script.
+
+## Step-by-step Script Breakdown
+
+<DynamicCallout>
+<Steps>
+
+<Step>
+### Preparando las Frases ###
+Crear un array que contenga frases comúnmente utilizadas en tickets. Las frases son bilingües (francés / inglés) para permitir reutilización rápida dependiendo del contexto *(~4 segundos)*.
+</Step>
+
+<Step>
+### Automatizando la Entrada al Portapapeles ###
+Recorrer automáticamente cada frase en la lista: cada una se copia sucesivamente al portapapeles del sistema. Este paso permite al usuario recuperar fácilmente cada mensaje simplemente presionando **Windows + V**, sin tener que abrir un documento o plantilla *(~10 segundos)*.
+</Step>
+
+<Step>
+### Agregando una Pausa Entre Copias ###
+Se aplica una pausa de 500 milisegundos entre cada copia para evitar que múltiples frases se sobrescriban demasiado rápido en el portapapeles. Este ligero tiempo de espera asegura la estabilidad de cada copia individual *(~12 segundos)*.
+</Step>
+
+</Steps>
+</DynamicCallout>
+
+## PowerShell Script
+
+```ps1 title="set-clipboard.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Insertar todas las frases utilizadas frecuentemente ###
+
+$phrases = @(
+    "Printer added to server + test print OK.",
+    "Imprimante ajoutée au serveur d'impression + test impression OK.",
+    "Access given to the user, admin account + the password transferred to the user via mail. I remain available for any information.",
+    "Accès donné à l'utilisateur, compte administrateur + le mot de passe transféré à l'utilisateur par mail. Je reste disponible pour toute information.",
+    "OTP sent to the user via mail, link will automatically expire but not the password itself, please note it.",
+    "OTP envoyé à l'utilisateur par mail, le lien expirera automatiquement mais pas le mot de passe lui-même, veuillez svp le noter.",
+    "Access given to the user, a reboot of PC or sign out/reconnect is needed to refresh the rights.",
+    "Accès donné à l'utilisateur, un redémarrage du PC ou une déconnexion/reconnexion est nécessaire pour actualiser les droits.",
+    "The mailbox has been created, synchro time can take up to 24 hours max.",
+    "La boîte aux lettres a été créée, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The mailing list has been created, synchro time can take up to 24 hours max.",
+    "La liste de diffusion a été créée, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The user has been added to mailbox, synchro time can take up to 24 hours max.",
+    "L'utilisateur a été ajouté à la boîte aux lettres, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The user has been added to mailing list, synchro time can take up to 24 hours max.",
+    "L'utilisateur a été ajouté à la liste de diffusion, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "License has been removed from the account.",
+    "License supprimée de compte.",
+    "License has been assigned to the account.",
+    "License assignée au compte.",
+    "Hello,`n`n`n`nRegards,`nAaron",
+    "Bonjour,`n`n`n`nCordialement,`nAaron"
+)
+
+### Agregar cada frase al portapapeles ###
+
+foreach ($phrase in $phrases) {
+    Set-Clipboard -Value $phrase
+    Start-Sleep -Milliseconds 500
+}
+```
+
+## Ejecución del Script
+
+Antes de ejecutar el script, me aseguré de habilitar el portapapeles de Windows presionando "Windows + V".
+
+![Habilitar Portapapeles de Windows](/images/powershell/clipboard-enable.png)
+
+Una vez que se ejecuta el script, las frases aparecen correctamente en el portapapeles. Desafortunadamente, según Microsoft, no es posible automatizar el anclaje de frases. Por lo tanto, deben anclarse manualmente, una por una.
+
+![Anclar Frases Frecuentes](/images/powershell/clipboard-phrases.png)
+
+Si las frases están ancladas, permanecen disponibles incluso después de reiniciar la PC o limpiar el portapapeles. Por lo tanto, no es necesario volver a ejecutar el script.

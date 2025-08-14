@@ -12,8 +12,8 @@ const DynamicCallout = ({ children }) => {
   };
 
   const content = React.Children.toArray(children).map(extractText).join('');
-  // Updated regex to support English and French variations
-  const regex = /\(~(\d+)\s(?:second|seconds|seconde|secondes)\)/g;
+  // Updated regex to support English, French, and Spanish variations
+  const regex = /\(~(\d+)\s(?:second|seconds|seconde|secondes|segundo|segundos)\)/g;
 
   let totalSeconds = 0;
   let match;

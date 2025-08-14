@@ -1,0 +1,247 @@
+---
+title: Basics of Python 
+---
+## Python: What Exactly Is It?
+
+**Python** is a high-level, interpreted programming language known for its readability and simplicity. It's widely used for automation, web development, data analysis, and system administration.
+
+Key characteristics:
+- Easy-to-read syntax
+- Interpreted (no compilation needed)
+- Cross-platform (Windows, macOS, Linux)
+- Extensive standard library
+- Huge ecosystem of third-party packages
+
+<Callout title="Key Takeaway">
+Python is perfect for beginners and powerful enough for complex enterprise applications.
+</Callout>
+
+---
+
+## Basic Syntax
+
+### Variables and Data Types
+```python
+### Variables (no declaration needed) ###
+
+name = "Aaron"
+age = 22
+is_filipino = True
+servers = ["memo", "cli", "lhc", "bbb", "mundo"]
+
+### Basic data types ###
+
+text = "Hello World"       # String
+number = 44                # Integer
+price = 19.99              # Float
+active = True              # Boolean
+```
+
+### Control Structures
+
+```python
+### If statements ###
+
+if age >= 18:
+    print("Adult")
+else:
+    print("Minor")
+
+### For loop ###
+
+for server in servers:
+    print(f"Checking {server}")
+
+### While loop ###
+
+count = 0
+while count < 3:
+    print(f"Attempt {count + 1}")
+    count += 1
+```
+
+### Functions
+
+```python
+def check_server_status(server_name):
+    """Check if a server is responding"""
+    print(f"Pinging {server_name}...")
+    return "Online"  # Simplified example
+
+### Call the function ###
+
+status = check_server_status("web01")
+print(status)
+```
+
+---
+
+## Working with Modules
+
+### Installing Packages
+```bash
+### Install packages using pip ###
+
+pip install requests
+pip install pandas
+pip install flask
+```
+
+### Importing Modules
+```python
+### Built-in modules ###
+
+import os
+import json
+from datetime import datetime
+
+### Third-party modules ###
+
+import requests
+
+### Your own modules ###
+
+from my_utils import server_tools
+```
+
+<Callout title="Best Practice">
+Always use virtual environments (`python -m venv myenv`) to isolate project dependencies.
+</Callout>
+
+---
+
+## API Basics with Requests
+
+### Making HTTP Requests
+```python
+import requests
+import json
+
+### GET request - Fetch data ###
+
+response = requests.get('https://jsonplaceholder.typicode.com/users')
+
+if response.status_code == 200:
+    users = response.json()
+    print(f"Found {len(users)} users")
+    
+    # Print first user's info
+    first_user = users[0]
+    print(f"Name: {first_user['name']}")
+    print(f"Email: {first_user['email']}")
+else:
+    print(f"Error: {response.status_code}")
+```
+
+### POST Request - Send Data
+```python
+import requests
+
+### Create new post ###
+
+new_post = {
+    'title': 'My Server Status',
+    'body': 'All servers are running normally',
+    'userId': 1
+}
+
+response = requests.post(
+    'https://jsonplaceholder.typicode.com/posts',
+    json=new_post
+)
+
+if response.status_code == 201:
+    created_post = response.json()
+    print(f"Created post with ID: {created_post['id']}")
+```
+
+### Real-World Example: Server Monitoring
+```python
+import requests
+from datetime import datetime
+
+def check_website_status(url):
+    """Check if a website is responding"""
+    try:
+        response = requests.get(url, timeout=5)
+        return {
+            'url': url,
+            'status_code': response.status_code,
+            'response_time': response.elapsed.total_seconds(),
+            'is_up': response.status_code == 200,
+            'checked_at': datetime.now().isoformat()
+        }
+    except requests.exceptions.RequestException as e:
+        return {
+            'url': url,
+            'error': str(e),
+            'is_up': False,
+            'checked_at': datetime.now().isoformat()
+        }
+
+### Monitor multiple websites ###
+
+websites = [
+    'https://httpbin.org/status/200',
+    'https://httpbin.org/status/404',
+    'https://httpbin.org/delay/1'
+]
+
+print("Website Status Report")
+print("-" * 50)
+
+for site in websites:
+    status = check_website_status(site)
+    
+    if status['is_up']:
+        print(f"✅ {site} - OK ({status['response_time']:.2f}s)")
+    else:
+        print(f"❌ {site} - DOWN")
+        if 'error' in status:
+            print(f"   Error: {status['error']}")
+```
+
+<Callout title="Educational APIs">
+Try these free APIs for practice:
+- **HTTPBin** (`httpbin.org`) - HTTP testing service  
+- **JSONPlaceholder** (`jsonplaceholder.typicode.com`) - Fake REST API
+- **ReqRes** (`reqres.in`) - Test API with real response codes
+</Callout>
+
+---
+
+## Error Handling
+
+```python
+import requests
+
+def safe_api_call(url):
+    """Make API call with proper error handling"""
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()  # Raises HTTPError for bad responses
+        return response.json()
+        
+    except requests.exceptions.Timeout:
+        print("Request timed out")
+    except requests.exceptions.ConnectionError:
+        print("Connection error")
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP error: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+    except json.JSONDecodeError:
+        print("Invalid JSON response")
+    
+    return None
+
+### Usage ###
+
+data = safe_api_call('https://jsonplaceholder.typicode.com/users/1')
+if data:
+    print(f"User: {data['name']}")
+```
+
+<Callout title="Best Practice">
+Always include error handling in production scripts. Network requests can fail for many reasons!
+</Callout>

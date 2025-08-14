@@ -75,7 +75,7 @@ Lit la liste des imprimantes depuis le fichier `.csv` et les ajoute une par une 
 </DynamicCallout>
 ## PowerShell Script
 ```ps1 {title="export_oldPC.ps1"}
-### © Aaron Pescasio / www.apescasio.fr ###
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
 
 ### Un script "export" qu'on executera sur l'ancien PC pour exporter: les signatures Outlook, les imprimantes, les favoris Chrome/Edge... et les copier coller dans le disque espace personnel de stockage dans le réseau ###
 
@@ -124,7 +124,7 @@ get-printer "\\imprimant.share.loc\*" | Select-Object Name | Export-Csv -Path "\
 
 ## PowerShell Script 2
 ```ps1 {title="import_oldPC.ps1"}
-### © Aaron Pescasio / www.apescasio.fr ###
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
 
 ### Script (à executer sur le nouveau PC) pour importer les: signatures Outlook, les imprimantes, les favoris Chrome/Edge... sur le disque de nouveau PC! ###
 

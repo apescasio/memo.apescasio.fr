@@ -1,6 +1,8 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { i18n } from '@/lib/i18n';
 import IconLinkedin from '@/components/icons/linkedin';
+import IconTwitter from '@/components/icons/twitter';
+import IconGitHub from '@/components/icons/github';
 import IconMemov2 from '@/components/icons/memov2';
 
 export function baseOptions(locale: string): BaseLayoutProps {
@@ -20,11 +22,10 @@ export function baseOptions(locale: string): BaseLayoutProps {
       ),
       url: `/${locale}`, // Add this to point to /${lang}
     },
-    githubUrl: 'https://github.com/apescasio/memo.apescasio.fr',
     links: [
       {
         type: 'main',
-        text: locale === 'en' ? 'Aaron PESCASIO' : 'Aaron PESCASIO',
+        text: locale === 'en' ? 'Aaron (Iso) Pescasio' : 'Aaron (Iso) Pescasio',
         url: 'https://apescasio.fr',
       },
       {
@@ -34,6 +35,28 @@ export function baseOptions(locale: string): BaseLayoutProps {
         icon: (
           <span style={{ transform: 'scale(1.3)' }}>
             <IconLinkedin />
+          </span>
+        ),
+        external: true,
+      },
+      {
+        type: 'icon',
+        text: 'Twitter',
+        url: 'https://twitter.com/@himapescasio',
+        icon: (
+          <span style={{ transform: 'scale(1.2)' }}>
+            <IconTwitter />
+          </span>
+        ),
+        external: true,
+      },
+      {
+        type: 'icon',
+        text: 'GitHub',
+        url: 'https://github.com/apescasio',
+        icon: (
+          <span style={{ transform: 'scale(1.3)' }}>
+            <IconGitHub />
           </span>
         ),
         external: true,

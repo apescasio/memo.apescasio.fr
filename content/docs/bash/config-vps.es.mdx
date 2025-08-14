@@ -1,0 +1,190 @@
+---
+title: Configurar un VPS
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Contexto
+
+Para practicar con Linux, decidí crear este script que preparará y asegurará un VPS completamente nuevo (alquilado de Netcup).
+
+Gracias a las instantáneas, pude probar la ejecución del script múltiples veces y revertir a un VPS limpio cada vez, lo que me permitió realizar pruebas de forma segura.
+
+## Step-by-step Script Breakdown
+
+<DynamicCallout>
+<Steps>
+<Step>
+### Inicialización del servidor ###
+Conectarse al VPS vía SSH como root, luego actualizar la lista de paquetes y los paquetes para asegurar un entorno limpio y actualizado *(~3 segundos)*.
+</Step>
+
+<Step>
+### Instalación de herramientas esenciales ###
+Instalar paquetes esenciales como `ufw` para el firewall, `fail2ban` para protección contra ataques, y `nginx` para alojar un sitio web *(~15 segundos)*.
+</Step>
+
+<Step>
+### Asegurar la cuenta root ###
+Cambiar la contraseña de la cuenta `root` para mejorar la seguridad *(~5 segundos)*.
+</Step>
+
+<Step>
+### Configuración de zona horaria ###
+Actualizar la zona horaria a París para mejor legibilidad de logs y consistencia de tiempo *(~2 segundos)*.
+</Step>
+
+<Step>
+### Personalización del terminal ###
+Descargar un `.bashrc` personalizado incluyendo alias y marcas de tiempo de comandos en el historial para un entorno más ergonómico *(~5 segundos)*.
+</Step>
+
+<Step>
+### Reforzar la seguridad SSH ###
+Cambiar el puerto SSH por defecto a un puerto no estándar (49152–65535), deshabilitar el login root, y configurar desconexión automática después de 120 segundos de inactividad *(~5 segundos)*.
+</Step>
+
+<Step>
+### Crear una cuenta de usuario personal ###
+Crear una cuenta no-root con privilegios sudo, agregarla a la lista blanca SSH para restringir el acceso solo a usuarios autorizados *(~5 segundos)*.
+</Step>
+
+<Step>
+### Configuración del firewall ###
+Permitir el nuevo puerto SSH y tráfico web para Nginx, luego habilitar el firewall `ufw` para bloquear todo lo demás *(~5 segundos)*.
+</Step>
+
+<Step>
+### Corrección para bug de NGINX ###
+Agregar una configuración especial para evitar un error común al iniciar NGINX en algunos VPS *(~5 segundos)*.
+</Step>
+
+<Step>
+### Configuración de Fail2ban para SSH ###
+Crear el archivo de log `/var/log/auth_fail2ban.log` si es necesario, luego configurar una cárcel específica para SSH para proteger contra ataques de fuerza bruta *(~10 segundos)*.
+</Step>
+
+<Step>
+### Cambiar a la cuenta de usuario ###
+Iniciar sesión con la nueva cuenta de usuario, marcando el final de la configuración root y el inicio de la gestión segura del VPS *(~3 segundos)*.
+</Step>
+</Steps>
+</DynamicCallout>
+
+## Bash Script
+```sh {title="config-vps.sh"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### 1. Script para preparar y asegurar un VPS ###
+
+### Prerrequisitos: -VPS Linux, -conexión SSH, -acceso 'root' ###
+
+### Después de conectar al VPS con SSH, inicio sesión como 'root': 'sudo su' ###
+
+### Actualizar la lista de paquetes ###
+
+apt update
+
+### Actualizar los paquetes ###
+
+apt upgrade -y
+
+### Instalar todos los paquetes necesarios para asegurar mi VPS y alojar mi sitio web ###
+
+apt install -y wget ufw fail2ban nginx ### (fail2ban, mantengo la configuración por defecto) ###
+
+### Crear el archivo de log de fail2ban ###
+
+touch /var/log/auth_fail2ban.log
+
+### Crear una cárcel específica para SSH ###
+
+cat <<EOL > /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port = ssh
+logpath = /var/log/auth_fail2ban.log
+maxretry = 5
+bantime = 3600
+EOL
+
+### Reiniciar el servicio fail2ban ###
+
+systemctl enable fail2ban && systemctl restart fail2ban
+
+### Cambiar la contraseña para la cuenta 'root' ###
+
+echo "Ingrese una nueva contraseña para la cuenta 'root'"
+passwd
+
+### Actualizar la zona horaria del VPS ###
+
+timedatectl set-timezone Europe/Paris
+
+### Actualizar mi .bashrc (lo que agregué: mis atajos, cambios al comando history para mostrar la fecha junto a los comandos ejecutados) ###
+
+cd ~
+mv /etc/bash.bashrc /etc/bash.bashrc.backup
+wget -O /etc/bash.bashrc https://raw.githubusercontent.com/ApecioU/configfiles/main/bash.bashrc
+source /etc/bash.bashrc
+
+### Cambiar el puerto de escucha SSH por defecto ###
+
+while true; do
+    read -p "Ingrese un número entre 49152 y 65535: " port
+    if [[ "$port" -ge 49152 && "$port" -le 65535 ]]; then ### Para seguridad adicional, use un número entre 49152 y 65535. ###
+        echo "Puerto válido: $port"
+        break
+    else
+        echo "Puerto inválido. Por favor ingrese un número entre 49152 y 65535."
+    fi
+done
+
+sed -i "s/^#Port 22/Port $port/" /etc/ssh/sshd_config
+
+### Note que necesitará especificar el nuevo puerto para cada conexión SSH a su servidor, ej.: ###
+### ssh usuario@VPS_IPv4 -p NuevoPuerto ###
+
+### Deshabilitar el login 'root' en la configuración SSH ###
+
+sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config
+
+### Desconectar al usuario después de 120s de inactividad ###
+
+sed -i 's/^#ClientAliveInterval 0/ClientAliveInterval 120/' /etc/ssh/sshd_config
+
+### Definir una variable para crear una cuenta personal ###
+
+read -p "Ingrese un nombre de usuario para crear una cuenta personal: " perso
+
+### Modificar la configuración SSH para especificar los nombres de usuario permitidos para usar SSH; todos los demás usuarios son bloqueados ###
+
+echo "AllowUsers $perso" | sudo tee -a /etc/ssh/sshd_config
+
+### Reiniciar el servicio para aplicar cambios ###
+
+systemctl restart sshd
+
+### Antes de habilitar el firewall ufw, permitir conexiones SSH en el puerto seleccionado ###
+
+ufw allow $port/tcp && ufw allow 'Nginx Full'  ### Este comando permite conexiones SSH y HTTP+S en los puertos seleccionados; todos los demás puertos son bloqueados :) ###
+
+### Corregir el problema 'Invalid argument' con NGINX en la primera instalación ###
+
+mkdir /etc/systemd/system/nginx.service.d
+printf "[Service]\nExecStartPost=/bin/sleep 0.1\n" > /etc/systemd/system/nginx.service.d/override.conf
+systemctl daemon-reload
+systemctl restart nginx
+
+### Ahora podemos habilitar el firewall después de permitir el nuevo puerto SSH ###
+
+ufw enable
+
+### Crear una cuenta personal y agregarla al grupo 'sudo' ###
+
+sudo useradd -m -s /bin/bash -G sudo $perso && echo "Ingrese una contraseña para $perso" && passwd $perso && sudo usermod -c "$perso" $perso
+
+### Iniciar sesión con la cuenta personal ###
+
+su $perso
+```

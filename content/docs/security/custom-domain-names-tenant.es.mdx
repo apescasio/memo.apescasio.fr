@@ -1,0 +1,110 @@
+---
+title: Configurar nombres de dominio personalizados para un lab tenant
+---
+import { HomeIcon } from 'lucide-react';
+
+## Contexto
+
+Quería una cuenta que tuviera un dominio en lugar de: 
+
+« @LabOfApes.onmicrosoft.com », A => primera letra de mi nombre y PES => tres primeras letras de mi apellido.
+
+Alquilo los nombres de dominio: apescasio.fr + lethimcook.fr en Netcup DE, elegí esta compañía porque tengo un amigo que trabaja allí.
+
+Aunque alquilo en Netcup DE, uso el [DNS de Cloudflare](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/) en lugar del de Netcup DE porque creo que es mucho mejor.
+
+Es completamente gratuito cambiar a Cloudflare, y también obtengo excelentes análisis y protección de firewall sin costo alguno. Esta idea me la dio mi tutor en el trabajo y años después, no me arrepiento en absoluto de haber cambiado.
+
+## Nombres de dominio personalizados
+
+### Paso 1: Agregar el dominio en Azure
+
+Primero, debo agregar mi dominio personalizado al tenant de lab de Azure. Navega al portal de Azure y agrega tu dominio.
+
+![Agregar dominio paso 1](/images/security/custom-domain-names-azure-add-1.png)
+
+![Agregar dominio paso 2](/images/security/custom-domain-names-azure-add-2.png)
+
+![Agregar dominio paso 3](/images/security/custom-domain-names-azure-add-3.png)
+
+![Agregar dominio paso 4](/images/security/custom-domain-names-azure-add-4.png)
+
+![Agregar dominio paso 5](/images/security/custom-domain-names-azure-add-5.png)
+
+### Paso 2: Crear una cuenta con dominio personalizado
+
+Una vez verificado el dominio, puedo crear cuentas de usuario usando mi dominio personalizado en lugar del dominio predeterminado onmicrosoft.com.
+
+![Crear cuenta paso 1](/images/security/custom-domain-names-azure-create-account-1.png)
+
+Mi sueño es agradecer personalmente a uno de mis modelos a seguir, Kdot, cara a cara.
+
+![Kdot SZA Paris Concert 1](/images/security/kdot-sza-paris.jpg)
+
+![Crear cuenta paso 2](/images/security/custom-domain-names-azure-create-account-2.png)
+
+![Crear cuenta paso 3](/images/security/custom-domain-names-azure-create-account-3.png)
+
+![Crear cuenta paso 4](/images/security/custom-domain-names-azure-create-account-4.png)
+
+![Configuración MFA paso 5](/images/security/custom-domain-names-azure-create-account-MFA-5.png)
+
+### Paso 3: Prueba con MailTester
+
+Puedo usar MailTester para verificar mi configuración de email e identificar los registros de seguridad faltantes.
+
+![MailTester paso 6](/images/security/custom-domain-names-azure-create-account-mailtester-6.png)
+
+![MailTester paso 7](/images/security/custom-domain-names-azure-create-account-mailtester-7.png)
+
+![Registros SPF, MX, DKIM, DMARC faltantes](/images/security/custom-domain-names-azure-create-account-mailtester-Missing-SPF-MX-DKIM-DMARC-8.png)
+
+### Paso 4: Configuración de registros SPF y MX
+
+Ahora debo configurar los registros SPF (Sender Policy Framework) y MX (Mail Exchange) en mi DNS para mejorar la seguridad y la entregabilidad de los emails.
+
+![Configuración SPF MX paso 1](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-1.png)
+
+![Configuración SPF MX paso 2](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-2.png)
+
+![Configuración SPF MX paso 3](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-3.png)
+
+![Configuración SPF MX paso 4](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-4.png)
+
+![Configuración SPF MX paso 5](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-5.png)
+
+### Paso 5: Configuración de DKIM
+
+DKIM (DomainKeys Identified Mail) agrega una firma digital a los emails para verificar su autenticidad e impedir su alteración.
+
+![Configuración DKIM paso 1](/images/security/custom-domain-names-defender-dkim-1.png)
+
+![Configuración DKIM paso 2](/images/security/custom-domain-names-defender-dkim-2.png)
+
+![Configuración DKIM paso 3](/images/security/custom-domain-names-defender-dkim-3.png)
+
+![Configuración DKIM paso 4](/images/security/custom-domain-names-defender-dkim-4.png)
+
+![Configuración DKIM paso 5](/images/security/custom-domain-names-defender-dkim-5.png)
+
+### Paso 6: Implementación de DMARC
+
+Finalmente, DMARC (Domain-based Message Authentication, Reporting & Conformance) proporciona instrucciones de política sobre cómo tratar los emails que fallan las verificaciones SPF o DKIM.
+
+![Configuración DMARC paso 1](/images/security/custom-domain-names-defender-dmarc-1.png)
+
+Resultado final del MailTester: 
+
+![Configuración SPF MX paso 6](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-6.png)
+
+## Conclusión
+
+Al implementar los registros SPF, DKIM y DMARC, he mejorado considerablemente la seguridad del email de mi tenant de lab. Esta configuración simula las prácticas de seguridad de email empresarial del mundo real y ayuda a prevenir la suplantación de emails y los ataques de phishing.
+
+Estas medidas de seguridad son esenciales para cualquier organización que use dominios personalizados con Microsoft 365, ya que:
+
+- **SPF**: Especifica qué servidores de correo están autorizados a enviar emails desde tu dominio
+- **DKIM**: Agrega firmas criptográficas para verificar la autenticidad de los emails
+- **DMARC**: Proporciona directrices de política e informes para intentos de autenticación fallidos
+
+Esta configuración ofrece una experiencia práctica con las configuraciones de seguridad de email de nivel empresarial que son simplemente requeridas en entornos profesionales.

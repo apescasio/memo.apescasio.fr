@@ -1,0 +1,110 @@
+---
+title: Configurar git en un VPS y PC
+---
+## Contexto
+
+Tengo una laptop con Windows 11 (mi máquina local) y un VPS con Debian 12 que alquilo de Netcup.
+
+Hay muchas compañías que ofrecen alojamiento VPS como OVH, Azure... Elegí Netcup porque por €6/mes: obtengo 4 vCores y 4 GB de RAM.
+
+Si tuviera que alojar un servidor funcionando 24/7 en casa, solo los costos de electricidad serían entre €15 y €20 por mes, sin contar el mantenimiento, lo que sería un poco complicado.
+
+Sin embargo, tampoco creo que sea perfecto, porque no tengo mucha RAM/CPU. Cada vez que desarrollo, necesito configurar todo cuidadosamente, optimizando cada aplicación y paquete usado.
+
+Si encuentras una mejor oferta que Netcup €6/mes, soy todo oídos.
+
+## PC Local
+
+En mi PC local, instalé git, VSCode como el IDE, Node.js y npm para mi proyecto web usando este PowerShell Script:
+
+```ps1 title="winget-webproject.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Verificar e instalar git ###
+
+if (-Not (Test-Path "C:\Program Files\git")) {
+    Write-Host "git no está instalado. Instalando vía winget..."
+    winget install -e -id git.git
+} else {
+    Write-Host "git ya está instalado."
+}
+
+### Verificar e instalar Visual Studio Code ###
+
+if (-Not (Test-Path "C:\Users\$env:USERNAME\AppData\Local\Programs\Microsoft VS Code")) {
+    Write-Host "Visual Studio Code no está instalado. Instalando vía winget..."
+    winget install -e --id Microsoft.VisualStudioCode
+} else {
+    Write-Host "Visual Studio Code ya está instalado."
+}
+
+### Verificar e instalar Node.js y npm ###
+
+if (-Not (Get-Command "node" -ErrorAction SilentlyContinue)) {
+    Write-Host "Node.js y npm no están instalados. Instalando vía winget..."
+    winget install -e --id OpenJS.NodeJS
+} else {
+    Write-Host "Node.js y npm ya están instalados."
+}
+```
+
+## VSCode Git Bash
+
+Una vez que VSCode esté instalado, para mostrar el terminal en modo 'git bash', haz clic en la pequeña flecha junto al botón `+`.
+
+![PC Local VSCode Git Bash](/images/git/vscode-gitbash.png)
+
+## VPS
+
+En mi VPS, instalé git, Node.js y npm para mi proyecto web usando este script bash:
+
+```bash title="apt-webproject.sh"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Actualización de paquetes del sistema ###
+
+echo "Actualizando paquetes del sistema..."
+sudo apt-get update
+
+### Verificar e instalar git ###
+
+check_git() {
+    if command -v git > /dev/null 2>&1; then
+        echo "git ya está instalado: $(git --version)"
+    else
+        echo "git no está instalado. Instalando..."
+        sudo apt-get install -y git
+        if command -v git > /dev/null 2>&1; then
+            echo "git instalado exitosamente: $(git --version)"
+        else
+            echo "Error al instalar git."
+            exit 1
+        fi
+    fi
+}
+
+### Verificar e instalar Node.js ###
+
+check_node() {
+    if command -v node > /dev/null 2>&1; then
+        echo "Node.js ya está instalado: $(node --version)"
+    else
+        echo "Node.js no está instalado. Instalando..."
+        # Instalar última versión LTS vía NodeSource
+        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo bash -
+        sudo apt-get install -y nodejs
+        if command -v node > /dev/null 2>&1; then
+            echo "Node.js y npm instalados exitosamente: $(node --version), npm: $(npm --version)"
+        else
+            echo "Error al instalar Node.js."
+            exit 1
+        fi
+    fi
+}
+
+### Ejecutar verificaciones ###
+
+check_git
+check_node
+
+echo "Verificación completa. Todas las herramientas

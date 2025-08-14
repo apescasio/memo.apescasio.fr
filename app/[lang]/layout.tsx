@@ -8,29 +8,37 @@ import { Metadata } from 'next';
 const inter = Inter({
   subsets: ['latin'],
 });
-
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
 
   const isFrench = lang === 'fr';
+  const isSpanish = lang === 'es';
 
   return {
     metadataBase: new URL('https://memo.apescasio.fr'),
-    title: isFrench ? "Mémoire d'un admin." : 'Handbook of an admin.',
-    description: isFrench ? 'cd /docs' : 'cd /docs',
+    title: isFrench ? "Mémoire d'un admin." : 
+           isSpanish ? "Manual del admin." : 
+           'Handbook of an admin.',
+    description: isFrench ? 'cd /docs' : isSpanish ? 'cd /docs' : 'cd /docs',
     keywords: isFrench
       ? ['mémoire', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook', 'system', 'network', 'azure', 'intune', 'admin-sys', 'apescasio']
-      : ['memory', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook',  'system', 'network', 'azure', 'intune', 'admin-sys', 'apescasio'],
+      : isSpanish
+      ? ['memoria', 'admin', 'docs', 'documentación', 'código', 'código-abierto', 'manual', 'sistema', 'red', 'azure', 'intune', 'admin-sys', 'apescasio']
+      : ['memory', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook', 'system', 'network', 'azure', 'intune', 'admin-sys', 'apescasio'],
     openGraph: {
       type: 'website',
       url: '/',
-      title: isFrench ? "Mémoire d'un admin." : 'Handbook of an admin.',
-      description: isFrench ? 'cd /docs' : 'cd /docs',
+      title: isFrench ? "Mémoire d'un admin." : 
+             isSpanish ? "Manual del admin." : 
+             'Handbook of an admin.',
+      description: isFrench ? 'cd /docs' : isSpanish ? 'cd /docs' : 'cd /docs',
       siteName: isFrench ? "memo.apescasio.fr" : 'memo.apescasio.fr',
       images: [
         {
           url: '/images/memo-128.png',
-          alt: isFrench ? "Mémoire d'un admin." : 'Handbook of an admin.',
+          alt: isFrench ? "Mémoire d'un admin." : 
+               isSpanish ? "Manual del admin." : 
+               'Handbook of an admin.',
         },
       ],
     },
@@ -49,7 +57,7 @@ export default async function Layout({
     <html lang={lang} className={inter.className} suppressHydrationWarning>
       <head>
         <link rel="icon" type="image/png" href="https://apescasio.fr/icon.svg" />
-        
+
       </head>
       <body
         style={{
@@ -70,6 +78,10 @@ export default async function Layout({
                 name: 'English',
                 locale: 'en',
               },
+              {
+                name: 'Spanish',
+                locale: 'es',
+              },
               // {
               //   name: 'Chinese',
               //   locale: 'cn',
@@ -84,6 +96,15 @@ export default async function Layout({
                 previousPage: 'Page précédente',
                 nextPage: 'Page suivante',
                 chooseLanguage: 'Choisir la langue',
+              },
+              es: {
+                toc: 'En esta página',
+                search: 'Buscar',
+                lastUpdate: 'Última actualización',
+                searchNoResult: 'Esta página no tiene resultados',
+                previousPage: 'Página anterior',
+                nextPage: 'Página siguiente',
+                chooseLanguage: 'Elegir lengua',
               },
             }[lang],
           }}
