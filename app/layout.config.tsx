@@ -2,6 +2,7 @@ import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { i18n } from '@/lib/i18n';
 import IconLinkedin from '@/components/icons/linkedin';
 import IconTwitter from '@/components/icons/twitter';
+import IconInstagram from '@/components/icons/instagram';
 import IconGitHub from '@/components/icons/github';
 import IconMemov2 from '@/components/icons/memov2';
 
@@ -41,11 +42,11 @@ export function baseOptions(locale: string): BaseLayoutProps {
       },
       {
         type: 'icon',
-        text: 'Twitter',
-        url: 'https://twitter.com/@himapescasio',
+        text: 'Instagram',
+        url: 'https://www.instagram.com/himapescasio',
         icon: (
           <span style={{ transform: 'scale(1.2)' }}>
-            <IconTwitter />
+            <IconInstagram />
           </span>
         ),
         external: true,
