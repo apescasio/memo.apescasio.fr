@@ -1,7 +1,7 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { i18n } from '@/lib/i18n';
 import IconLinkedin from '@/components/icons/linkedin';
-import IconYouTube from '@/components/icons/youtube';
+import IconYouTubeV2 from '@/components/icons/youtube';
 import IconInstagram from '@/components/icons/instagram';
 import IconGitHub from '@/components/icons/github';
 import IconMemov2 from '@/components/icons/memov2';
@@ -35,7 +35,7 @@ export function baseOptions(locale: string): BaseLayoutProps {
         url: 'https://youtube.com/@apescasio',
         icon: (
           <span style={{ transform: 'scale(1.3)' }}>
-            <IconYouTube />
+            <IconYouTubeV2 />
           </span>
         ),
         external: true,
