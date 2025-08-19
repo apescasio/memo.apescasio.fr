@@ -1,7 +1,7 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { i18n } from '@/lib/i18n';
 import IconLinkedin from '@/components/icons/linkedin';
-import IconTwitter from '@/components/icons/twitter';
+import IconYouTube from '@/components/icons/youtube';
 import IconInstagram from '@/components/icons/instagram';
 import IconGitHub from '@/components/icons/github';
 import IconMemov2 from '@/components/icons/memov2';
@@ -28,6 +28,17 @@ export function baseOptions(locale: string): BaseLayoutProps {
         type: 'main',
         text: locale === 'en' ? 'Aaron (Iso) Pescasio' : 'Aaron (Iso) Pescasio',
         url: 'https://apescasio.fr',
+      },
+      {
+        type: 'icon',
+        text: 'YouTube',
+        url: 'https://youtube.com/@apescasio',
+        icon: (
+          <span style={{ transform: 'scale(1.3)' }}>
+            <IconYouTube />
+          </span>
+        ),
+        external: true,
       },
       {
         type: 'icon',
