@@ -33,7 +33,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
 
   return (
     <>
-      <main className="container flex flex-col gap-8 py-8 lg:gap-16 lg:py-16 max-w-7xl">
+      <main className="container flex flex-col gap-8 py-8 lg:gap-10 lg:py-10 max-w-7xl">
         {/* Hero */}
         <div className="flex flex-col items-center text-center">
           <div className="bg-fd-card mb-4 aspect-square rounded-full border p-6 lg:p-6">
