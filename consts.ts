@@ -8,8 +8,8 @@ import IconGit from '@/components/icons/git';
 import IconCopilot from './components/icons/copilot';
 import IconYouTube from './components/icons/youtube';
 import IconCli from './components/icons/cli';
-import IconBbb from './components/icons/bbb';
 import IconLhc from './components/icons/lhc';
+import IconBbb from './components/icons/bbb';
 import IconNovels from './components/icons/novels';
 import IconSecurity from './components/icons/security';
 import IconPython from './components/icons/python';
@@ -198,17 +198,6 @@ const TRANSLATIONS = {
       desc: 'Bienvenido a mi sitio web de portafolio con una terminal interactiva.',
     },
   },
-  bbb: {
-    en: {
-      desc: 'My fuel.',
-    },
-    fr: {
-      desc: 'Mon carburant.',
-    },
-    es: {
-      desc: 'Mi combustible.',
-    },
-  },
   lhc: {
     en: {
       desc: 'Let him cook.',
@@ -218,6 +207,17 @@ const TRANSLATIONS = {
     },
     es: {
       desc: 'Let him cook.',
+    },
+  },
+  bbb: {
+    en: {
+      desc: 'My fuel.',
+    },
+    fr: {
+      desc: 'Mon carburant.',
+    },
+    es: {
+      desc: 'Mi combustible.',
     },
   },
   novels: {
@@ -382,32 +382,6 @@ export const DOCS = {
     path: '/docs/copilot',
     icon: IconCopilot,
   },
-
-  youtube: {
-    title: 'YouTube',
-    label: 'YouTube',
-    path: 'https://youtube.com/@apescasio',
-    icon: IconYouTube,
-  },
-
-  cli: {
-    title: 'CLI',
-    label: 'CLI',
-    path: 'https://cli.apescasio.fr',
-    icon: IconCli,
-  },
-  bbb: {
-    title: 'BBB',
-    label: 'BBB',
-    path: 'https://bbb.apescasio.fr',
-    icon: IconBbb,
-  },
-  lhc: {
-    title: 'LHC',
-    label: 'LHC',
-    path: 'https://lethimcook.fr/en',
-    icon: IconLhc,
-  },
   novels: {
     title: 'Novels',
     label: 'Novels',
@@ -431,6 +405,30 @@ export const DOCS = {
     label: 'NodeJS',
     path: '/docs/nodejs',
     icon: IconNodeJS,
+  },
+  youtube: {
+    title: 'YouTube',
+    label: 'YouTube',
+    path: 'https://youtube.com/@apescasio',
+    icon: IconYouTube,
+  },
+  cli: {
+    title: 'CLI',
+    label: 'CLI',
+    path: 'https://cli.apescasio.fr',
+    icon: IconCli,
+  },
+  lhc: {
+    title: 'LHC',
+    label: 'LHC',
+    path: 'https://lethimcook.fr/en',
+    icon: IconLhc,
+  },
+  bbb: {
+    title: 'BBB',
+    label: 'BBB',
+    path: 'https://bbb.apescasio.fr',
+    icon: IconBbb,
   },
   sql: {
     title: 'SQL (MariaDB)',
