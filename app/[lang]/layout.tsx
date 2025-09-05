@@ -71,6 +71,14 @@ export default async function Layout({
             locale: lang,
             locales: [
               {
+                name: 'Spanish',
+                locale: 'es',
+              },
+           // {
+           //   name: 'Arabic',
+           //   locale: 'ar',
+           // },
+              {
                 name: 'French',
                 locale: 'fr',
               },
@@ -78,14 +86,6 @@ export default async function Layout({
                 name: 'English',
                 locale: 'en',
               },
-              {
-                name: 'Spanish',
-                locale: 'es',
-              },
-              // {
-              //   name: 'Chinese',
-              //   locale: 'cn',
-              // },
             ],
             translations: {
               fr: {

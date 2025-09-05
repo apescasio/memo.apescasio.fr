@@ -1,6 +1,6 @@
 {
     "title": "Future / Human",
     "icon": "future",
-    "pages": ["index", "my-perseverance", "my-awareness", "my-kindness", "my-truth"],
+    "pages": ["index", "my-perseverance", "my-awareness", "my-kindness", "my-truth", "about-me"],
     "root": true
   }
