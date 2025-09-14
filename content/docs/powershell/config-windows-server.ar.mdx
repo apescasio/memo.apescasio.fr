@@ -1,0 +1,194 @@
+---
+title: تهيئة Windows Server
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## السياق
+
+في معظم الحصص المتعلقة بـ Windows Server في IPI، كان عليَّ إعادة تثبيت خادم ويندوز مع AD DS و DNS و DHCP يدوياً داخل VMWare Workstation. لذلك قررت إنشاء هذا السكربت لأتمتة العملية كاملة مع إعدادات IP مُسبقة.
+
+## تحليل السكربت خطوة بخطوة
+
+<DynamicCallout>
+<Steps>
+<Step>
+### إعادة تسمية الخادم ###
+*(~5 ثوانٍ)* يطلب من المستخدم إدخال اسم جديد للخادم ثم يُعيد تسمية الجهاز.
+</Step>
+
+<Step>
+### ضبط إعدادات الشبكة ###
+*(~3 ثوانٍ)* تهيئة عنوان IP ثابت، وقناع الشبكة، والبوابة الافتراضية، وخادم DNS بقيم مُسبقة.
+</Step>
+
+<Step>
+### تفعيل تسجيل الدخول التلقائي (Autologon) ###
+*(~3 ثوانٍ)* إعداده حتى يقوم المستخدم بتسجيل الدخول تلقائياً بعد إعادة التشغيل مع حفظ كلمة المرور في السجل.
+</Step>
+
+<Step>
+### إنشاء مجلد السكربتات ###
+*(~5 ثوانٍ)* إنشاء مجلد لتخزين السكربتات الإضافية المطلوبة للإعداد.
+</Step>
+
+<Step>
+### إنشاء وتنفيذ السكربت الأول (`2adds.ps1`) ###
+*(~5 ثوانٍ)* إنشاء السكربت الذي يثبّت ويهيئ Active Directory Domain Services، ثم جدولة تشغيله بعد إعادة التشغيل.
+</Step>
+
+<Step>
+### تهيئة DNS و DHCP (`3dns.ps1`) ###
+*(~5 ثوانٍ)* إنشاء السكربت الذي يضبط منطقة DNS ويثبّت خدمة DHCP، ثم جدولة تشغيله بعد إعادة التشغيل.
+</Step>
+
+<Step>
+### إعادة تشغيل الخادم ###
+*(~180 ثانية)* إعادة التشغيل لتطبيق التغييرات والتأكد من استئناف المهام المجدولة.
+</Step>
+
+<Step>
+### إلغاء تفعيل Autologon والتنظيف ###
+*(~5 ثوانٍ)* إلغاء تسجيل الدخول التلقائي وتنظيف بيانات الاعتماد من السجل بعد انتهاء السكربتات.
+</Step>
+</Steps>
+</DynamicCallout>
+<Callout type="warn">
+يُنفَّذ هذا السكربت بعد تثبيت جديد ونظيف لنظام Windows Server داخل الجهاز الافتراضي.
+</Callout>
+
+## سكربت PowerShell
+```ps1 {title="config-wserver.ps1"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Script to automate/simplify the setup of a Windows Server with preconfigured AD DS, DNS, DHCP ###
+
+### Define the absolute path of the script (to store the script in a folder at the end) ###
+
+$ScriptPath = Convert-Path -Path $MyInvocation.MyCommand.Path
+
+### Prompt the user for the new PC name ###
+
+$nom = ""
+while ($nom -eq "") {
+    $nom = Read-Host "`nEnter the new PC name (cannot be empty)"
+}
+Rename-Computer $nom
+
+### Configure the server's IP address ###
+
+New-NetIPAddress -InterfaceAlias "Ethernet0" -IPAddress 192.168.31.10 -PrefixLength 24 -DefaultGateway 192.168.31.254 | Out-Null
+
+### Configure the server's DNS ###
+
+Set-DnsClientServerAddress -InterfaceAlias "Ethernet0" -ServerAddresses 192.168.31.10 | Out-Null
+
+### Prompt the user for the password ###
+
+$Password = Read-Host -Prompt "Please enter your password"
+
+### Modify the registry to enable Autologon ###
+
+$RegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+Set-ItemProperty $RegistryPath 'AutoAdminLogon' -Value "1" -Type String
+Set-ItemProperty $RegistryPath 'DefaultUsername' -Value "$env:USERNAME" -Type String
+Set-ItemProperty $RegistryPath 'DefaultPassword' -Value "$Password" -Type String
+
+### Create the folder for scripts ###
+
+New-Item -ItemType Directory -Path "C:\ap_script" -Force
+
+### Create the script "2adds.ps1" to install AD DS ###
+
+New-Item -ItemType File -Path "C:\ap_script\2adds.ps1" -Force | Out-Null
+Set-Content -Path "C:\ap_script\2adds.ps1" -Value @"
+###
+### Script to create AD DS with "apes.loc" as the domain name and "APES" as the NETBIOS name ###
+###
+
+Install-WindowsFeature -name AD-Domain-Services –IncludeManagementTools
+Install-ADDSForest `
+-CreateDnsDelegation:\$false `
+-SafeModeAdministratorPassword:(ConvertTo-SecureString -String "${Password}" -AsPlainText -Force) `
+-DatabasePath "C:\Windows\NTDS" `
+-DomainMode "WinThreshold" `
+-DomainName "apes.loc" `
+-DomainNetbiosName "APES" `
+-ForestMode "WinThreshold" `
+-InstallDns:\$true `
+-LogPath "C:\Windows\NTDS" `
+-NoRebootOnCompletion:\$false `
+-SysvolPath "C:\Windows\SYSVOL" `
+-Force:\$true
+
+### Remove the scheduled task "2adds" to avoid errors ###
+
+schtasks /delete /tn "2adds" /f
+
+### Create the scheduled task to execute "3dns.ps1" at logon ###
+
+schtasks /create /tn "3dns" /tr "powershell.exe -ExecutionPolicy Bypass -File C:\ap_script\3dns.ps1" /rl highest /sc onlogon
+
+### Add DefaultDomainName in the registry for Autologon ###
+
+Set-ItemProperty -Path "${RegistryPath}" 'DefaultDomainName' -Value "apes.loc" -Type String
+
+### Restart the machine ###
+
+Restart-Computer -Force
+"@
+
+### Create the script "3dns.ps1" to configure DNS and DHCP ###
+
+New-Item -ItemType File -Path "C:\ap_script\3dns.ps1" -Force | Out-Null
+Set-Content -Path "C:\ap_script\3dns.ps1" -Value @"
+###
+### Script to configure the DNS zone, PTR record, DHCP... ###
+###
+
+Add-DnsServerPrimaryZone -NetworkId "192.168.31.0/24" -ReplicationScope 'Domain'
+
+\$IP = (Get-NetIPAddress -InterfaceAlias "Ethernet0" -AddressFamily 'IPv4').IPV4Address
+\$PTRIP = \$IP.Split('.',6)[3]
+\$fqdn = (Get-ADComputer \$(hostname)).DNSHostName
+
+Add-DnsServerResourceRecordPtr -Name "\$PTRIP" -ZoneName "31.168.192.in-addr.arpa" -PtrDomainName "\$fqdn"
+
+Set-DnsClientServerAddress -InterfaceAlias "Ethernet0" -ServerAddresses 192.168.31.10, 127.0.0.1
+
+### Install and configure the DHCP role ###
+
+Install-WindowsFeature DHCP -IncludeManagementTools
+\$DNSName = "\$env:COMPUTERNAME.apes.loc"
+Add-DHCPServerInDC -DNSName \$DNSName
+
+Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
+
+Set-DhcpServerv4OptionValue -DNSServer 192.168.31.10 -DNSDomain apes.loc -Router 192.168.31.254
+Add-DhcpServerv4Scope -Name "PCsRange" -StartRange 192.168.31.100 -EndRange 192.168.31.200 -SubnetMask 255.255.255.0 -Description "DHCP range for APES domain computers"
+
+### Remove the scheduled task ###
+
+schtasks /delete /tn "3dns" /f
+
+### Disable Autologon and clean up the registry ###
+
+Set-ItemProperty -Path "${RegistryPath}" 'AutoAdminLogon' -Value "0" -Type String
+Set-ItemProperty -Path "${RegistryPath}" 'DefaultUsername' -Value "No" -Type String
+Set-ItemProperty -Path "${RegistryPath}" 'DefaultPassword' -Value "No" -Type String
+
+### Move the original script to the ap_script folder ###
+
+Copy-Item "${ScriptPath}" C:\ap_script\1ip.ps1
+Remove-Item "${ScriptPath}"
+"@
+
+### Create the scheduled task to execute the script 2adds.ps1 ###
+
+schtasks /create /tn "2adds" /tr "powershell.exe -ExecutionPolicy Bypass -File C:\ap_script\2adds.ps1" /rl highest /sc onlogon
+
+### Restart the machine ###
+
+Restart-Computer -Force
+```

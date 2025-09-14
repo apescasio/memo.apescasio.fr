@@ -1,0 +1,163 @@
+---
+title: مزامنة حساب سحابي Azure فقط مع Active Directory محلي
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## السياق
+
+يعمل Azure AD Connect كجسر بين Active Directory المحلي و **مستأجر Azure**.
+
+إذا لم تكن قد أنشأت الحساب للشخص X في السحابة بعد، فالإعداد سيستغرق 5 دقائق كحد أقصى (إنشاء الحساب محلياً ثم إجراء مزامنة دلتا).
+
+لكن تنشأ المشكلة عندما تكون قد أنشأت بالفعل مستخدمين سحابيين فقط (Cloud-Only) في Azure وتريد الآن ربطهم بـ AD المحلي.
+
+## الحل
+
+الحل هو حذف الحسابات المكررة والاحتفاظ بالأصلية. في هذا المثال المستخدم الأصلي هو "apes" لذا يجب حذف الآخر.
+
+![Image 34](/images/azure/34.PNG)
+![Image 35](/images/azure/35.PNG)
+
+بعد ذلك أشغّل سكربت PowerShell لتنفيذ المزامنة.
+
+## تحليل السكربت خطوة بخطوة
+<DynamicCallout>
+<Steps>
+
+<Step>
+### الاتصال بـ Office 365 Admin ###
+*(~30 ثانية)* يطلب السكربت بيانات الاعتماد ويجري اتصالاً بخدمة Microsoft Online باستخدام وحدة `MsOnline` لإتاحة تعديل المستخدمين السحابيين لاحقاً.
+</Step>
+
+<Step>
+### تعطيل المزامنة مؤقتاً ###
+*(~5 ثوانٍ)* يتم تعطيل المزامنة بين Azure AD و AD المحلي لتجنّب التعارض أثناء الربط. يتحقق السكربت من أن التعطيل تم بنجاح قبل المتابعة.
+</Step>
+
+<Step>
+### اختيار المستخدم والربط ###
+*(~60 ثانية)* يعرض السكربت شبكة تفاعلية لاختيار مستخدم AD المحلي، يحوّل `ObjectGUID` إلى `ImmutableID` ثم يسمح باختيار المستخدم السحابي لربطه. يُطبق `ImmutableID` على المستخدم السحابي. تتكرر العملية حسب الحاجة.
+</Step>
+
+<Step>
+### التحقق من ImmutableID ###
+*(~10 ثوانٍ)* بعد الانتهاء يعرض السكربت قائمة بالمستخدمين السحابيين وحقول `ImmutableID` للتأكد بصرياً.
+</Step>
+
+<Step>
+### إعادة تفعيل المزامنة ###
+*(~15 ثانية)* يُعاد تفعيل المزامنة ويُشغّل دورة مزامنة (Delta) لتطبيق التغييرات في Azure AD.
+</Step>
+
+<Step>
+### تنظيف الجلسات ###
+*(~3 ثوانٍ)* إغلاق جميع جلسات PowerShell المفتوحة لتحرير الموارد.
+</Step>
+
+</Steps>
+</DynamicCallout>
+
+## سكربت PowerShell
+```ps1 title="SyncCloudOnlyToAD.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### سكربت لربط مستخدمين سحابيين فقط مع مستخدمين في AD المحلي ###
+
+$credential = Get-Credential
+
+### استيراد وحدة Microsoft Online لإدارة Office 365 ###
+
+Import-Module MsOnline
+
+### الاتصال بـ Microsoft Online (Office 365) ###
+
+Connect-MsolService -Credential $credential
+
+### تعطيل المزامنة مؤقتاً ###
+
+Set-MsolDirSyncEnabled -EnableDirSync $false
+
+### فحص حالة المزامنة ###
+
+$IsDirSyncEnabled = (Get-MsolCompanyInformation).DirectorySynchronizationEnabled
+
+### تأكيد التعطيل ###
+
+If($IsDirSyncEnabled -eq $false) {Write-Host Directory sync disabled - Ready to proceed!}
+else {Write-Host Please disable directory sync and wait before exiting}
+
+### انتظار 5 ثواني لضمان التعطيل ###
+
+Start-Sleep -Seconds 5
+
+do{
+    ### جلب مستخدمي AD المحلي وعرضهم في نافذة اختيار ###
+
+    $ADGuidUser = Get-ADUser -Filter * | Select Name,ObjectGUID | Sort-Object Name | Out-GridView -Title "Select the local AD user to retrieve their Immutable ID" -PassThru
+
+    ### تحويل ObjectGUID إلى ImmutableID ###
+
+    $UserimmutableID = [System.Convert]::ToBase64String($ADGuidUser.ObjectGUID.tobytearray())
+
+    ### جلب المستخدمين السحابيين وعرضهم ###
+
+    $OnlineUser = Get-MsolUser | Select UserPrincipalName,DisplayName,ProxyAddresses,ImmutableID | Sort-Object DisplayName | Out-GridView -Title "Select the Office 365 user to link with the AD user" -PassThru
+
+    ### تطبيق ImmutableID لربط المستخدمين ###
+
+    Set-MSOLuser -UserPrincipalName $OnlineUser.UserPrincipalName -ImmutableID $UserimmutableID
+
+    ### سؤال: هل تريد ربط مستخدم آخر؟ ###
+
+    $Repeat = read-host Do you want to select another user? Y or N 
+} while ($Repeat -eq "Y")
+
+### عرض جميع المستخدمين مع ImmutableID ###
+
+Get-MsolUser | Select DisplayName,ImmutableID | Sort-Object DisplayName | Out-GridView -Title "List of users with ImmutableID shown"
+
+### إعادة تفعيل المزامنة ###
+
+Set-MsolDirSyncEnabled -EnableDirSync $true
+
+### تشغيل دورة مزامنة Delta ###
+
+Start-ADSyncSyncCycle -PolicyType Delta
+
+### انتظار 5 ثواني لإكمال المزامنة ###
+
+Start-Sleep -Seconds 5
+
+### إغلاق جميع الجلسات ###
+
+Get-PSSession | Remove-PSSession
+
+### إذا وصل بريد: "Password Hash Synchronization heartbeat was skipped..." شغّل الأمر التالي (اختياري) ###
+# Restart-Service -Name "ADSync" 3> $null
+
+### بديل: إعادة تشغيل خدمة "Microsoft Azure AD Sync" من services.msc ###
+# افتح services.msc وأعد تشغيل الخدمة
+```
+
+## تنفيذ السكربت
+
+في النافذة الأولى اختر مستخدم AD المحلي "apes".
+
+![Image 36](/images/azure/36.PNG)
+
+ثم في النافذة الثانية اختر مستخدم Azure AD المراد ربطه.
+
+![Image 37](/images/azure/37.PNG)
+
+بعد الربط يسأل السكربت إن كنت ترغب في مواصلة ربط مستخدمين آخرين.
+
+![Image 38](/images/azure/38.PNG)
+
+إذا كتبت "N" ستُعرض نافذة فيها المستخدمون وحقول "ImmutableID".
+
+![Image 40](/images/azure/40.PNG)
+
+كما ترى في Azure AD، المستخدم "apes" أصبح الآن متزامناً. رائع!
+
+![Image 39](/images/azure/39.PNG)

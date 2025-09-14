@@ -1,0 +1,364 @@
+---
+title: تهيئة حاسوب محمول لموظف جديد
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## السياق
+
+خلال أول تدريب مدمج لي في مجموعة جامعات، كان عليَّ تجهيز ما يقارب مئة موظف جديد.
+
+قررت إنشاء هذا السكربت لتبسيط وأتمتة العملية بالكامل.
+
+من خلال تحسين إعداد المعدات للمنضمين الجدد، تمكنت من تقليل الوقت المطلوب وبالتالي التفرغ لمهام أخرى.
+## تحليل السكربت خطوة بخطوة
+
+<DynamicCallout>
+
+<Steps>
+
+<Step>
+### تسجيل التنفيذ ###
+*(~2 ثانيتين)* إنشاء سجل يحتوي اسم المستخدم وتاريخ تنفيذ السكربت في مشاركة شبكة.
+</Step>
+
+<Step>
+### طلب معلومات الموظف ###
+*(~2 ثانيتين)* يطلب من المستخدم إدخال الاسم الأول واسم العائلة للموظف الجديد، ثم يُولّد اسم الحاسوب بناءً على ذلك.
+</Step>
+
+<Step>
+### إعادة تسمية الحاسوب ###
+*(~10 ثوانٍ)* يقترح اسماً بناءً على الاسم الأول واسم العائلة، ويقصّه إلى 15 حرفاً إن لزم، يطلب تأكيداً ثم يُعيد التسمية.
+</Step>
+
+<Step>
+### التحقق من مضاد الفيروسات وتثبيته ###
+*(~3 ثوانٍ)* يفحص ما إذا كان مثبّتاً مسبقاً، وإذا لم يكن؛ يثبّت آخر إصدار.
+</Step>
+
+<Step>
+### اختيار حساب إداري ###
+*(~2 ثانيتين)* يعرض قائمة بالحسابات الإدارية المتاحة للانضمام إلى المجال ويطلب الاختيار.
+</Step>
+
+<Step>
+### الانضمام إلى المجال "mydomain.fr" ###
+*(~10 ثوانٍ)* يستخدم الحساب الإداري المحدد لضم الحاسوب إلى المجال.
+</Step>
+
+<Step>
+### توليد معرف الموظف ###
+*(~1 ثانية)* يُنشئ معرفاً فريداً بناءً على الاسم الأول واسم العائلة بالشكل المتوقع في المجال.
+</Step>
+
+<Step>
+### إضافة المستخدم إلى مجموعة المسؤولين المحليين ###
+*(~3 ثوانٍ)* يُضيف المستخدم تلقائياً إلى مجموعة "Administrators" عبر مهمة مجدولة تُنفَّذ عند الإقلاع التالي.
+</Step>
+
+<Step>
+### خيار بديل لاسم مستخدم مخصص ###
+*(~4 ثوانٍ)* يمكن إدخال حساب مخصص يدوياً لإضافته إلى مجموعة المسؤولين.
+</Step>
+
+<Step>
+### تحديث جرد Excel ###
+*(~3 ثوانٍ)* يُحدّث ملف Excel في مجلد مشترك يحتوي بيانات الحاسوب والمستخدم.
+</Step>
+
+<Step>
+### إنشاء وطباعة نموذج الإعارة ###
+*(~4 ثوانٍ)* يُنشئ نموذج Word بمعلومات الجهاز والموظف ثم يطبعه تلقائياً.
+</Step>
+
+</Steps>
+</DynamicCallout>
+## سكربت PowerShell
+```ps1 {title="prep_pcintegration.ps1"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### سكربت لتبسيط وأتمتة إعداد حاسوب محمول لموظف جديد. ###
+
+### ملخص المهام: ###
+
+### • تثبيت أحدث إصدار من مضاد الفيروسات لدينا ###  
+### • ربط الحاسوب بالمجال الصحيح "mydomain.fr" ###  
+### • إضافة حساب الموظف إلى مجموعة المسؤولين المحليين ###  
+### • تحديث الجرد (ملف Excel) وطباعة نموذج إعارة الحاسوب للموظف ###
+
+### لمعرفة من نفّذ أي سكربت وفي أي تاريخ/وقت ###
+
+$username23 = "$env:USERDOMAIN\$env:USERNAME"
+$date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
+$log23 = "$username23 executed the script: prep_pcintegration.bat on $date23"
+Add-Content -Path "\\adds01\Integration\prep_pcintegration.log" -Value $log23
+
+### طلب: الاسم الأول واسم العائلة للموظف الجديد وأخذ أول حرف من الاسم الأول متبوعاً بالاسم العائلي كاسم للحاسوب ###
+
+$global:prenom = Read-Host `n, "Enter the first name of the employee "
+$global:nom = Read-Host `n, "Enter the last name of the employee "
+$global:nom_pas_espace = $nom.Replace(" ", "")
+$global:premierelettre_fin = $prenom.Substring(0, 1)
+if ($prenom.Contains(" ")) {
+$global:prenomsplit = $prenom.Split(" ")
+$global:premierelettre = $prenomsplit | ForEach-Object { $_.Substring(0, 1) }
+$global:premierelettre_fin = $premierelettre -join ""
+}
+$pc_nom = $premierelettre_fin + $nom_pas_espace
+
+### إذا تجاوز الاسم الكامل 15 حرفاً، خذ فقط أول 15 حرفاً (مثال: "APESCASIO") ###
+
+if ($pc_nom.length -gt 15) {
+$pc_nom15 = $pc_nom.substring(0, 15)
+$pc_nom15maj = $pc_nom15.ToUpper()
+Write-Output `n, $pc_nom15maj, "`nIf you forgot something, you can 'ctrl + C' 2 times to get out and start over"
+#
+
+### إعادة تسمية الحاسوب فقط إذا أكد المستخدم بـ 'o' ###
+
+do {
+$confirmation = Read-Host "`nDo you agree with the name of the PC?`n(Make sure to verify if a PC with the same name exists or not in the AD !"
+
+if ($confirmation -eq "o") {
+Rename-Computer -NewName $pc_nom15maj 3> $null
+}
+elseif ($confirmation -eq "n") {
+$pc_nommaj15 = Read-Host "Enter the complete name of the PC"
+Rename-Computer -NewName $pc_nommaj15 3> $null
+}
+
+else {
+Write-Host `n, "Please enter 'o' or 'n' only."
+}
+} until ( $confirmation -eq "o" -or $confirmation -eq "n")
+}
+
+### إذا لم يتجاوز الاسم الكامل 15 حرفاً ###
+
+else {
+$pc_nommaj = $pc_nom.ToUpper()
+Write-Output `n, $pc_nommaj, "`nIf you forgot something, you can 'ctrl + C' 2 times to get out and start over"
+
+### Rename the PC only if the user confirmed with 'o' ###
+
+do {
+$confirmation = Read-Host "`nDo you agree with the name of the PC?`n(Make sure to verify if a PC with the same name exists or not in the AD !"
+
+if ($confirmation -eq "o") {
+Rename-Computer -NewName $pc_nommaj 3> $null
+}
+
+elseif ($confirmation -eq "n") {
+$pc_nommaj = Read-Host "Enter the complete name of the PC"
+Rename-Computer -NewName $pc_nommaj 3> $null
+}
+
+else {
+Write-Host `n, "Please enter 'o' or 'n' only."
+}
+} until ( $confirmation -eq "o" -or $confirmation -eq "n")
+
+}
+
+### تثبيت مضاد الفيروسات عبر السكربت "antivirusintegration_ap.bat" إذا لم يكن مثبتاً (بعد التثبيت يظهر مجلد Antivirus في Program Files، وإن لم يظهر فهو غير مثبت) ###
+
+$antivirus = "C:\Program Files\Antivirus\"
+if (Test-Path $antivirus) {
+Write-Output "Antivirus is already installed"
+}
+else {
+Write-Output "Installing the recent version of Antivirus"
+Start-Process "\\adds01\ap_script\antivirusintegration_ap.bat"
+}
+
+### سؤال المستخدم: أي حساب لاستخدامه في ضم الحاسوب إلى المجال: ###
+
+$techs = [Ordered]@{
+"1" = "Administrator"
+"2" = "Tech1"
+"3" = "Tech2"
+}
+
+Write-Output $techs
+
+### تعريف اسم المجال و NETBIOS الذي سنضيف إليه الحاسوب ###
+
+$domain_admin = "mydomain.fr"
+$domain_net = "MYDOM"
+$premierelettre_fin_minuscules = $premierelettre_fin.ToLower()
+$nom_minuscules = $nom.ToLower()
+$domain_user = "$premierelettre_fin_minuscules$nom_pas_espace"
+$sam_acc = "$domain_net\$domain_user"
+
+do {
+$choix_tech = Read-Host `n , "Choose your account"
+
+if ($techs.Contains($choix_tech)) {
+Do {
+
+Try {
+$techs_user = $techs[$choix_tech]
+
+### إضافة الحاسوب إلى المجال بخياري "JoinWithNewName" و "AccountCreate" ليظهر في AD بالاسم الجديد ###
+
+$j = Add-Computer -DomainName $domain_admin -Credential $domain_net\$techs_user -Force -Options JoinWithNewName, AccountCreate -PassThru -ErrorAction Stop 3> $null
+
+}
+
+Catch {
+$Error[0].Exception
+}
+
+} While ( $j.HasSucceeded -ne $true )
+}
+else {
+Write-Output `n, "Please enter a number that is part of the list of technicians only."
+
+}
+} until ($techs.Contains($choix_tech))
+
+### إضافة حساب الموظف الجديد إلى مجموعة المسؤولين المحليين ###
+
+Write-Output "`nThe user $sam_acc will be automatically added to the local admin group.."
+
+do {
+$confirmation_2 = Read-Host "Do you agree with this ?`nEnter 'o' for yes or 'n' to manually write the NETBIOS and username of the new employee"
+
+### إذا تم اختيار 'o' فسيُنشأ مهمة مجدولة (تعمل عند الإقلاع) تُضيف حساب الموظف في AD تلقائياً إلى مجموعة المسؤولين المحليين. ###
+
+if ($confirmation_2 -eq "o") {
+$command_addlocal = "Add-LocalGroupMember -Group Administrators -Member $sam_acc"
+$command_deletetask = "schtasks /delete /tn 'ajouter_addminlocal' /f"
+$command_deletefile = "rm C:\ajouter_adminlocal.ps1"
+Set-Content C:\ajouter_adminlocal.ps1 -Value $command_addlocal, $command_deletetask, $command_deletefile
+$action = New-ScheduledTaskAction -Execute 'PowerShell.exe' -Argument '-ExecutionPolicy Bypass -File C:\ajouter_adminlocal.ps1'
+$trigger = New-ScheduledTaskTrigger -AtStartup
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+
+Register-ScheduledTask -TaskName 'ajouter_addminlocal' -Action $action -Trigger $trigger -Settings $settings -User System -RunLevel Highest | Out-Null
+}
+elseif ($confirmation_2 -eq "n") {
+$sam_acc_n = Read-Host "`nPlease enter the full ID of the new employee with the NETBIOS included!"
+$command_addlocal = "Add-LocalGroupMember -Group Administrators -Member $sam_acc_n"
+$command_deletetask = "schtasks /delete /tn 'ajouter_addminlocal' /f"
+$command_deletefile = "rm C:\ajouter_adminlocal.ps1"
+Set-Content C:\ajouter_adminlocal.ps1 -Value $command_addlocal, $command_deletetask, $command_deletefile
+$action = New-ScheduledTaskAction -Execute 'PowerShell.exe' -Argument '-ExecutionPolicy Bypass -File C:\ajouter_adminlocal.ps1'
+$trigger = New-ScheduledTaskTrigger -AtStartup
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+
+Register-ScheduledTask -TaskName 'ajouter_addminlocal' -Action $action -Trigger $trigger -Settings $settings -User System -RunLevel Highest | Out-Null
+
+}
+else {
+Write-Host `n, "Please enter 'o' or 'n' only."
+
+}
+} until ($confirmation_2 -eq "o" -or $confirmation_2 -eq "n")
+
+
+### بعد إعادة التسمية + الانضمام للمجال سنقوم الآن بتحديث ملف الجرد Excel ###
+
+### وضع المُصنّع في متغير لاستخدامه لاحقاً في نموذج إعارة الحاسوب (Word) ###
+
+$fournisseur = Get-WmiObject -Class win32_bios | Select -ExpandProperty Manufacturer
+
+### لأجهزة Lenovo نضيف حرف "S" في بداية الرقم التسلسلي لأن ملفات Excel تحتوي أرقام Lenovo مسبوقة بـ "S" ###
+
+if ($fournisseur -eq "LENOVO" ) {
+$global:serial = Get-WmiObject -Class win32_bios | Select -ExpandProperty serialnumber
+$global:s = "S"
+$global:serial = $s + $serial
+}
+
+# إذا لم يكن الجهاز من LENOVO فلا حاجة لفعل شيء.
+
+else {
+$global:serial = Get-WmiObject -Class win32_bios | Select -ExpandProperty serialnumber
+$global:serial = "$global:serial"
+
+}
+
+Write-Output "`nAfter renaming the PC and joining it to the administrative domain, we will now update the Excel inventory. `n`nThe serial number of the PC is: $serial"
+
+### سؤال المستخدم: سنة رقم الأصل (الموجود على الملصق أسفل الحاسوب) ###
+
+$immobs = [Ordered]@{
+"1" = "2022\DELL_Inventory.xlsx"
+"2" = "2021\DELL_Inventory.xlsx"
+"3" = "2020\Gestion Parc-Lenovo.xlsx"
+}
+
+Write-Output $immobs
+
+### مسار ملفات الجرد والمتغير الخاص بالموظف لتحديث الملف بالاسم الكامل ###
+
+$global:employe = $nom.ToUpper() + " " + $prenom.substring(0, 1).ToUpper() + $prenom.substring(1).toLower()
+$sharedfolder_inventory = "\\adds01\Stock"
+
+### دالة لتحديث ملف Excel الموجود على الشبكة فقط إذا لم يكن مفتوحاً من مستخدم آخر، إن كان مفتوحاً لا تفعل شيئاً. ###
+function Save-ExcelDataLoop {
+[CmdletBinding()]
+param ()
+
+do {
+
+### طلب اختيار سنة رقم الأصل ###
+
+$choix_immob = Read-Host "Choose the year of the asset number `n"
+if ($immobs.Contains($choix_immob)) {
+$choix_immob_fin = $immobs[$choix_immob]
+$global:absolute = "$sharedfolder_inventory\$choix_immob_fin"
+[IO.File]::OpenWrite($absolute).Close()
+
+### فتح ملف Excel ثم تحديث الجرد بالصيغة: الاسم الكامل + اسم الحاسوب ###
+
+$excel = New-Object -ComObject Excel.Application
+$excel.Visible = $false
+$workbook = $excel.Workbooks.Open($absolute)
+$worksheet = $workbook.Sheets.Item(1)
+
+$cell = $worksheet.Range("A1").EntireRow
+$lastRow = $worksheet.Cells($worksheet.Rows.Count, 1).End(-4162).Row + 1
+$worksheet.Cells.Item($lastRow, 1).Value = $employe
+$worksheet.Cells.Item($lastRow, 2).Value = $pc_nommaj
+$worksheet.Cells.Item($lastRow, 3).Value = $serial
+$workbook.Save()
+$workbook.Close()
+
+}
+else {
+Write-Host "Please select a valid year."
+}
+} until ($immobs.Contains($choix_immob))
+}
+
+Save-ExcelDataLoop
+
+### طباعة نموذج إعارة الحاسوب ###
+
+### سؤال المستخدم عن الطابعة المستخدمة ###
+
+$printer = Read-Host "`nWhich printer to use for printing the laptop loan form?"
+$filename = "\\adds01\Stock\PC Loan Forms\PC_Loan_Form_Template.docx"
+$doc = New-Object -ComObject Word.Application
+$doc.Visible = $false
+$document = $doc.Documents.Open($filename)
+
+### البحث والاستبدال في الحقول داخل مستند Word ###
+
+$find = $document.Content.Find
+$find.Execute("{Name}", $employe)
+$find.Execute("{PC_Name}", $pc_nommaj)
+$find.Execute("{Serial}", $serial)
+
+### طباعة مستند Word إلى الطابعة المحددة ###
+
+$document.PrintOut([Type]::Missing, [Type]::Missing, [Type]::Missing, [Type]::Missing, [Type]::Missing, [Type]::Missing, [Type]::Missing, [Type]::Missing, [Type]::Missing, $printer)
+
+### النهاية ###
+
+Write-Output "`nThe laptop loan form has been printed! `nTask Completed."
+
+```

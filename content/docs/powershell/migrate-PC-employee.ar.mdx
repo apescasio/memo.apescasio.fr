@@ -1,0 +1,165 @@
+---
+title: ترحيل حاسوب قديم إلى جديد لموظف
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## السياق
+
+خلال أول تدريب مزدوج لي، كان عليَّ ترحيل حوالي ثلاثين حاسوب موظف من أجهزة قديمة إلى جديدة.
+
+لذا قررت إنشاء هذه السكربتات لتبسيط وأتمتة العملية بالكامل.
+
+## تحليل السكربت خطوة بخطوة
+
+<DynamicCallout>
+<Steps>
+
+<Step>
+### تسجيل التنفيذ (الحاسوب القديم) ###
+*(~2 ثانيتين)* إنشاء سجل يتضمن اسم المستخدم وتاريخ التنفيذ للاحتفاظ بأثر لعملية الترحيل.
+</Step>
+
+<Step>
+### إنشاء مجلد الترحيل على الشبكة ###
+*(~3 ثوانٍ)* التحقق مما إذا كان هناك مجلد شخصي للترحيل في مشاركة الشبكة، إذا لم يوجد يتم إنشاؤه تلقائياً.
+</Step>
+
+<Step>
+### تصدير علامات Chrome ###
+*(~2 ثانيتين)* التحقق من وجود ملف العلامات، إذا وجد يُنسخ إلى مجلد الترحيل.
+</Step>
+
+<Step>
+### تصدير علامات Edge ###
+*(~2 ثانيتين)* نفس مبدأ Chrome: تُنسخ إذا وُجدت.
+</Step>
+
+<Step>
+### تصدير تواقيع Outlook ###
+*(~3 ثوانٍ)* إذا وُجد مجلد التواقيع، يتم حفظ محتواه في مجلد الشبكة.
+</Step>
+
+<Step>
+### تصدير قائمة الطابعات ###
+*(~2 ثانيتين)* جلب الطابعات المثبتة على الحاسوب القديم وتصديرها إلى ملف `.csv`.
+</Step>
+
+<Step>
+### تسجيل التنفيذ (الحاسوب الجديد) ###
+*(~2 ثانيتين)* إنشاء سجل ثانٍ عند تشغيل السكربت على الحاسوب الجديد لضمان التتبع.
+</Step>
+
+<Step>
+### استيراد علامات Chrome ###
+*(~2 ثانيتين)* استرجاع علامات Chrome من مجلد الشبكة إلى المسار المحلي الصحيح.
+</Step>
+
+<Step>
+### استيراد علامات Edge ###
+*(~2 ثانيتين)* نفس الإجراء: نسخ علامات Edge إلى دليل المستخدم.
+</Step>
+
+<Step>
+### استيراد تواقيع Outlook ###
+*(~3 ثوانٍ)* إنشاء مجلد التواقيع إذا لم يكن موجوداً، ثم استيراد الملفات المحفوظة.
+</Step>
+
+<Step>
+### إعادة تثبيت الطابعات ###
+*(~4 ثوانٍ)* قراءة قائمة الطابعات من ملف `.csv` وتثبيت كل طابعة غير موجودة.
+</Step>
+
+</Steps>
+</DynamicCallout>
+## سكربت PowerShell
+```ps1 {title="export_oldPC.ps1"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### سكربت "تصدير" يُشغَّل على الحاسوب القديم لتصدير: تواقيع Outlook، الطابعات، علامات Chrome/Edge... ونسخها إلى مجلد تخزين المستخدم على الشبكة ###
+
+$username23 = "$env:USERDOMAIN\$env:USERNAME"
+$date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
+$log23 = "$username23 a executé le script: export_ancienPC.bat le $date23"
+Add-Content -Path "\\adds01\soft\ap_script\ap_script_logs\export_ancienPC.log" -Value $log23
+
+### إذا لم يكن مجلد MigrationP5_username موجوداً => يتم إنشاؤه، وإن وُجد يُسجَّل تنبيه فقط ###
+
+if (!(Test-Path -Path "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME" -PathType Container)) {
+    New-Item -Type Directory "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME"
+} else {
+    Write-Output "Folder 'MigrationP5_$env:USERNAME' already exists"
+}
+
+### إن لم يوجد ملف العلامات (Chrome) => سجّل رسالة، وإن وُجد انسخه إلى مجلد الشبكة الشخصي ###
+
+if (!(Test-Path -Path "$env:localappdata\Google\Chrome\User Data\Default\Bookmarks")) {
+    Write-Output "Google Chrome bookmarks do not exist"
+} else {
+    Copy-Item "$env:localappdata\Google\Chrome\User Data\Default\Bookmarks" "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Bookmarks_ch" -Force
+}
+
+### إن لم يوجد ملف العلامات (Edge) => سجّل رسالة، وإن وُجد انسخه إلى مجلد الشبكة الشخصي ###
+
+if (!(Test-Path -Path "$env:localappdata\Microsoft\Edge\User Data\Default\Bookmarks")) {
+    Write-Output "Microsoft Edge bookmarks do not exist"
+} else {
+    Copy-Item "$env:localappdata\Microsoft\Edge\User Data\Default\Bookmarks" "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Bookmarks_ms" -Force
+}
+
+### إذا لم توجد تواقيع Outlook => سجّل رسالة، وإن وُجدت انسخها إلى مجلد الشبكة الشخصي ###
+
+if (!(Test-Path -Path "$env:appdata\Microsoft\Signatures" -PathType Container)) {
+    Write-Output "Outlook signatures do not exist"
+} else {
+    Copy-Item "$env:appdata\Microsoft\Signatures" "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\" -Recurse -Force
+}
+
+### تصدير الطابعات (نسخ قائمة الطابعات من الحاسوب القديم ثم لصقها في مجلد الشبكة الشخصي) ###
+
+get-printer "\\imprimant.share.loc\*" | Select-Object Name | Export-Csv -Path "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\ecoleprinters.csv" -NoTypeInformation
+
+```
+## سكربت PowerShell 2
+```ps1 {title="import_oldPC.ps1"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### سكربت (يُشغَّل على الحاسوب الجديد) لاستيراد: تواقيع Outlook، الطابعات، علامات Chrome/Edge... إلى القرص المحلي للحاسوب الجديد ###
+
+$username23 = "$env:USERDOMAIN\$env:USERNAME"
+$date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
+$log23 = "$username23 a executé le script: import_nouveauPC.bat le $date23"
+Add-Content -Path "\\adds01\soft\ap_script\ap_script_logs\import_nouveauPC.log" -Value $log23
+
+### استيراد العلامات => Chrome ###
+
+Copy-Item "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Bookmarks_ch" "$env:localappdata\Google\Chrome\User Data\Default\Bookmarks" -Force
+
+### استيراد العلامات => Edge ###
+
+Copy-Item "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Bookmarks_ms" "$env:localappdata\Microsoft\Edge\User Data\Default\Bookmarks" -Force
+
+### استيراد تواقيع Outlook ###
+
+if (!(Test-Path -Path "$env:appdata\Microsoft\Signatures" -PathType Container)) {
+    New-Item -Type Directory "$env:appdata\Microsoft\Signatures"
+    Copy-Item "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Signatures\*" "$env:appdata\Microsoft\Signatures" -Force
+} else {
+    Copy-Item "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Signatures\*" "$env:appdata\Microsoft\Signatures" -Force
+}
+
+### استيراد / تثبيت الطابعات على الحاسوب الجديد ###
+
+$Printers = Import-Csv -Path "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\ecoleprinters.csv"
+foreach ($Printer in $Printers)
+{
+    $PrinterName = $Printer.Name
+    if (Get-Printer -Name $PrinterName 2>$null)
+    {
+        Write-Host "The printer $PrinterName is already installed!"
+    } else {
+        Add-Printer -ConnectionName $PrinterName
+    }
+}
+
+```

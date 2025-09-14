@@ -1,0 +1,149 @@
+---
+title: تهيئة NGINX على خادم VPS
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## السياق
+
+للتدرّب على لينكس أنشأت هذا السكربت لتبسيط إعداد خادم NGINX على VPS بهدف استضافة موقع ويب.
+
+## تحليل السكربت خطوة بخطوة
+<DynamicCallout>
+<Steps>
+<Step>
+### تثبيت NGINX ###
+*(~10 ثوانٍ)* تثبيت خادم الويب `nginx` الضروري لاستضافة موقع ثابت.
+</Step>
+
+<Step>
+### اختيار اسم النطاق ###
+*(~1 ثانية)* تحديد اسم النطاق الذي سيُستخدم في إعداد الموقع.
+</Step>
+
+<Step>
+### ضبط صلاحيات دليل الويب ###
+*(~1 ثانية)* منح الصلاحيات للمستخدم الحالي لإدارة محتوى الموقع.
+</Step>
+
+<Step>
+### إنشاء هيكل مجلدات الموقع ###
+*(~2 ثانيتين)* إنشاء المسار `/var/www/domainname/public` لاستضافة ملفات الموقع.
+</Step>
+
+<Step>
+### إضافة صفحة اختبار ###
+*(~1 ثانية)* إنشاء ملف `index.html` تجريبي للتحقق من عمل الموقع.
+</Step>
+
+<Step>
+### إزالة الإعدادات الافتراضية ###
+*(~2 ثانيتين)* حذف ملفات إعداد NGINX الافتراضية لتجنّب التعارض.
+</Step>
+
+<Step>
+### إنشاء إعداد مخصص لـ NGINX ###
+*(~3 ثوانٍ)* كتابة كتلة خادم (server block) مخصصة تشير إلى المجلد الصحيح.
+</Step>
+
+<Step>
+### تفعيل الإعداد ###
+*(~3 ثوانٍ)* إنشاء رابط رمزي داخل `sites-enabled` ثم اختبار وإعادة تحميل NGINX.
+</Step>
+
+<Step>
+### تثبيت Certbot ###
+*(~10 ثوانٍ)* تثبيت `certbot` مع دعم NGINX لتوليد شهادة SSL.
+</Step>
+
+<Step>
+### توليد شهادة SSL ###
+*(~30 ثانية)* تشغيل `certbot` لتوليد وتطبيق شهادة HTTPS من Let's Encrypt.
+</Step>
+
+<Step>
+### اختبار التجديد ###
+*(~5 ثوانٍ)* عرض رسالة معلوماتية وإجراء اختبار للتجديد التلقائي للشهادة.
+</Step>
+</Steps>
+</DynamicCallout>
+
+## سكربت Bash
+
+```bash {title="config-nginx-vps.sh"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### سكربت لاستضافة موقع عبر NGINX وتأمينه بـ HTTPS من خلال Certbot ###
+
+### تثبيت خادم الويب NGINX ###
+
+sudo apt install nginx -y
+
+### تعيين اسم النطاق المستخدم للموقع ###
+
+domain_name='apescasio.fr'
+
+### إسناد ملكية /var/www إلى المستخدم الحالي ###
+
+sudo chown $USER:$USER /var/www -R
+
+### الانتقال إلى الدليل الأساسي لمحتوى الويب ###
+
+cd /var/www
+
+### إنشاء مجلدات الموقع: الجذر + مجلد public ###
+
+mkdir $domain_name && mkdir $domain_name/public
+
+### الانتقال إلى مجلد public الخاص بالموقع ###
+
+cd $domain_name/public
+
+### إنشاء ملف index تجريبي للتحقق من عمل الموقع ###
+
+echo 'Test' >> index.html
+
+### إزالة ملفات إعداد NGINX الافتراضية ###
+
+sudo rm /etc/nginx/sites-available/default
+sudo rm /etc/nginx/sites-enabled/default
+
+### إنشاء ملف إعداد جديد لـ NGINX خاص بالموقع ###
+
+sudo sh -c "echo 'server {
+listen 80;
+server_name $domain_name www.$domain_name;
+
+root /var/www/$domain_name/public;
+index index.html;
+
+location / {
+try_files \$uri \$uri/ =404;
+error_page 404 /404/index.html;
+}
+}' > /etc/nginx/sites-available/$domain_name.conf"
+
+### تفعيل إعداد الموقع عبر رابط رمزي ###
+
+sudo ln -s /etc/nginx/sites-available/$domain_name.conf /etc/nginx/sites-enabled/
+
+### اختبار إعداد NGINX وإعادة التحميل إن كان سليماً ###
+
+sudo nginx -t && sudo systemctl reload nginx
+
+### تثبيت Certbot للحصول على شهادة SSL عبر NGINX ###
+
+sudo apt-get install python3-certbot-nginx -y
+
+### توليد شهادة Let's Encrypt وتطبيقها تلقائياً ###
+
+sudo certbot --nginx -d $domain_name -d www.$domain_name
+
+### رسالة معلومات حول صلاحية الشهادة ###
+
+echo "شهادة Let's Encrypt صالحة لمدة 90 يوماً فقط. اختبار عملية التجديد الآن."
+
+### اختبار عملية التجديد التلقائي للشهادة ###
+
+sudo certbot renew --dry-run
+```

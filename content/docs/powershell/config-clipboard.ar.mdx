@@ -1,0 +1,88 @@
+---
+title: تهيئة الحافظة
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## السياق
+
+في بداية فترة التدريب المزدوج الثانية لي داخل شركة دولية لتجزئة السفر، أدركت سريعاً أن بعض المهام كانت متكررة—خصوصاً كتابة نفس الجمل لإغلاق "تذاكر" الدعم.
+
+سواء كان الأمر لإعلام أن ترخيصاً تمت إضافته إلى حساب، أو أن مستخدماً أُضيف إلى صندوق بريد، أو للتنبيه بأن طابعة تم ضبطها بنجاح، فإن هذه الرسائل المتكررة كانت جزءاً من روتيني اليومي.
+
+بعد تكرار هذه الأفعال مرات عديدة، بحثت عن حل لتوفير الوقت وتجنب أخطاء الكتابة. هكذا وُلدت فكرة هذا السكربت في PowerShell.
+
+## تحليل السكربت خطوة بخطوة
+
+<DynamicCallout>
+<Steps>
+
+<Step>
+### تجهيز العبارات ###
+*(~4 ثوانٍ)* إنشاء مصفوفة تتضمن العبارات الشائعة الاستخدام في التذاكر. العبارات ثنائية اللغة (فرنسية / إنجليزية) لإعادة الاستخدام السريع حسب السياق.
+</Step>
+
+<Step>
+### أتمتة نسخ العبارات إلى الحافظة ###
+*(~10 ثوانٍ)* الدوران تلقائياً على كل عبارة في القائمة: كل واحدة تُنسخ تباعاً إلى حافظة النظام. هذه الخطوة تتيح للمستخدم استرجاع كل رسالة بسهولة عبر الضغط على **Windows + V** بدون فتح مستند أو قالب.
+</Step>
+
+<Step>
+### إضافة مهلة بين كل عملية نسخ ###
+*(~12 ثانية)* تطبيق تأخير مقداره 500 ملي ثانية بين كل عملية نسخ لمنع استبدال عبارات متعددة بسرعة في الحافظة. هذا الانتظار البسيط يضمن ثبات كل نسخة.
+</Step>
+
+</Steps>
+</DynamicCallout>
+
+## سكربت PowerShell
+
+```ps1 title="set-clipboard.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### إدراج جميع العبارات المستخدمة بشكل متكرر ###
+
+$phrases = @(
+    "Printer added to server + test print OK.",
+    "Imprimante ajoutée au serveur d'impression + test impression OK.",
+    "Access given to the user, admin account + the password transferred to the user via mail. I remain available for any information.",
+    "Accès donné à l'utilisateur, compte administrateur + le mot de passe transféré à l'utilisateur par mail. Je reste disponible pour toute information.",
+    "OTP sent to the user via mail, link will automatically expire but not the password itself, please note it.",
+    "OTP envoyé à l'utilisateur par mail, le lien expirera automatiquement mais pas le mot de passe lui-même, veuillez svp le noter.",
+    "Access given to the user, a reboot of PC or sign out/reconnect is needed to refresh the rights.",
+    "Accès donné à l'utilisateur, un redémarrage du PC ou une déconnexion/reconnexion est nécessaire pour actualiser les droits.",
+    "The mailbox has been created, synchro time can take up to 24 hours max.",
+    "La boîte aux lettres a été créée, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The mailing list has been created, synchro time can take up to 24 hours max.",
+    "La liste de diffusion a été créée, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The user has been added to mailbox, synchro time can take up to 24 hours max.",
+    "L'utilisateur a été ajouté à la boîte aux lettres, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The user has been added to mailing list, synchro time can take up to 24 hours max.",
+    "L'utilisateur a été ajouté à la liste de diffusion, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "License has been removed from the account.",
+    "License supprimée de compte.",
+    "License has been assigned to the account.",
+    "License assignée au compte.",
+    "Hello,`n`n`n`nRegards,`nAaron",
+    "Bonjour,`n`n`n`nCordialement,`nAaron"
+)
+
+### إضافة كل عبارة إلى الحافظة ###
+
+foreach ($phrase in $phrases) {
+    Set-Clipboard -Value $phrase
+    Start-Sleep -Milliseconds 500
+}
+```
+
+## تنفيذ السكربت
+
+قبل تشغيل السكربت، تأكدت من تفعيل الحافظة في ويندوز بالضغط على "Windows + V".
+
+![Enable Windows Clipboard](/images/powershell/clipboard-enable.png)
+
+بعد التنفيذ، تظهر العبارات بشكل صحيح في الحافظة. للأسف، وفقاً لمايكروسوفت، لا يمكن أتمتة تثبيت (Pin) العبارات، لذا يجب تثبيتها يدوياً واحدةً تلو الأخرى.
+
+![Pinning Frequent Phrases](/images/powershell/clipboard-phrases.png)
+
+إذا ثُبّتت العبارات، فإنها تبقى متاحة حتى بعد إعادة تشغيل الحاسوب أو مسح الحافظة. وبالتالي لا حاجة لإعادة تشغيل السكربت.

@@ -1,0 +1,183 @@
+---  
+title: تهيئة ملف تعريف Autopilot في مختبر Intune  
+---
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
+## إنشاء ملف تعريف Autopilot
+
+أنشأت ملفاً تعريفياً جديداً عبر الذهاب إلى: Devices > Enrollment > Deployment profiles.
+
+![Creating an Autopilot profile](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-1.png)
+
+أعطيت الملف اسماً وتركت الخيار "No" حتى لا يتم تحويل كل الأجهزة إلى Autopilot.
+
+![Creating an Autopilot profile 2](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-2.png)
+
+هيّأت تجربة OOBE للملف بالإعدادات التالية:
+
+- **وضع النشر**: موجه بواسطة المستخدم (User-Driven)
+- **الانضمام إلى Microsoft Entra ID كـ**: انضمام سحابي كامل (Microsoft Entra joined - Full Cloud)
+- **شروط ترخيص برامج Microsoft**: إخفاء
+- **إعدادات الخصوصية**: إخفاء
+- **إخفاء خيارات تغيير الحساب**: إخفاء
+- **نوع حساب المستخدم**: قياسي (Standard)
+- **السماح بالنشر المسبق (Pre-provisioned)**: نعم
+- **اللغة (المنطقة)**: افتراضي نظام التشغيل
+- **تكوين لوحة المفاتيح تلقائياً**: نعم
+- **تطبيق قالب اسم الجهاز**: نعم
+- **الإسم**: FRLAB-%SERIAL%
+
+![Creating an Autopilot profile 3](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-3.png)
+
+بالنسبة للمجموعات لم أُسند أي شيء الآن؛ سأفعل ذلك لاحقاً.
+
+![Creating an Autopilot profile 4](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-4.png)
+
+تم إنشاء ملف تعريف Autopilot بنجاح.
+
+![Creating an Autopilot profile 5](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-5.png)
+
+## المحاولة الأولى لتسجيل جهاز افتراضي (VM)
+
+لإنشاء مجموعة ديناميكية تتضمن كل الأجهزة ذات الوسم "FRLAB" يجب أن يتواجد الجهاز أولاً في Intune.
+
+<Callout type="warn">
+أثناء إنشاء المجموعة الديناميكية ستظهر رسالة خطأ طالما لا يوجد جهاز يحمل وسم "FRLAB".
+</Callout>
+
+شغّلت جهاز Windows 11 (على Hyper-V) وضغطت `Shift + F10` لفتح موجّه الأوامر.
+
+![Creating an Autopilot profile 6](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-6.png)
+
+ثم بدّلت المحطة إلى PowerShell.
+
+![Creating an Autopilot profile 7](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-7.png)
+
+بعدها ثبّت سكربت "WindowsAutopilotInfo" ونفذت الأمر لإضافة وسم المجموعة (GroupTag) "FRLAB" للجهاز.
+
+```ps1
+Install-Script -Name Get-WindowsAutopilotInfo -Force
+Get-WindowsAutopilotInfo -Online -GroupTag 'FRLAB'
+```
+![Creating an Autopilot profile 8](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-8.png)
+
+بعد تنفيذ الأمر Get-WindowsAutopilotInfo -Online -GroupTag 'FRLAB' سجّلت الدخول بحساب المسؤول العام ووافقت على طلب إنشاء تطبيق مؤسسة "MS Graph Command Line Tools".
+
+![Creating an Autopilot profile 10](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-10.png)
+
+وفقاً للمخرجات تم تسجيل الجهاز الافتراضي بنجاح!
+
+![Creating an Autopilot profile 11](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-11.png)
+
+الجهاز ظاهر أيضاً في لوحة Intune.
+
+![Creating an Autopilot profile 12](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-12.png)
+
+الآن وبعد وجود جهاز في Intune أضفته إلى المجموعة "FRLAB-FullCloud-StaticGroup" لأُسند ملف تعريف Autopilot لاحقاً.
+
+![Creating an Autopilot profile 13](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-13.png)
+
+ثم أسندت المجموعة "FRLAB-FullCloud-StaticGroup" إلى ملف تعريف Autopilot.
+
+![Creating an Autopilot profile 14](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-14.png)
+
+بعد حوالي 15 دقيقة تغيّرت حالة الملف إلى "Assigned" وتم تطبيق إعدادات Autopilot!
+
+![Creating an Autopilot profile 15](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-15.png)
+
+بعد تطبيق ملف Autopilot بدأت محاولة "النشر بالقفازات البيضاء" (White Glove Deployment) بالضغط على مفتاح Windows خمس مرات.
+<Callout type="warn">
+احتجت لفتح الجهاز الافتراضي بوضع ملء الشاشة وإلا لم تنجح ضغطة مفتاح Windows خمس مرات.
+</Callout>
+
+![Creating an Autopilot profile 16](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-16.png)
+
+ثم نقرت "Next".
+
+![Creating an Autopilot profile 17](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-17.png)
+
+وتوقفت بسبب رسالة الخطأ هذه.
+
+![Creating an Autopilot profile 18](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-18.png)
+
+## الخطأ `TPM attestation timed out`
+
+وفقاً لمقالة Microsoft لا يمكن تنفيذ Pre-provisioning باستخدام Windows Autopilot على الأجهزة الافتراضية.
+
+<Callout type="warn">
+هذا يعمل فقط على عتاد فعلي متوافق مع Autopilot. لذا ظهور مشكلة "TPM attestation timed out" أمر طبيعي داخل Hyper-V VM.
+</Callout>
+
+## المحاولة الثانية لتسجيل جهاز افتراضي
+
+على الرغم من أن Pre-provisioning غير ممكن على VM، إلا أن التهيئة القياسية (Standard provisioning) عبر Autopilot ممكنة بالكامل.
+
+أولاً استرجعت نقطة تحقق سابقة للجهاز.
+
+![Creating an Autopilot profile 19](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-19.png)
+
+وحذفت الجهاز من لوحة Intune.
+
+![Creating an Autopilot profile 20](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-20.png)
+
+أعدت تثبيت السكربت وأعدت تنفيذ الأمر.
+
+![Creating an Autopilot profile 21](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-21.png)
+
+أضفت الجهاز إلى المجموعة.
+
+![Creating an Autopilot profile 22](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-22.png)
+
+بعد 15 دقيقة تغيّرت الحالة إلى "Assigned" ورأيت GroupTag "FRLAB".
+
+![Creating an Autopilot profile 23](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-23.png)
+
+عدت للجهاز وأعدت تشغيله.
+
+![Creating an Autopilot profile 27](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-27.png)
+
+بعد إعادة التشغيل سجّلت الدخول بحسابي مرة واحدة.
+
+![Creating an Autopilot profile 28](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-28.png)
+
+ثم هيّأت Windows Hello.
+
+![Creating an Autopilot profile 29](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-29.png)
+
+تم تسجيل أول جهاز افتراضي في مختبر Intune بنجاح!
+
+![Creating an Autopilot profile 30](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-30.png)
+
+الجهاز ظاهر في لوحة Intune بالاسم FRLAB-%SERIAL%. لم يُدرج الرقم التسلسلي كاملاً بسبب حد 15 محرف.
+
+![Creating an Autopilot profile 31](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-31.png)
+
+## إنشاء مجموعة ديناميكية "Autopilot"
+
+أنشأت مجموعة ديناميكية لتضم كل الأجهزة ذات وسم "FRLAB".
+
+<Callout type="warn">
+أثناء إنشاء المجموعة سيظهر خطأ ما لم يوجد جهاز بوسم "FRLAB". الآن بعد توفر جهاز يعمل.
+</Callout>
+
+![Dynamic Group Autopilot Devices](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-dynamic-group-1.png)
+
+استخدمت الوسم "FRLAB" لذا ضبطت القاعدة كالتالي: `(device.devicePhysicalIds -any "_ -startsWith "[OrderID]:FRLAB")`
+
+![Dynamic Group Autopilot Devices 2](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-dynamic-group-2.png)
+
+أستطيع رؤية الجهاز ضمنها.
+
+![Dynamic Group Autopilot Devices 3](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-dynamic-group-3.png)
+
+## إسناد ملف Autopilot إلى المجموعة الديناميكية
+
+بالانتقال إلى Devices > Enrollment > Windows Autopilot deployment profiles قمت بضبط ملف "Autopilot Full Cloud".
+
+![Linking Autopilot Profile to Dynamic Group 1](/images/intune/intune-lab/link-autopilot-full-cloud-to-dynamicgroup-1.png)
+
+ثم أضفت المجموعة الديناميكية إلى "Included groups".
+
+![Linking Autopilot Profile to Dynamic Group 2](/images/intune/intune-lab/link-autopilot-full-cloud-to-dynamicgroup-2.png)
+
+هذا يعني أنه عند تسجيل جهاز افتراضي آخر بوسم "FRLAB" ستلتقطه المجموعة ديناميكياً وسيُسند إليه ملف Autopilot تلقائياً.

@@ -1,0 +1,225 @@
+---
+title: تدريب سرعة الكتابة والذاكرة
+---
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
+## السياق
+
+لستُ طبيبًا، هذه ملاحظاتي أنا، طالب غير مهم، آرون (Iso) بيسكاسيو.
+
+في أيام الثانوية، كنتُ أعيد كتابة ملاحظاتي في التاريخ والجغرافيا وغيرها على لوحة المفاتيح مرارًا وتكرارًا.
+
+بعد سنوات، أنشأتُ هذا التطبيق A.R.T بلغة Python لتدريب السرعة (عدد الكلمات في الدقيقة) والذاكرة.
+
+أكتب بأقصى سرعة وأثناء الكتابة أكرر كل جملة في ذهني.
+
+لمن يفضّل المشاهدة: هناك [فيديو يشرح كل شيء خطوة بخطوة](https://youtube.com/@apescasio).
+
+![ALZHEIMERS-RESISTANCE-TRAINING (ART)](/images/python/art.png)
+
+## تطبيق A.R.T Python
+
+أساس الكود قادم من [Tech with Tim](https://www.youtube.com/watch?v=NQ5i1kJAA6Y) الذي أوصي بمشاهدته لمشاريع Python للتعلّم.
+
+كود تيم متاح في [GitHub](https://github.com/techwithtim/WPM_Typing_Test).
+
+التغييرات التي قمتُ بها:
+
+- إزالة الاختيار العشوائي للعبارات من ملف txt
+- إمكانية الخروج (Escape) بعد كل عبارة
+- تتبّع كل دورة (Cycle)
+- إظهار متوسط WPM بعد كل دورة
+
+## هيكل المجلد 
+
+<Files>
+  <Folder name="C:\Alzheimers-Resistance-Training" defaultOpen>
+    <File name="inputs.txt" />
+    <File name="train.py" />
+  </Folder>
+</Files>
+
+## تشغيل تطبيق A.R.T Python
+
+إذا لم تكن قد ثبّتت Python بعد، ثبّتها بهذا الأمر في PowerShell.
+
+```ps1 title="install-python"
+winget install --id Python.Python.3.12 -e
+```
+
+ستحتاج إلى وجود pip وتثبيت الوحدة `windows-curses`.
+
+```ps1 title="install-pip"
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+pip --version
+pip install windows-curses
+```
+
+ثم أنشئ ملف Python جديد واملأه بهذا الكود.
+
+```py title="train.py"
+import curses
+from curses import wrapper
+import time
+import random
+
+def start_screen(stdscr):
+	stdscr.clear()
+	stdscr.addstr("Welcome to the Speed Typing Test!")
+	stdscr.addstr("\nPress any key to begin!")
+	stdscr.refresh()
+	stdscr.getkey()
+
+def display_text(stdscr, target, current, wpm=0):
+	stdscr.addstr(target)
+	stdscr.addstr(1, 0, f"WPM: {wpm}")
+
+	for i, char in enumerate(current):
+		correct_char = target[i]
+		color = curses.color_pair(1)
+		if char != correct_char:
+			color = curses.color_pair(2)
+
+		stdscr.addstr(0, i, char, color)
+
+def load_text(line_index=0):
+	with open("inputs.txt", "r") as f:
+		lines = f.readlines()
+		### إزالة الأسطر الفارغة ###
+		lines = [line.strip() for line in lines if line.strip()]
+		if not lines:
+			return "No text found in inputs.txt", 0
+		### إرجاع السطر الحالي وعدد الأسطر الكلي ###
+		return lines[line_index % len(lines)], len(lines)
+
+def wpm_test(stdscr, line_index=0, cycle=1):
+	target_text, total_lines = load_text(line_index)
+	current_text = []
+	wpm = 0
+	start_time = time.time()
+	stdscr.nodelay(True)
+
+	while True:
+		time_elapsed = max(time.time() - start_time, 1)
+		wpm = round((len(current_text) / (time_elapsed / 60)) / 5)
+
+		stdscr.clear()
+		display_text(stdscr, target_text, current_text, wpm)
+		current_line = (line_index % total_lines) + 1
+		stdscr.addstr(2, 0, f"Cycle {cycle} - Line {current_line} of {total_lines}")
+		stdscr.refresh()
+
+		if "".join(current_text) == target_text:
+			stdscr.nodelay(False)
+			### حساب WPM النهائي لهذه العبارة ###
+			final_time = time.time() - start_time
+			final_wpm = round((len(target_text) / (final_time / 60)) / 5)
+			break
+
+		try:
+			key = stdscr.getkey()
+		except:
+			continue
+
+		if ord(key) == 27:
+			final_wpm = 0  # إذا خرج المستخدم، لا يسجل WPM
+			break
+
+		if key in ("KEY_BACKSPACE", '\b', "\x7f"):
+			if len(current_text) > 0:
+				current_text.pop()
+		elif len(current_text) < len(target_text):
+			current_text.append(key)
+
+	return line_index + 1, cycle, final_wpm
+
+
+def main(stdscr):
+	curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+	curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+	curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLACK)
+
+	start_screen(stdscr)
+	line_index = 0
+	cycle = 1
+	wpm_results = []  ### تخزين WPM لكل عبارة في الدورة الحالية ###
+	cycle_averages = []  ### تخزين متوسط WPM لكل دورة مكتملة ###
+
+	### الحصول على العدد الكلي للأسطر لمعرفة متى نزيد رقم الدورة ###
+	_, total_lines = load_text(0)
+	
+	while True:
+		line_index, cycle, phrase_wpm = wpm_test(stdscr, line_index, cycle)
+		wpm_results.append(phrase_wpm)
+
+		### التحقق إن أكملنا جميع الأسطر ونبدأ دورة جديدة ###
+		if line_index >= total_lines:
+			### حساب المتوسط لهذه الدورة ###
+			if wpm_results:
+				cycle_average = round(sum(wpm_results) / len(wpm_results))
+				cycle_averages.append(cycle_average)
+			
+			line_index = 0
+			cycle += 1
+			wpm_results = []  ### إعادة الضبط لدورة جديدة ###
+
+		stdscr.clear()
+		stdscr.addstr(0, 0, "You completed the text! Press any key to continue...")
+		stdscr.addstr(1, 0, "Press ESC to quit.")
+
+		### عرض متوسطات الدورات إن وُجدت دورة واحدة على الأقل ###
+		
+		if cycle_averages:
+			stdscr.addstr(3, 0, "Cycle Averages (WPM):")
+			for i, avg in enumerate(cycle_averages):
+				stdscr.addstr(4 + i, 0, f"  Cycle {i + 1}: {avg} WPM")
+		
+		stdscr.refresh()
+		key = stdscr.getkey()
+		
+		if ord(key) == 27:
+			break
+
+wrapper(main)
+```
+
+ستحتاج أيضًا إلى ملف `inputs.txt` (يحتوي العبارات) داخل نفس المجلد.
+
+```txt title="inputs.txt"
+Hello World. 
+One must imagine Sisyphus happy.
+Repetition is simply the Mother of Learning.
+This is my culture, my open-source contributions, and my passion for sharing knowledge.
+```
+
+أخيرًا، هذا اختبار تشغيل للتطبيق.
+
+قمتُ بتحويل ملف .mkv إلى .gif لأن حجم ملف mkv كان كبيرًا جدًا.
+
+![Train WPM & Memory - A.R.T Python App](/images/python/art_execution.gif)
+
+## تأملات بعد تطبيق A.R.T
+
+اشتريتُ مؤخرًا جهاز مشي صغير، لذا سأكون قادرًا على التدريب أثناء المشي.
+
+بحسب بعض الدراسات عن ألزهايمر، المشي يساعد في الحفاظ على الصحة الإدراكية وتحسين سرعة المعالجة.
+
+- NBC => https://www.nbcnews.com/news/amp/rcna221024
+- CNN => https://amp.cnn.com/cnn/2025/07/28/health/alzheimers-disease-walking-exercise-wellness
+
+لدي أيضًا جد يمكنه قيادة جيب وهو في عمر 85 عامًا. واضح أنه لا يقود يوميًا ولكن في مناسبات نادرة—ومع ذلك يستطيع.
+
+بحسب قوله: جسده وعقله بصحة جيدة، بفضل المشي وأكل السمك و"الْمُنْغُو" فقط. ويتجنب باقي اللحوم.
+
+هدفي عبر هذا [القناة](https://youtube.com/@apescasio) هو أن أوثق المشاريع الحرة ومفتوحة المصدر التي أنجزتها لتعلّم لغة مثل Python والذكاء الاصطناعي وأدوات Microsoft.
+
+كما قال الكثيرون: لتتعلّم لغة مثل Python فعليًا، لا تكتفِ بمتابعة الدروس، بل أنشئ مشاريعك الخاصة. على سبيل المثال، تابعتُ هذا الدرس من Tech with Tim لصنع تطبيق السرعة، وبعدها حوّلته بنفسي إلى تطبيق سأستخدمه فعليًا.
+
+استخدمت لغات أخرى مثل JavaScript لصنع MUNDO.APESCASIO.FR لمشاركة رحلتي كمسافر غير مهم عبر خريطة ثلاثية الأبعاد تفاعلية—منشور إنستغرام، دولة، مدينة، ثقافة.
+
+فيديوي القادم في سبتمبر سيكون عن إنشاء ISO — وكيل (Agent) في Copilot Studio لقسم تقنية المعلومات. ولـ HR سيكون MIDL.
+
+للاستفسارات المهنية: him@apescasio.fr !
+
+للاستفسارات الشخصية: تواصل معي عبر Discord / Instagram / Twitter، @himapescasio.

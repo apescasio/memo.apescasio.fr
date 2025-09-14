@@ -1,0 +1,77 @@
+---
+title: تهيئة Azure Active Directory
+---
+## السياق
+
+لفهم Azure Active Directory بشكل أفضل قررت إنشاء مستأجر (Tenant) خاص وإعداد بيئة اختبار (Lab).
+
+سمح لي ذلك باستكشاف مزايا Azure AD مثل: إدارة المستخدمين، المزامنة مع Active Directory محلي، والتكامل مع تطبيقات سحابية.
+
+هذه الصفحة تفصّل الخطوات التي اتبعتها لإعداد مستأجر Azure AD ومزامنة AD محلي مع السحابة.
+
+## إنشاء مستأجر Azure
+
+أولاً تحتاج إنشاء حساب [Microsoft Azure](https://azure.microsoft.com/en-us/pricing/purchase-options/azure-account) (يتوفر خيار مجاني تماماً).
+
+ثم انتقل إلى البوابة: [https://portal.azure.com](https://portal.azure.com) لإنشاء مستأجر Azure AD جديد.
+
+![Image 1](/images/azure/1.PNG)  
+![Image 2](/images/azure/2.PNG)  
+![Image 3](/images/azure/3.PNG)  
+
+## إنشاء أول حساب داخل المستأجر
+
+بعد الدخول إلى المستأجر الجديد (إن لم تفعل مسبقاً) أنشئ مستخدماً جديداً. سيُستخدم هذا الحساب لمزامنة AD المحلي مع سحابة Azure AD.
+
+![Image 5](/images/azure/5.PNG)  
+![Image 6](/images/azure/6.PNG)  
+![Image 7](/images/azure/7.PNG)  
+
+بعد إنشاء المستخدم (يستغرق 1–2 دقيقة)، انسخ UPN الخاص به. مثال: `apes@labapes.onmicrosoft.com`.
+
+## إعداد Azure AD Connect
+
+لتثبيت [Azure AD Connect](https://www.microsoft.com/en-US/download/details.aspx?id=47594) استخدمت الإعدادات الافتراضية.
+
+![Image 8](/images/azure/8.PNG)  
+![Image 9](/images/azure/9.PNG)  
+![Image 10](/images/azure/10.PNG)  
+![Image 11](/images/azure/11.PNG)  
+![Image 12](/images/azure/12.PNG)  
+![Image 13](/images/azure/13.PNG)  
+![Image 14](/images/azure/14.PNG)  
+![Image 16](/images/azure/16.PNG)  
+![Image 17](/images/azure/17.PNG)  
+![Image 18](/images/azure/18.PNG)  
+![Image 19](/images/azure/19.PNG)  
+![Image 20](/images/azure/20.PNG)  
+![Image 21](/images/azure/21.PNG)  
+![Image 22](/images/azure/22.PNG)  
+![Image 23](/images/azure/23.PNG)  
+![Image 24](/images/azure/24.PNG)  
+![Image 25](/images/azure/25.PNG)  
+![Image 26](/images/azure/26.PNG)  
+![Image 27](/images/azure/27.PNG)  
+
+## خدمة مزامنة Azure AD Connect
+
+بعد ضبط AAD Connect شغّل برنامج "Synchronization Service" لفحص سجلات المزامنة بين AD المحلي و Azure AD.
+
+![Image 28](/images/azure/28.PNG)  
+
+يجب أن ترى عمليات "Success". يمكنك أيضاً التحقق في بوابة Azure من أن المستخدمين تمت مزامنتهم.
+
+![Image 29](/images/azure/29.PNG)  
+![Image 30](/images/azure/30.PNG)  
+
+## إنشاء حساب في AD المحلي
+
+بعد هذه التحققات يمكنك اختبار إنشاء مستخدم جديد في AD المحلي وفرض مزامنة باستخدام الأمر:
+`Start-ADSyncSyncCycle -PolicyType Delta`
+
+![Image 31](/images/azure/31.PNG)  
+![Image 32](/images/azure/32.PNG)  
+
+كل شيء يعمل وظهر المستخدم الجديد!
+
+![Image 33](/images/azure/33.PNG)

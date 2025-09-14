@@ -1,0 +1,42 @@
+---
+title: تهيئة SSH على خادم VPS
+---
+## السياق
+
+بدلاً من السماح بالمصادقة بكلمة مرور على الخادم، رغبت في إزالتها وفرض المصادقة بمفتاح SSH.
+
+## الحاسوب المحلي
+
+أولاً أنشئ مفتاح SSH:
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+```
+
+أضغط Enter ثلاث مرات، ثم أنسخ كامل محتوى الملف ذي الامتداد `.pub` الناتج.
+
+## الخادم (VPS)
+
+أتصل بالخادم:
+
+```bash
+ssh username@Your_VPS_IPv4 -p PortNumber
+```
+
+أُنشئ الملف `~/.ssh/authorized_keys` (إن لم يكن موجوداً) وألصق بداخله محتوى ملف `.pub`.
+
+```bash
+nano ~/.ssh/authorized_keys
+```
+
+أخيراً، أُعطّل المصادقة بكلمة مرور وأُعيد تشغيل خدمة SSH بهذا السكربت:
+
+```bash title="update-sshdconfig.sh"
+sudo sed -i "s/^#PasswordAuthentication yes/PasswordAuthentication no/" /etc/ssh/sshd_config
+sudo systemctl restart sshd
+```
+أُعيد الاتصال بالخادم ويجب ألّا تُطلب كلمة مرور.
+
+```bash
+ssh username@Your_VPS_IPv4 -p PortNumber
+```

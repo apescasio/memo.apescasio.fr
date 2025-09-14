@@ -1,0 +1,170 @@
+---
+title: إعداد خادم VPS
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## السياق
+
+للتدرّب على لينكس قررت إنشاء هذا السكربت الذي يُحضّر ويؤمّن خادماً افتراضياً جديداً (مستأجر من Netcup).
+
+بفضل اللقطات (Snapshots) استطعت اختبار تنفيذ السكربت عدة مرات والرجوع في كل مرة إلى حالة نظيفة، ما أتاح إجراء التجارب بأمان.
+
+## تحليل السكربت خطوة بخطوة
+
+<DynamicCallout>
+<Steps>
+<Step>
+### تهيئة الخادم ###
+*(~3 ثوانٍ)* الاتصال بالخادم عبر SSH بحساب الجذر ثم تحديث فهارس الحزم والحزم نفسها لضمان بيئة نظيفة ومحدَّثة.
+</Step>
+
+<Step>
+### تثبيت الأدوات الأساسية ###
+*(~15 ثانية)* تثبيت الحزم المهمة مثل `ufw` للجدار الناري، و `fail2ban` للحماية من الهجمات، و `nginx` لاستضافة موقع ويب.
+</Step>
+
+<Step>
+### تأمين حساب الجذر ###
+*(~5 ثوانٍ)* تغيير كلمة مرور حساب `root` لتعزيز الأمان.
+</Step>
+
+<Step>
+### ضبط المنطقة الزمنية ###
+*(~2 ثانيتين)* تحديث المنطقة الزمنية إلى باريس لتحسين قراءة السجلات واتساق الوقت.
+</Step>
+
+<Step>
+### تخصيص الطرفية ###
+*(~5 ثوانٍ)* تنزيل ملف `.bashrc` مخصص يحتوي اختصارات (aliases) وختم زمني للأوامر في السجل لبيئة أكثر راحة.
+</Step>
+
+<Step>
+### تعزيز أمان SSH ###
+*(~5 ثوانٍ)* تغيير منفذ SSH الافتراضي إلى منفذ غير قياسي (49152–65535)، تعطيل تسجيل دخول الجذر، وضبط قطع الاتصال التلقائي بعد 120 ثانية من عدم النشاط.
+</Step>
+
+<Step>
+### إنشاء حساب مستخدم شخصي ###
+*(~5 ثوانٍ)* إنشاء حساب غير جذري بصلاحيات sudo وإضافته إلى قائمة المسموح لهم بالاتصال عبر SSH.
+</Step>
+
+<Step>
+### إعداد الجدار الناري ###
+*(~5 ثوانٍ)* السماح للمنفذ الجديد الخاص بـ SSH وحركة الويب لـ Nginx ثم تفعيل `ufw` لحجب ما عدا ذلك.
+</Step>
+
+<Step>
+### حل خلل NGINX المحتمل ###
+*(~5 ثوانٍ)* إضافة إعداد خاص لتفادي خطأ شائع عند بدء NGINX في بعض خوادم VPS.
+</Step>
+
+<Step>
+### إعداد Fail2ban لـ SSH ###
+*(~10 ثوانٍ)* إنشاء ملف السجل `/var/log/auth_fail2ban.log` عند الحاجة ثم إعداد حجز (jail) مخصص لـ SSH للحماية من هجمات التخمين.
+</Step>
+
+<Step>
+### الانتقال إلى حساب المستخدم ###
+*(~3 ثوانٍ)* تسجيل الدخول بالحساب الجديد إيذاناً بنهاية إعداد الجذر وبداية إدارة الخادم المؤمَّن.
+</Step>
+</Steps>
+</DynamicCallout>
+
+## سكربت Bash
+```sh {title="config-vps.sh"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### 1. سكربت لإعداد وتأمين خادم VPS ###
+
+### المتطلبات: خادم VPS بنظام لينكس، اتصال SSH، صلاحيات 'root' ###
+
+### بعد الاتصال بالخادم عبر SSH أنتقل إلى حساب الجذر: sudo su ###
+
+### تحديث قائمة الحزم ###
+apt update
+
+### تحديث الحزم نفسها ###
+apt upgrade -y
+
+### تثبيت كل الحزم اللازمة لتأمين الخادم واستضافة موقعي ###
+apt install -y wget ufw fail2ban nginx ### (أبقي إعداد fail2ban الافتراضي) ###
+
+### إنشاء ملف سجل fail2ban ###
+touch /var/log/auth_fail2ban.log
+
+### إنشاء حجز (jail) مخصص لـ SSH ###
+cat <<EOL > /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port = ssh
+logpath = /var/log/auth_fail2ban.log
+maxretry = 5
+bantime = 3600
+EOL
+
+### إعادة تشغيل خدمة fail2ban وتفعيلها عند الإقلاع ###
+systemctl enable fail2ban && systemctl restart fail2ban
+
+### تغيير كلمة مرور حساب 'root' ###
+echo "أدخل كلمة مرور جديدة لحساب 'root'"
+passwd
+
+### تحديث المنطقة الزمنية للخادم ###
+timedatectl set-timezone Europe/Paris
+
+### تحديث .bashrc (إضافة الاختصارات وتنسيق السجل بالتاريخ) ###
+cd ~
+mv /etc/bash.bashrc /etc/bash.bashrc.backup
+wget -O /etc/bash.bashrc https://raw.githubusercontent.com/ApecioU/configfiles/main/bash.bashrc
+source /etc/bash.bashrc
+
+### تغيير المنفذ الافتراضي لـ SSH ###
+while true; do
+    read -p "أدخل رقماً بين 49152 و 65535: " port
+    if [[ "$port" -ge 49152 && "$port" -le 65535 ]]; then ### لمزيد من الأمان استخدم مجال المنافذ العليا. ###
+        echo "منفذ صالح: $port"
+        break
+    else
+        echo "منفذ غير صالح. أدخل رقماً بين 49152 و 65535." 
+    fi
+done
+
+sed -i "s/^#Port 22/Port $port/" /etc/ssh/sshd_config
+
+### ملاحظة: ستحتاج لتحديد المنفذ الجديد في كل اتصال SSH، مثال: ###
+### ssh username@VPS_IPv4 -p NewPort ###
+
+### تعطيل تسجيل دخول الجذر في إعداد SSH ###
+sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config
+
+### قطع الاتصال بعد 120 ثانية من عدم النشاط ###
+sed -i 's/^#ClientAliveInterval 0/ClientAliveInterval 120/' /etc/ssh/sshd_config
+
+### متغير لإنشاء حساب شخصي ###
+read -p "أدخل اسم مستخدم للحساب الشخصي: " perso
+
+### تقييد SSH بالمستخدم الجديد فقط (AllowUsers) ###
+echo "AllowUsers $perso" | sudo tee -a /etc/ssh/sshd_config
+
+### إعادة تشغيل الخدمة لتطبيق التغييرات ###
+systemctl restart sshd
+
+### السماح بالمنفذ الجديد ومرور الويب قبل تفعيل الجدار الناري ###
+ufw allow $port/tcp && ufw allow 'Nginx Full'  ### السماح بـ SSH و HTTP/HTTPS والباقي محجوب ###
+
+### إصلاح مشكلة 'Invalid argument' المحتملة عند أول تشغيل لـ NGINX ###
+mkdir /etc/systemd/system/nginx.service.d
+printf "[Service]\nExecStartPost=/bin/sleep 0.1\n" > /etc/systemd/system/nginx.service.d/override.conf
+systemctl daemon-reload
+systemctl restart nginx
+
+### تفعيل الجدار الناري بعد السماح بالمنفذ الجديد ###
+ufw enable
+
+### إنشاء الحساب الشخصي وإضافته لمجموعة sudo ###
+sudo useradd -m -s /bin/bash -G sudo $perso && echo "أدخل كلمة مرور لـ $perso" && passwd $perso && sudo usermod -c "$perso" $perso
+
+### تسجيل الدخول بالحساب الشخصي ###
+su $perso
+```

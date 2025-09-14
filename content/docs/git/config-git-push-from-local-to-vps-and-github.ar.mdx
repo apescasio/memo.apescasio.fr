@@ -1,0 +1,247 @@
+---
+title: تهيئة git للدفع من الحاسوب المحلي إلى الـ VPS و GitHub
+---
+## السياق
+
+أردت إنشاء عملية تطوير لمشروع التوثيق/الموقع `memo.apescasio.fr`.
+
+احتجت وسيلة أعمل بها بأمان على الجهاز المحلي مع نشر التغييرات بسرعة إلى الـ VPS.
+
+الطرق القديمة كانت: تعديل الملفات يدوياً على الـ VPS أو استخدام FTP لإرسال الملفات (مضيعة للوقت وعادة سيئة). كثيراً ما كنت أنسى أي ملفات عدّلت أو أكتب فوق تحديثات حديثة دون قصد.
+
+## إنشاء مستودع GitHub
+
+أنشأت مستودع GitHub `memo.apescasio.fr` عبر الذهاب إلى https://github.com/new.
+
+## مفتاح SSH على الـ VPS (الملف `.pub`)
+
+ولّدت زوج مفاتيح SSH جديد:
+
+```bash
+ssh-keygen -t rsa -b 4096
+```
+
+أضفت المفتاح العمومي `.pub` إلى إعدادات SSH في حساب GitHub لكي أستطيع تنفيذ `git push` بأمان وبدون كلمة مرور بين الـ VPS و GitHub.
+
+![Adding the SSH key (VPS) to GitHub](/images/git/github_vps_ssh_key_pub.png)
+
+## مفتاح SSH على الحاسوب المحلي (الملف `.pub`)
+
+ولّدت زوج مفاتيح SSH آخر:
+
+```bash
+ssh-keygen -t rsa -b 4096
+```
+
+وأضفت أيضاً المفتاح العمومي `.pub` إلى إعدادات SSH في حساب GitHub.
+
+![Adding the SSH key (Local PC) to GitHub](/images/git/github_local_pc_ssh_key_pub.png)
+
+إذا رغبت بالعمل لاحقاً على حاسوب محلي آخر يكفي أن أُنشئ مفتاح SSH جديد وأضيف المفتاح العمومي لـ GitHub مجدداً.
+
+الـ VPS لدي يقبل المصادقة عبر مفتاح SSH فقط، لذا محتوى المفتاح العمومي (الحاسوب المحلي) موجود أيضاً داخل `~/.ssh/authorized_keys` على الـ VPS.
+
+## تهيئة مستودع git (bare) على الـ VPS
+
+أنشأت هذا المستودع (bare) حتى يتصرف الـ VPS كمستودع بعيد (remote) لجهازي المحلي، ما يسمح بمركزة ومزامنة التغييرات بين البيئة المحلية والخادم.
+
+```bash
+mkdir -p ~/memo.apescasio.fr.git
+cd ~/memo.apescasio.fr.git
+git init --bare
+```
+
+## استنساخ مستودع للعمل (working directory) على الـ VPS
+
+استنسخت المستودع (bare)، وسيُستخدم الاستنساخ كمستودع دليل عمل. لا يمكنك وضع ملفات الموقع داخل مستودع (bare).
+
+```bash
+git clone ~/memo.apescasio.fr.git ~/memo.apescasio.fr
+```
+
+أضفت مستودع GitHub (الذي أنشأته سابقاً) كـ remote للاستنساخ.
+
+```bash
+cd ~/memo.apescasio.fr
+git remote add github git@github.com:apescasio/memo.apescasio.fr.git
+```
+
+اختبرت اتصال SSH من الـ VPS إلى GitHub ونجح بعد إضافة المفتاح `.pub` إلى حسابي.
+
+```bash
+ssh -i ~/.ssh/id_rsa_memo_github -T git@github.com
+```
+
+تحققت من أن مستودع GitHub مضبوط بشكل صحيح عبر تنفيذ:
+
+```bash title="git remote -v"
+github  git@github.com:apescasio/memo.apescasio.fr.git (fetch)
+github  git@github.com:apescasio/memo.apescasio.fr.git (push)
+origin  /home/apecio/memo.apescasio.fr.git (fetch)
+origin  /home/apecio/memo.apescasio.fr.git (push)
+```
+
+بعد إكمال هذه الخطوات يستطيع hook `post-receive` دفع التغييرات إلى GitHub كما هو مخطط.
+
+## إنشاء hook `post-receive` على الـ VPS
+
+أنشأت هذا الـ hook باسم `post-receive` داخل المستودع (bare) (`~/memo.apescasio.fr.git/hooks/post-receive`).
+
+عملية النشر مؤتمتة بالكامل => بمجرد دفع تغيير إلى المستودع (bare) على الـ VPS يتم تحديث الكود آلياً في مستودع دليل العمل (`/home/apecio/memo.apescasio.fr`) ثم أيضاً في مستودع GitHub مع تسجيل الأحداث داخل `/tmp/deploy.log`.
+
+```bash
+### Fetch the latest code into the working directory ###
+
+GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git checkout -f main
+
+### Navigate to the working directory ###
+
+cd /home/apecio/memo.apescasio.fr
+
+### Ensure the working directory is clean and up-to-date ###
+
+echo "Ensuring the working directory is clean..."
+GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git fetch origin
+GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git reset --hard origin/main
+
+### Push changes to GitHub ###
+
+echo "Pushing changes to GitHub..."
+GIT_SSH_COMMAND="ssh -i /home/apecio/.ssh/id_rsa_memo_github" GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git push github main
+
+### Log the deployment ###
+
+echo "Deployment completed at $(date)" >> /tmp/deploy.log
+```
+
+جعلت الـ hook قابلاً للتنفيذ بالأمر:
+
+```bash
+chmod +x ~/memo.apescasio.fr.git/hooks/post-receive
+```
+
+## أول `git push` من الحاسوب المحلي
+
+من جهازي المحلي انتقلت إلى مجلد المشروع وأضفت المستودع (bare) على الـ VPS كـ remote.
+
+```bash
+cd $env:USERPROFILE/PC-Local/memo.apescasio.fr
+git init
+git remote add origin ssh://username@your-vps-ip:your-ssh-port-number/home/apecio/memo.apescasio.fr.git
+
+### أفضل تسمية الفرع بـ 'main' ###
+
+git branch -M main
+```
+
+أنشأت ملف `example.txt` ثم نفذت أول `git push`.
+
+![First git push from Local PC](/images/git/github_local_pc_firstgitpush.png)
+
+استطعت رؤية الملف `example.txt` في كل من الـ VPS ومستودع GitHub.
+
+![First git push from Local PC 2](/images/git/github_repo_vps_example.txt.png)
+
+## ثاني `git push` من الحاسوب المحلي
+
+دفعت ملفاً آخر `example2.txt`.
+
+![Second git push from Local PC](/images/git/github_repo_vps_example2.txt.png)
+
+## فحص `git log`
+
+للتأكد من التغييرات وتتبع تاريخ النشر استخدمت أمر `git log` على الجهاز المحلي. يُظهر هذا الأمر تاريخ الالتزامات متضمناً المؤلف والتاريخ ورسالة الالتزام.
+
+```bash title="git log"
+commit 5f0364f1300208edf632d0bc8c26a6a9c640d094 (HEAD -> main, origin/main)
+Author: apescasio <apescasio92@gmail.com>
+Date:   Sat Apr 19 23:16:06 2025 +0200
+
+    Added example2.txt
+
+commit 4016153605ddc6c14878b2fe4c80ea98f5f82590
+Author: apescasio <apescasio92@gmail.com>
+Date:   Sat Apr 19 23:10:42 2025 +0200
+
+    Added example.txt
+```
+
+## التراجع `git revert`
+
+للتراجع إلى الحالة قبل إضافة `example2.txt` استخدمت الأوامر:
+
+```bash
+git revert 5f0364f1300208edf632d0bc8c26a6a9c640d094
+git push origin main
+```
+
+## "الدفع النهائي" من الحاسوب المحلي
+
+بعد نجاح كل الاختبارات دفعت الشفرة الفعلية للمشروع من جهازي المحلي إلى الـ VPS.
+
+بما أنني أستخدم 'Fumadocs' كتطبيق قالب احتجت إلى هذه الحزم على الـ VPS: Node.js و npm و pm2 لتشغيل الموقع `memo.apescasio.fr` 24/7.
+
+```bash
+npm install
+npm run build
+pm2 start npm --name memo -- run start
+```
+
+## تحديث hook `post-receive`
+
+حدّثت الـ hook ليشغّل أيضاً `npm run build` (لحفظ التغييرات) و `pm2 restart` لإجبار الموقع على التحديث بالبناء الجديد.
+
+```bash
+### Load nvm and set Node.js version ###
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+nvm use 20.19.0
+ 
+### Checkout the latest code into the working directory ###
+
+GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git checkout -f main
+ 
+### Navigate to the working directory ###
+
+cd /home/apecio/memo.apescasio.fr
+ 
+### Ensure the working directory is clean and up-to-date ###
+
+echo "Ensuring the working directory is clean..."
+GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git fetch origin
+GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git reset --hard origin/main
+ 
+### Run npm build ###
+
+echo "Running npm build..."
+if ! npm run build; then
+    echo "Build failed. Check the logs for details." >> /tmp/deploy.log
+    exit 1
+fi
+ 
+### Restart the PM2 process ###
+
+echo "Restarting PM2 process..."
+if ! pm2 restart memo; then
+    echo "PM2 restart failed. Check the logs for details." >> /tmp/deploy.log
+    exit 1
+fi
+ 
+### Push changes to GitHub ###
+
+echo "Pushing changes to GitHub..."
+GIT_SSH_COMMAND="ssh -i /home/apecio/.ssh/id_rsa_memo_github" GIT_DIR=/home/apecio/memo.apescasio.fr/.git GIT_WORK_TREE=/home/apecio/memo.apescasio.fr git push github main
+ 
+### Log the deployment ###
+
+echo "Deployment completed at $(date)" >> /tmp/deploy.log
+```
+
+## المزايا
+
+1. **التحكم بالإصدارات**: git يتتبع كل تغيير مما يسمح بالعودة لإصدار سابق عند حدوث كسر.
+2. **الأتمتة**: الجهاز المحلي يدفع الكود إلى الـ VPS (المستودع bare) مفعلاً hook `post-receive`. هذا الـ hook يحدّث دليل العمل على الـ VPS ويزامن التغييرات مع GitHub.
+3. **الأمان**: أستطيع اختبار التغييرات محلياً قبل دفعها إلى الـ VPS لضمان جاهزيتها للإنتاج.
+
+بهذا الإعداد حوّلت سير العمل إلى خط أنابيب سلس وفعّال. لا مزيد من النسخ اليدوي للملفات أو القلق حول الكتابة فوق التغييرات—نظام موثوق يعمل ببساطة.

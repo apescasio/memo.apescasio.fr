@@ -1,0 +1,111 @@
+---
+title: تهيئة git على VPS و PC
+---
+## السياق
+
+أملك حاسوباً محمولاً يعمل بنظام Windows 11 (الآلة المحلية) وVPS يعمل Debian 12 أستأجره من Netcup.
+
+هناك العديد من الشركات التي تقدم استضافة VPS مثل OVH و Azure... اخترت Netcup لأنه مقابل 6€ شهرياً أحصل على 4 vCores و 4 GB RAM.
+
+لو استضفت خادماً يعمل 24/7 في المنزل ستكون تكلفة الكهرباء وحدها بين 15€ و20€ شهرياً دون احتساب الصيانة مما يزيد التعقيد.
+
+لكن لا أعتبره مثالياً أيضاً لأن الموارد ليست كبيرة. في كل مرة أطور فيها شيئاً أضطر لضبط كل شيء بعناية وتحسين كل تطبيق وكل حزمة مستخدمة.
+
+إن وجدت عرضاً أفضل من Netcup بسعر 6€ شهرياً فأنا مهتم بسماعه.
+
+## الحاسوب المحلي
+
+على جهازي المحلي ثبت git و VSCode كبيئة IDE و Node.js و npm لمشروعي الويب باستخدام سكربت PowerShell التالي:
+
+```ps1 title="winget-webproject.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### فحص وتثبيت git ###
+
+if (-Not (Test-Path "C:\Program Files\git")) {
+    Write-Host "git غير مثبت. تثبيت عبر winget..."
+    winget install -e -id git.git
+} else {
+    Write-Host "git مثبت بالفعل."
+}
+
+### فحص وتثبيت Visual Studio Code ###
+
+if (-Not (Test-Path "C:\Users\$env:USERNAME\AppData\Local\Programs\Microsoft VS Code")) {
+    Write-Host "VS Code غير مثبت. تثبيت عبر winget..."
+    winget install -e --id Microsoft.VisualStudioCode
+} else {
+    Write-Host "VS Code مثبت بالفعل."
+}
+
+### فحص وتثبيت Node.js و npm ###
+
+if (-Not (Get-Command "node" -ErrorAction SilentlyContinue)) {
+    Write-Host "Node.js و npm غير مثبّتين. تثبيت عبر winget..."
+    winget install -e --id OpenJS.NodeJS
+} else {
+    Write-Host "Node.js و npm مثبتان بالفعل."
+}
+```
+
+## VSCode Git Bash
+
+بعد تثبيت VSCode لعرض الطرفية بنمط 'git bash' انقر السهم الصغير بجانب زر `+`.
+
+![Local PC VSCode Git Bash](/images/git/vscode-gitbash.png)
+
+## الـ VPS
+
+على الـ VPS ثبت git و Node.js و npm لمشروعي الويب باستخدام سكربت bash التالي:
+
+```bash title="apt-webproject.sh"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### تحديث حزم النظام ###
+
+echo "Updating system packages..."
+sudo apt-get update
+
+### فحص وتثبيت git ###
+
+check_git() {
+    if command -v git > /dev/null 2>&1; then
+        echo "git مثبت بالفعل: $(git --version)"
+    else
+        echo "git غير مثبت. تثبيت..."
+        sudo apt-get install -y git
+        if command -v git > /dev/null 2>&1; then
+            echo "تم تثبيت git بنجاح: $(git --version)"
+        else
+            echo "خطأ أثناء تثبيت git."
+            exit 1
+        fi
+    fi
+}
+
+### فحص وتثبيت Node.js ###
+
+check_node() {
+    if command -v node > /dev/null 2>&1; then
+        echo "Node.js مثبت بالفعل: $(node --version)"
+    else
+        echo "Node.js غير مثبت. تثبيت..."
+        # تثبيت آخر نسخة LTS عبر NodeSource
+        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo bash -
+        sudo apt-get install -y nodejs
+        if command -v node > /dev/null 2>&1; then
+            echo "تم تثبيت Node.js و npm بنجاح: $(node --version), npm: $(npm --version)"
+        else
+            echo "خطأ أثناء تثبيت Node.js."
+            exit 1
+        fi
+    fi
+}
+
+### تنفيذ الفحوص ###
+
+check_git
+check_node
+
+echo "اكتمل الفحص. كل الأدوات الضرورية مثبّتة."
+```

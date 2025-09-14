@@ -1,0 +1,110 @@
+---
+title: تهيئة أسماء نطاق مخصصة لمستأجر مختبر
+---
+import { HomeIcon } from 'lucide-react';
+
+## السياق
+
+أردت حساباً يحمل نطاقاً (Domain) بدلاً من الافتراضي:
+
+« @LabOfApes.onmicrosoft.com »، الحرف A أول حرف من اسمي و PES أول ثلاثة أحرف من اسم العائلة.
+
+أستأجر أسماء النطاقات: `apescasio.fr` و `lethimcook.fr` من Netcup DE؛ اخترت هذه الشركة لأن لدي صديقاً يعمل هناك.
+
+رغم أنني أستأجر من Netcup DE إلا أنني أستخدم [خوادم DNS الخاصة بـ Cloudflare](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/) بدلاً من Netcup لأنها — برأيي — أفضل.
+
+التحويل إلى Cloudflare مجاني بالكامل، كما أحصل على تحليلات مذهلة وجدار ناري دون تكلفة. هذه الفكرة منحني إياها مشرفي في العمل وبعد سنوات لا أندم على التحويل.
+
+## أسماء النطاقات المخصصة
+
+### الخطوة 1: إضافة النطاق في Azure
+
+أولاً أضيف النطاق المخصص إلى مستأجر Azure. اذهب إلى بوابة Azure وأضف النطاق.
+
+![Adding domain step 1](/images/security/custom-domain-names-azure-add-1.png)
+
+![Adding domain step 2](/images/security/custom-domain-names-azure-add-2.png)
+
+![Adding domain step 3](/images/security/custom-domain-names-azure-add-3.png)
+
+![Adding domain step 4](/images/security/custom-domain-names-azure-add-4.png)
+
+![Adding domain step 5](/images/security/custom-domain-names-azure-add-5.png)
+
+### الخطوة 2: إنشاء حساب باستخدام النطاق المخصص
+
+بعد التحقق من النطاق أستطيع إنشاء حسابات مستخدمين تستخدم النطاق المخصص بدلاً من onmicrosoft.com.
+
+![Create account step 1](/images/security/custom-domain-names-azure-create-account-1.png)
+
+حلمي أن أشكر شخصياً أحد قدواتي Kdot وجهاً لوجه.
+
+![Kdot SZA Paris Concert 1](/images/security/kdot-sza-paris.jpg)
+
+![Create account step 2](/images/security/custom-domain-names-azure-create-account-2.png)
+
+![Create account step 3](/images/security/custom-domain-names-azure-create-account-3.png)
+
+![Create account step 4](/images/security/custom-domain-names-azure-create-account-4.png)
+
+![MFA setup step 5](/images/security/custom-domain-names-azure-create-account-MFA-5.png)
+
+### الخطوة 3: الاختبار باستخدام MailTester
+
+أستطيع استخدام MailTester للتحقق من إعداد البريد وتحديد سجلات الأمان الناقصة.
+
+![MailTester step 6](/images/security/custom-domain-names-azure-create-account-mailtester-6.png)
+
+![MailTester step 7](/images/security/custom-domain-names-azure-create-account-mailtester-7.png)
+
+![Missing SPF, MX, DKIM, DMARC records](/images/security/custom-domain-names-azure-create-account-mailtester-Missing-SPF-MX-DKIM-DMARC-8.png)
+
+### الخطوة 4: تهيئة سجلات SPF و MX
+
+الآن أضبط سجلات SPF (إطار سياسة المرسل) و MX (موزع البريد) في DNS لتحسين أمان البريد وقابلية التسليم.
+
+![SPF MX setup step 1](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-1.png)
+
+![SPF MX setup step 2](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-2.png)
+
+![SPF MX setup step 3](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-3.png)
+
+![SPF MX setup step 4](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-4.png)
+
+![SPF MX setup step 5](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-5.png)
+
+### الخطوة 5: إعداد DKIM
+
+DKIM (DomainKeys Identified Mail) يضيف توقيعاً رقمياً للبريد للتحقق من أصالته ومنع العبث.
+
+![DKIM setup step 1](/images/security/custom-domain-names-defender-dkim-1.png)
+
+![DKIM setup step 2](/images/security/custom-domain-names-defender-dkim-2.png)
+
+![DKIM setup step 3](/images/security/custom-domain-names-defender-dkim-3.png)
+
+![DKIM setup step 4](/images/security/custom-domain-names-defender-dkim-4.png)
+
+![DKIM setup step 5](/images/security/custom-domain-names-defender-dkim-5.png)
+
+### الخطوة 6: تنفيذ DMARC
+
+أخيراً DMARC (Domain-based Message Authentication, Reporting & Conformance) يوفر سياسات لكيفية التعامل مع البريد الذي يفشل فحوص SPF أو DKIM.
+
+![DMARC setup step 1](/images/security/custom-domain-names-defender-dmarc-1.png)
+
+النتيجة النهائية في MailTester:
+
+![Configuration SPF MX step 6](/images/security/custom-domain-names-admin-microsoft-com-spf-mx-6.png)
+
+## الخلاصة
+
+بتطبيق سجلات SPF و DKIM و DMARC حسّنت أمان البريد لمستأجر المختبر بشكل كبير. هذا الإعداد يحاكي ممارسات الأمان في المؤسسات الحقيقية ويساعد على منع انتحال البريد والهجمات التصيدية.
+
+هذه الضوابط ضرورية لأي مؤسسة تستخدم نطاقات مخصصة مع Microsoft 365 لأنها:
+
+- **SPF**: يحدد خوادم البريد المخولة بإرسال رسائل من نطاقك
+- **DKIM**: يضيف توقيعات تشفيرية للتحقق من أصالة البريد
+- **DMARC**: يعطي سياسة وتقريراً لمحاولات المصادقة الفاشلة
+
+هذا الإعداد يمنح خبرة عملية بضبط أمان بريد بمستوى المؤسسات وهو مطلوب في البيئات المهنية.

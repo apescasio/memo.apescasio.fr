@@ -6,6 +6,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
   const { lang = 'en' } = await params;
   const title = lang === 'fr' ? "Mémoire d'un admin." : 
                 lang === 'es' ? "Manual del admin." : 
+                lang === 'ar' ? 'دليل المسؤول.' :
                 'Handbook of an admin.';
   const paragraph = lang === 'fr' ? (
     <>
@@ -16,6 +17,11 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
     <>
       « No tengo talento. »<br />
       « Sin talento, para alcanzar grandes alturas, uno debe estar dispuesto a morir incluso al caer la tarde. »<br />
+    </>
+  ) : lang === 'ar' ? (
+    <>
+      « لا أمتلك موهبة. »<br />
+      « بدون موهبة، للوصول إلى مراتب عالية، يجب أن تكون مستعدًا للموت حتى في المساء. »<br />
     </>
   ) : (
     <>

@@ -1,0 +1,112 @@
+---
+title: البحث عن قيمة داخل عدة ملفات Excel
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## السياق
+
+خلال أول تدريب مدمج لي، استخدمت Excel بكثافة لإدارة جرد الشركة.
+
+ومع كثرة ملفات Excel، أنشأت هذا السكربت للبحث عن قيمة عبر جميع الملفات.
+
+هذا السكربت وفر لي الوقت عبر إرجاع اسم الملف الذي يحتوي القيمة مباشرة دون الحاجة لفتح كل ملف واحداً تلو الآخر.
+
+على سبيل المثال، كثيراً ما كان عليَّ إيجاد الرقم التسلسلي الدقيق لحاسوب زميل. بدلاً من فتح كل الملفات، كان السكربت يُرجع لي الملف (أو الملفات) التي تحتوي القيمة.
+
+## تحليل السكربت خطوة بخطوة
+
+<DynamicCallout>
+
+<Steps>
+<Step>
+### طلب القيمة للبحث ###
+*(~5 ثوانٍ)* يطلب السكربت من المستخدم إدخال قيمة (اسم، لقب، رقم تسلسلي، إلخ). ويتأكد من أن الإدخال غير فارغ قبل المتابعة.
+</Step>
+
+<Step>
+### تسجيل التنفيذ ###
+*(~3 ثوانٍ)* يسجل السكربت مَن نفّذه والتاريخ/الوقت بدقة، وهذا يساعد في تتبع الاستخدام.
+</Step>
+
+<Step>
+### نسخ ملفات Excel محلياً ###
+*(~10 ثوانٍ)* يتم نسخ جميع ملفات الجرد إلى مجلد مؤقت في الحاسوب للعمل محلياً دون تعديل ملفات الشبكة.
+</Step>
+
+<Step>
+### البحث عن القيمة في جميع الملفات ###
+*(~30 ثانية إلى عدة دقائق حسب العدد)* يفتح السكربت كل ملف، ويدور على كل ورقة، ويبحث عن القيمة المدخلة. إذا وُجدت، يعرض اسم الملف واسم الورقة. إذا وُجدت في عدة ملفات يعرضها جميعاً.
+</Step>
+
+<Step>
+### التنظيف ###
+*(~2 ثانيتين)* بعد اكتمال البحث، تُحذف ملفات Excel المنسوخة في المجلد المؤقت للحفاظ على النظافة.
+</Step>
+</Steps>
+</DynamicCallout>
+## سكربت PowerShell
+```ps1 title="search_inventoryExcel.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### سكربت للبحث عن اسم / اسم أول / رقم تسلسلي داخل جميع ملفات الجرد في الشركة ###
+### إذا وجد اسماً / اسماً أول / رقماً تسلسلياً / رقم أصل فسيعرض ملف (أو ملفات) Excel واسم الورقة التي تحتوي القيمة ###
+
+### تسجيل من نفّذ السكربت وفي أي تاريخ/وقت ###
+
+$username23 = "$env:USERDOMAIN\$env:USERNAME"
+$date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
+$log23 = "$username23 a executé le script: trouver_inventaireExcel.bat le $date23"
+Add-Content -Path "\\adds01\soft\ap_script\ap_script_logs\trouver_inventaireExcel.log" -Value $log23
+
+### طلب القيمة المراد البحث عنها من المستخدم ###
+
+$searchValue = ""
+while ($searchValue -eq "") {
+    $searchValue = Read-Host "`nPlease enter a name / first name / serial number you want to search for (cannot be empty)"
+}
+
+### نسخ كل ملفات Excel إلى مجلد TEMP ###
+
+### بهذه الطريقة يعمل السكربت محلياً دون التأثير على ملفات الشبكة ###
+Copy-Item -Path "\\adds01\inventaire\2022\Gestion Parc-informatique*.xlsx" -Destination $env:TEMP
+Copy-Item -Path "\\adds01\inventaire\2021\Gestion Parc-informatique*.xlsx" -Destination $env:TEMP
+Copy-Item -Path "\\adds01\inventaire\2020\Gestion Parc*.xlsx" -Destination $env:TEMP
+Copy-Item -Path "\\adds01\inventaire\2019\Gestion*.xlsx" -Destination $env:TEMP
+Copy-Item -Path "\\adds01\inventaire\2018\Gestion Parc*.xlsx" -Destination $env:TEMP
+
+### الحصول على كل ملفات Excel المنسوخة إلى TEMP ###
+
+$excelFiles = GCI "$env:TEMP\gestion*.xlsx","$env:TEMP\dell_vostro.xlsx"
+
+### المرور على كل ملف Excel للبحث عن القيمة ###
+
+foreach ($file in $excelFiles) {
+    $excel = New-Object -ComObject Excel.Application
+    $workbook = $excel.Workbooks.Open($file.FullName)
+
+    $worksheets = $workbook.Worksheets
+    foreach ($worksheet in $worksheets) {
+        $range = $worksheet.UsedRange
+        $cells = $range.Cells
+        $searchResult = $cells.Find($searchValue)
+
+        if ($searchResult -ne $null) {
+
+            ### عرض الملف (أو الملفات) واسم الورقة التي وُجدت فيها القيمة ###
+
+            Write-Host "`nThe value '$searchValue' exists in the file: $($file.Name) on sheet $($worksheet.Name) `n"
+        }
+    }
+
+    ### إغلاق الملف وتحرير موارد Excel ###
+
+    $workbook.Close()
+    $excel.Quit()
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excel) | Out-Null
+}
+
+### حذف كل ملفات Excel من TEMP بعد انتهاء البحث ###
+
+Remove-Item -Path "$env:TEMP\gestion*.xlsx" -Force
+```
