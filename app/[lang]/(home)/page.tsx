@@ -72,6 +72,10 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
             <a href="https://sh2a.org/" target="_blank" className="hover:text-fd-accent-foreground underline">
               sh2a.org
             </a>
+                        {` + `}
+            <a href="https://github.com/nouraellm" target="_blank" className="hover:text-fd-accent-foreground underline">
+              nouraellm
+            </a>
           </p>
         </div>
 
