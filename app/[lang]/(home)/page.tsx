@@ -4,10 +4,10 @@ import IconMemov2 from '@/components/icons/memov2'; // Corrected import
 
 export default async function HomePage({ params }: { params: Promise<{ lang?: string }> }) {
   const { lang = 'en' } = await params;
-  const title = lang === 'fr' ? "Mémoire d'un admin." : 
-                lang === 'es' ? "Manual del admin." : 
-                lang === 'ar' ? 'دليل المسؤول.' :
-                'Handbook of an admin.';
+  const title = lang === 'fr' ? "Mémoire d'un admin." :
+    lang === 'es' ? "Manual del admin." :
+      lang === 'ar' ? 'دليل المسؤول.' :
+        'Handbook of an admin.';
   const paragraph = lang === 'fr' ? (
     <>
       « Je n'ai aucun talent. »<br />
@@ -72,7 +72,11 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
             <a href="https://sh2a.org/" target="_blank" className="hover:text-fd-accent-foreground underline">
               sh2a.org
             </a>
-                        {` + `}
+            {` + `}
+            <a href="https://www.contraelcancer.es/" target="_blank" className="hover:text-fd-accent-foreground underline">
+              lucia
+            </a>
+            {` + `}
             <a href="https://github.com/nouraellm" target="_blank" className="hover:text-fd-accent-foreground underline">
               nouraellm
             </a>
@@ -121,7 +125,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang?: st
   }
 `}</style>
 
-     </main>
+      </main>
     </>
   );
 }
