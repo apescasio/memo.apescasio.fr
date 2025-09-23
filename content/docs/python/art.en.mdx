@@ -44,7 +44,11 @@ The changes I've done to the code were:
 If you have not installed Python yet, install it with this PowerShell command.
 
 ```ps1 title="install-python"
-winget install --id Python.Python.3.12 -e
+winget install -e --id Python.Python.3.12
+
+### VSCode Editor ###
+
+winget install -e --id Microsoft.VisualStudioCode
 ```
 
 You will need to have pip and the module `windows-curses` installed.

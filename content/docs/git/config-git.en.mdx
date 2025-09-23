@@ -24,7 +24,7 @@ On my local PC, I installed git, VSCode as the IDE, Node.js and npm for my web p
 
 if (-Not (Test-Path "C:\Program Files\git")) {
     Write-Host "git is not installed. Installing via winget..."
-    winget install -e -id git.git
+    winget install -e --id git.git
 } else {
     Write-Host "git is already installed."
 }

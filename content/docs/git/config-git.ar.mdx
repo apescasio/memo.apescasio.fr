@@ -24,7 +24,7 @@ title: تهيئة git على VPS و PC
 
 if (-Not (Test-Path "C:\Program Files\git")) {
     Write-Host "git غير مثبت. تثبيت عبر winget..."
-    winget install -e -id git.git
+    winget install -e --id git.git
 } else {
     Write-Host "git مثبت بالفعل."
 }

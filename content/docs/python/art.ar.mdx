@@ -44,7 +44,11 @@ import { File, Folder, Files } from 'fumadocs-ui/components/files';
 إذا لم تكن قد ثبّتت Python بعد، ثبّتها بهذا الأمر في PowerShell.
 
 ```ps1 title="install-python"
-winget install --id Python.Python.3.12 -e
+winget install -e --id Python.Python.3.12
+
+### VSCode Editor ###
+
+winget install -e --id Microsoft.VisualStudioCode
 ```
 
 ستحتاج إلى وجود pip وتثبيت الوحدة `windows-curses`.
