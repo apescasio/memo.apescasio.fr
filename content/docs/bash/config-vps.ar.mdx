@@ -6,6 +6,8 @@ import DynamicCallout from '../../../components/DynamicCallout';
 
 ## السياق
 
+لستُ معلماً، هذه ملاحظاتي الخاصة، طالب متواضع، آرون (إيزو) بيسكاسيو.
+
 للتدرّب على لينكس قررت إنشاء هذا السكربت الذي يُحضّر ويؤمّن خادماً افتراضياً جديداً (مستأجر من Netcup).
 
 بفضل اللقطات (Snapshots) استطعت اختبار تنفيذ السكربت عدة مرات والرجوع في كل مرة إلى حالة نظيفة، ما أتاح إجراء التجارب بأمان.
@@ -114,10 +116,10 @@ passwd
 timedatectl set-timezone Europe/Paris
 
 ### تحديث .bashrc (إضافة الاختصارات وتنسيق السجل بالتاريخ) ###
-cd ~
-mv /etc/bash.bashrc /etc/bash.bashrc.backup
-wget -O /etc/bash.bashrc https://raw.githubusercontent.com/ApecioU/configfiles/main/bash.bashrc
-source /etc/bash.bashrc
+#cd ~
+#mv /etc/bash.bashrc /etc/bash.bashrc.backup
+#wget -O /etc/bash.bashrc https://raw.githubusercontent.com/ApecioU/configfiles/main/bash.bashrc
+#source /etc/bash.bashrc
 
 ### تغيير المنفذ الافتراضي لـ SSH ###
 while true; do
