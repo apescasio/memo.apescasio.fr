@@ -1,0 +1,6 @@
+{
+    "title": "Novels",
+    "icon": "novels",
+    "pages": ["index", "reading-list"],
+    "root": true
+  }

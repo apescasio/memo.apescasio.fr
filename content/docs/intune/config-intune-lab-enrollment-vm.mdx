@@ -1,0 +1,20 @@
+---  
+title: Enrôlement d'une VM pour un lab Intune
+---
+## Enrôlement d'une 2ème VM
+
+Pour confirmer que le profil Autopilot, le package Google Chrome et la policy administrateur local s'appliquent correctement sur le groupe dynamique, j'ai enrollé une deuxième VM.
+
+![Second Enrollment VM 1](/images/intune/intune-lab/enrollment-second-VM-lab-intune-1.png) 
+
+Je vois bien le profile en Assigned sur le device, je continue donc le provisioning en redémarrant la VM et en se connectant.
+
+![Second Enrollment VM 2](/images/intune/intune-lab/enrollment-second-VM-lab-intune-2.png) 
+
+J'ai bien le package Google Chrome qui s'est installé correctement, le log transcript est aussi disponible dans `C:\ProgramData\Lab\Intune`.
+
+![Second Enrollment VM 3](/images/intune/intune-lab/enrollment-second-VM-lab-intune-3.png) 
+
+Et j'arrive bien à me connecter avec le 2ème compte "IT@LABAPES01.onmicrosoft.com" et j'ai pu également exécuter en tant qu'admin, la policy a donc fonctionné ! 
+
+![Second Enrollment VM 4](/images/intune/intune-lab/enrollment-second-VM-lab-intune-4.png) 

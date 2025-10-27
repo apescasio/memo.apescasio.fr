@@ -1,0 +1,55 @@
+---
+title: Básicos de Azure
+---
+## Azure: ¿Qué es Exactamente?
+
+**Azure** es la plataforma en la cloud de Microsoft, que ofrece Infraestructura como Servicio (IaaS), Plataforma como Servicio (PaaS) y Software como Servicio (SaaS). Te permite desplegar, gestionar y monitorear recursos en centros de datos distribuidos globalmente.
+
+Entre los servicios más utilizados:
+- Máquinas Virtuales (VM),
+- Almacenamiento (Blob, File Share),
+- Redes Virtuales (VNet, VPN),
+- Bases de Datos Administradas (SQL, Cosmos DB),
+- Servicios de Identidad y Acceso (Azure AD, RBAC),
+- Herramientas DevOps, monitoreo, IA, etc.
+
+<Callout title="Punto Clave">
+Azure es una cloud pública integral capaz de reemplazar o complementar una infraestructura local.
+</Callout>
+
+---
+
+## Azure Active Directory (Azure AD)
+
+**Azure AD** es el servicio de identidad en la cloud de Microsoft. Centraliza:
+- Autenticación de usuarios (SSO, MFA, etc.),
+- Gestión de grupos, roles y permisos,
+- Integración con miles de aplicaciones SaaS (ej., Office 365, Salesforce, GitHub),
+- Y sincronización con un Active Directory on-premise (mediante Azure AD Connect).
+
+**No** es un controlador de dominio tradicional sino más bien un **directorio en la cloud** basado en identidades de usuarios.  
+Soporta protocolos estándar: **OAuth2, OpenID Connect, SAML, WS-Fed**.
+
+<Callout title="Caso de Uso Común">
+Autenticar usuarios en Office 365, gestionar el acceso a aplicaciones internas, o implementar MFA mediante Acceso Condicional.
+</Callout>
+
+---
+
+## ¿Qué es un Tenant de Azure?
+
+Un **tenant de Azure** es una instancia aislada de Azure Active Directory asociada con una organización.  
+Sirve como un **contexto de seguridad** para:
+- Usuarios,
+- Aplicaciones,
+- Grupos,
+- Roles y políticas de seguridad.
+
+Cada tenant tiene:
+- Un **nombre de dominio** por defecto (`<nombre>.onmicrosoft.com`),
+- Un **GUID único** (`Directory (tenant) ID`),
+- Y puede estar vinculado a múltiples suscripciones de Azure.
+
+<Callout title="Importante">
+Una suscripción de Azure puede existir **dentro** de un tenant, pero un tenant puede existir **sin una suscripción**. No son lo mismo.
+</Callout>

@@ -1,0 +1,249 @@
+---
+title: Básicos de Python
+---
+## Python: ¿Qué es exactamente?
+
+**Python** es un lenguaje de programación interpretado de alto nivel conocido por su legibilidad y simplicidad. Es ampliamente utilizado para automatización, desarrollo web, análisis de datos y administración de sistemas.
+
+Características clave:
+- Sintaxis fácil de leer
+- Interpretado (no necesita compilación)
+- Multiplataforma (Windows, macOS, Linux)
+- Extensa biblioteca estándar
+- Enorme ecosistema de packages de terceros
+
+<Callout title="Punto Clave">
+Python es perfecto para principiantes y lo suficientemente potente para aplicaciones empresariales complejas.
+</Callout>
+
+---
+
+## Sintaxis Básica
+
+### Variables y Tipos de Datos
+```python
+### Variables (no necesitan declaración) ###
+
+name = "Aaron"
+age = 22
+is_filipino = True
+servers = ["memo", "cli", "lhc", "bbb", "mundo"]
+
+### Tipos de datos básicos ###
+
+text = "Hello World"           # String
+number = 44                    # Integer
+price = 19.99                  # Float
+active = True                  # Boolean
+```
+
+### Estructuras de Control
+
+```python
+### Declaraciones if ###
+
+if age >= 18:
+    print("Adulto")
+else:
+    print("Menor")
+
+### Bucle for ###
+
+for server in servers:
+    print(f"Verificando {server}")
+
+### Bucle while ###
+
+count = 0
+while count < 3:
+    print(f"Intento {count + 1}")
+    count += 1
+
+### AP ###
+```
+
+### Funciones
+
+```python
+def check_server_status(server_name):
+    """Verificar si un servidor está respondiendo"""
+    print(f"Haciendo ping a {server_name}...")
+    return "En línea"  # Ejemplo simplificado
+
+### Llamar a la función ###
+
+status = check_server_status("web01")
+print(status)
+```
+
+---
+
+## Trabajando con Módulos
+
+### Instalando Packages
+```bash
+### Instalar packages usando pip ###
+
+pip install requests
+pip install pandas
+pip install flask
+```
+
+### Importando Módulos
+```python
+### Módulos integrados ###
+
+import os
+import json
+from datetime import datetime
+
+### Módulos de terceros ###
+
+import requests
+
+### Tus propios módulos ###
+
+from my_utils import server_tools
+```
+
+<Callout title="Mejor Práctica">
+Siempre usa entornos virtuales (`python -m venv myenv`) para aislar las dependencias del proyecto.
+</Callout>
+
+---
+
+## Básicos de API con Requests
+
+### Haciendo Peticiones HTTP
+```python
+import requests
+import json
+
+### Petición GET - Obtener datos ###
+
+response = requests.get('https://jsonplaceholder.typicode.com/users')
+
+if response.status_code == 200:
+    users = response.json()
+    print(f"Se encontraron {len(users)} usuarios")
+    
+    # Mostrar información del primer usuario
+    first_user = users[0]
+    print(f"Nombre: {first_user['name']}")
+    print(f"Email: {first_user['email']}")
+else:
+    print(f"Error: {response.status_code}")
+```
+
+### Petición POST - Enviar Datos
+```python
+import requests
+
+### Crear nueva publicación ###
+
+new_post = {
+    'title': 'Estado de Mi Servidor',
+    'body': 'Todos los servidores funcionan normalmente',
+    'userId': 1
+}
+
+response = requests.post(
+    'https://jsonplaceholder.typicode.com/posts',
+    json=new_post
+)
+
+if response.status_code == 201:
+    created_post = response.json()
+    print(f"Publicación creada con ID: {created_post['id']}")
+```
+
+### Ejemplo del Mundo Real: Monitoreo de Servidores
+```python
+import requests
+from datetime import datetime
+
+def check_website_status(url):
+    """Verificar si un sitio web está respondiendo"""
+    try:
+        response = requests.get(url, timeout=5)
+        return {
+            'url': url,
+            'status_code': response.status_code,
+            'response_time': response.elapsed.total_seconds(),
+            'is_up': response.status_code == 200,
+            'checked_at': datetime.now().isoformat()
+        }
+    except requests.exceptions.RequestException as e:
+        return {
+            'url': url,
+            'error': str(e),
+            'is_up': False,
+            'checked_at': datetime.now().isoformat()
+        }
+
+### Monitorear múltiples sitios web ###
+
+websites = [
+    'https://httpbin.org/status/200',
+    'https://httpbin.org/status/404',
+    'https://httpbin.org/delay/1'
+]
+
+print("Reporte de Estado de Sitios Web")
+print("-" * 50)
+
+for site in websites:
+    status = check_website_status(site)
+    
+    if status['is_up']:
+        print(f"✅ {site} - OK ({status['response_time']:.2f}s)")
+    else:
+        print(f"❌ {site} - CAÍDO")
+        if 'error' in status:
+            print(f"   Error: {status['error']}")
+```
+
+<Callout title="APIs Educativas">
+Prueba estas APIs gratuitas para practicar:
+- **HTTPBin** (`httpbin.org`) - Servicio de prueba HTTP  
+- **JSONPlaceholder** (`jsonplaceholder.typicode.com`) - API REST falsa
+- **ReqRes** (`reqres.in`) - API de prueba con códigos de respuesta reales
+</Callout>
+
+---
+
+## Error Handling
+
+```python
+import requests
+
+def safe_api_call(url):
+    """Hacer llamada API con manejo de errores adecuado"""
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()  # Lanza HTTPError para respuestas incorrectas
+        return response.json()
+        
+    except requests.exceptions.Timeout:
+        print("La petición agotó el tiempo de espera")
+    except requests.exceptions.ConnectionError:
+        print("Error de conexión")
+    except requests.exceptions.HTTPError as e:
+        print(f"Error HTTP: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Petición falló: {e}")
+    except json.JSONDecodeError:
+        print("Respuesta JSON inválida")
+    
+    return None
+
+### Uso ###
+
+data = safe_api_call('https://jsonplaceholder.typicode.com/users/1')
+if data:
+    print(f"Usuario: {data['name']}")
+```
+
+<Callout title="Mejor Práctica">
+¡Siempre incluye manejo de errores en scripts de producción. Las peticiones de red pueden fallar por muchas razones!
+</Callout>

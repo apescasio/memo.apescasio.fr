@@ -1,0 +1,38 @@
+---  
+title: Configurar una política de administradores de grupo local en un lab Intune
+---
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
+## Crear una Política de `Seguridad de Endpoints/Protección de Cuenta`
+
+Por defecto, quería que el grupo "Administradores" en los dispositivos incluyera el grupo "técnicos", así que creé esta política en "Seguridad de Endpoints > Protección de Cuenta".
+
+![Política de Administrador de Grupo Lab Intune 1](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-1.png)
+
+Seleccioné la "plataforma" como Windows y el "perfil" como Membresía de grupo de usuario local.
+
+![Política de Administrador de Grupo Lab Intune 2](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-2.png)
+
+Nombré la política.
+
+![Política de Administrador de Grupo Lab Intune 3](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-3.png)
+
+Hice clic en "Agregar" y luego en "Seleccionar usuarios/grupo" para seleccionar el grupo que quiero agregar al grupo de administrador local en los dispositivos.
+
+![Política de Administrador de Grupo Lab Intune 4](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-4.png)
+
+Seleccioné "GRP-IT".
+
+![Política de Administrador de Grupo Lab Intune 5](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-5.png)
+
+Dejé las "Etiquetas de ámbito" como predeterminado.
+
+![Política de Administrador de Grupo Lab Intune 6](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-6.png)
+
+Luego, seleccioné el grupo dinámico que incluye todos los dispositivos con la categoría "FRLAB".
+
+![Política de Administrador de Grupo Lab Intune 7](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-7.png)
+
+Finalmente, ¡hice clic en Guardar!
+
+![Política de Administrador de Grupo Lab Intune 8](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-8.png)

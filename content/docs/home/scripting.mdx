@@ -1,0 +1,83 @@
+---
+title: Pourquoi je fais du scripting
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCalloutHome';
+
+## Use case
+Il y a des tâches qui, bien qu’essentielles, deviennent vite répétitives. 
+
+Par exemple, dans ma première alternance au sein d'un groupe d'universités, lorsqu’on recevait un nouveau PC à configurer, une des étapes courantes consiste à installer un antivirus. 
+
+Si on se fie à la méthode manuelle, ça se passe ainsi :
+
+<DynamicCallout>
+<Steps>
+  <Step>
+    ### Accéder au dossier partagé 
+    où se trouve le fichier d’installation de l’antivirus *(~10 secondes)*. 
+  </Step>
+  <Step>
+    ### Repérer la .msi la plus récente
+    parmi les fichiers *(~3 secondes)*.
+  </Step>
+  <Step>
+    ### Exécuter en tant qu'admin 
+    pour lancer l'installation *(~3 secondes)*.
+  </Step>
+  <Step>
+    ### Cliquer sur "Suivant" 3x
+    pour finaliser l'installation *(~60 secondes)*.
+  </Step>
+</Steps>
+</DynamicCallout>
+## PowerShell Script
+
+J'ai très vite comprit à quel point cette procédure devient répétitive et chronophage, surtout lorsqu’il y a plusieurs ordinateurs à configurer. C’est là que je me suis dit : Pourquoi ne pas automatiser tout ça ?
+
+C’est ainsi que j’ai décidé de créer un script PowerShell. Voici ce qu'il fait :
+
+```ps1 {title="silentinstall.ps1"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Vérifier et créer le dossier "log" si nécessaire ###
+
+$log_folder = "C:\ProgramData\Logs"
+if (-not (Test-Path -Path $log_folder)) {
+    New-Item -ItemType Directory -Path $log_folder -Force
+}
+
+### Démarrer la transcription ###
+
+$date = $(Get-Date -Format 'dd-MM-yyyy_HH-mm-ss')
+Start-Transcript -Path "$log_folder\$date-Install-ANTIVIRUS.log" -Force
+
+### Vérifier si le programme ANTIVIRUS est déjà installé ###
+
+### Si le programme n'est pas installé, installer le plus récent fichier .msi ###
+
+$antivirus_folder = "C:\Program Files\ANTIVIRUS"
+if (-not (Test-Path -Path $antivirus_folder)) {
+    $all_msi = Get-ChildItem -Path "\\adds01\ANTIVIRUS\" -Filter "*.msi" | Sort-Object LastWriteTime -Descending
+    $newest = $all_msi[0].FullName
+
+    Write-Host "Installation du plus récent ANTIVIRUS: $newest"
+
+    ### Installer le fichier .msi de manière silencieuse (pas d'interface graphique) ###
+
+    Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$newest`" /qn" -Wait
+
+    Write-Host "Installation terminée."
+} else {
+    Write-Host "ANTIVIRUS est déjà installé."
+}
+
+### Arrêter la transcription ###
+
+Stop-Transcript
+
+```
+
+En quelques lignes de code, j’ai transformé une tâche répétitive en une simple action automatisée. 
+
+Et voilà pourquoi je fais du scripting: gagner du temps, réduire les erreurs, et surtout, rendre les tâches plus efficaces.

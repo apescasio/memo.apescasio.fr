@@ -1,0 +1,38 @@
+---  
+title: Configure a policy of local group admins in a lab Intune
+---
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
+## Creating an `Endpoint Security/Account Protection` Policy
+
+By default, I wanted the "Administrators" group on the devices to include the "technicians" group, so I created this policy in "Endpoint Security > Account Protection".
+
+![Group Admin Policy Intune Lab 1](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-1.png)
+
+I selected the "platform" as Windows and the "profile" as Local user group membership.
+
+![Group Admin Policy Intune Lab 2](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-2.png)
+
+I named the policy.
+
+![Group Admin Policy Intune Lab 3](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-3.png)
+
+I clicked on "Add" and then on "Select users/group" to select the group I want to add to the local admin group on the devices.
+
+![Group Admin Policy Intune Lab 4](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-4.png)
+
+I selected "GRP-IT".
+
+![Group Admin Policy Intune Lab 5](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-5.png)
+
+I left the "Scope tags" as default.
+
+![Group Admin Policy Intune Lab 6](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-6.png)
+
+Then, I selected the dynamic group that includes all devices with the "FRLAB" category.
+
+![Group Admin Policy Intune Lab 7](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-7.png)
+
+Finally, I clicked on Save!
+
+![Group Admin Policy Intune Lab 8](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-8.png)

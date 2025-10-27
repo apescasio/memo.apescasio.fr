@@ -1,0 +1,161 @@
+---
+title: Configurer une VM pour un lab Intune
+---
+
+## Contexte
+
+Je ne suis pas enseignant, ce sont mes propres notes, celles d'un étudiant insignifiant, Aaron (Iso) Pescasio.
+
+J'ai voulu enroler une machine virtuelle (VM) à mon lab Intune. 
+
+Pour cela, j'ai choisi d'utiliser Hyper-V afin de me familiariser avec cet outil, au lieu de continuer avec VMware Workstation que j'ai toujours utilisé à l'école IPI.
+
+<Callout title="À retenir">
+Hyper-V est une solution de virtualisation native intégrée à Windows, idéale pour les environnements professionnels et les tests de machines virtuelles, Hyper-V est gratuit avec Windows Pro/Entreprise, alors que VMware Workstation nécessite une licence "payante".
+</Callout>
+
+## Pré-requis
+
+Pour utiliser Hyper-V sur mon PC, les pré-requis suivants sont nécessaires :
+
+- Un PC équipé d'une version de Windows : Windows 10/11 Entreprise, Windows 10/11 Éducation ou Windows 10/11 Pro.
+- Un processeur 64 bits prenant en charge la traduction d'adresses de second niveau (SLAT).
+- Un processeur compatible avec les extensions de virtualisation, comme VT-x chez Intel.
+- Au moins 4 Go de RAM, bien que 8 ou 16 Go soient recommandés pour de meilleures performances.
+
+
+## Activer Hyper-V `optionalfeatures.exe`
+
+J'ai executé PowerShell en tant qu'admininistrateur pour lancer cette commande qui va forcer le fichier de démarrage de Windows (boot config data ou BCD) de charger l'hyperviseur automatiquement.
+
+```ps1
+bcdedit /set hypervisorlaunchtype auto
+```
+
+Puis, j'ai lancé la commande `optionalfeatures.exe` pour activer Hyper-V et j'ai redémarré mon PC.
+
+![Enable Hyper-V and reboot](/images/intune/hyper-v/turn-on-hyper-v.png)
+
+## Check `systeminfo`
+
+Avant de commencer, j'ai lancé la commande `systeminfo` pour vérifier que tout est prêt sur mon PC.
+
+![systeminfo Hyper-V Check](/images/intune/hyper-v/systeminfo.png)
+
+## Hyper-V Manager
+
+Après un reboot, je vois bien le gestionnaire d'Hyper-V.
+
+![Hyper-V Manager](/images/intune/hyper-v/hyper-v-manager.png)
+
+## Configurer un commutateur réseau virtuel
+
+Hyper-V propose trois types de commutateurs virtuels, chacun ayant des usages spécifiques :
+
+1. **Commutateur virtuel externe**  
+   Ce type de commutateur permet à la machine virtuelle d'utiliser l'une des cartes réseau physiques de mon PC (RJ45 Ethernet ou Wi-Fi). Cela donne à la VM un accès à la même connexion réseau que mon PC, permettant notamment d'accéder à Internet.
+
+2. **Commutateur virtuel interne**  
+Avec ce type de commutateur, la machine virtuelle peut communiquer avec l'hôte Hyper-V (mon PC) ainsi qu'avec les autres machines virtuelles connectées au même commutateur. Cependant, elle n'aura pas accès à la connexion réseau externe de mon PC.
+3. **Commutateur virtuel privé**  
+   Ce commutateur offre un niveau d'isolation supérieur. Les machines virtuelles connectées à ce type de commutateur peuvent uniquement communiquer entre elles, sans interaction avec l'hôte Hyper-V ou le réseau externe.
+
+Pour que ma machine virtuelle puisse être enrolée, j'ai besoin qu'elle puisse accéder à Internet. 
+
+Je crée donc un commutateur virtuel de type "Externe".
+
+![Hyper-V Switch Manager](/images/intune/hyper-v/hyper-v-switch-manager.png)
+
+J'ai sélectionné ma carte réseau (RJ45).
+
+![Hyper-V Switch Manager - Create External Switch](/images/intune/hyper-v/hyper-v-switch-ext.png)
+
+Puis j'ai appliqué.
+
+![Hyper-V Switch Manager - Create External Switch 2](/images/intune/hyper-v/hyper-v-switch-ext-apply.png)
+
+## Création d'une VM pour mon lab Intune
+
+Au lieu d'utiliser la fonctionnalité "Quick Create" d'Hyper-V, j'ai préféré prendre moi même l'ISO dans [Microsoft](https://www.microsoft.com/en-us/software-download/windows11) pour faire l'installation à la main.
+
+Puis, j'ai cliqué sur "New > Virtual Machine". 
+
+![Hyper-V Switch Manager - Create VM 1](/images/intune/hyper-v/hyper-v-create-vm-1.png)
+
+J'ai mis le nom de la VM.
+
+![Hyper-V Switch Manager - Create VM 2](/images/intune/hyper-v/hyper-v-create-vm-2.png)
+
+J'ai choisi la génération 2.
+
+![Hyper-V Switch Manager - Create VM 3](/images/intune/hyper-v/hyper-v-create-vm-3.png)
+
+Pour la RAM, j'ai mis 4 GB et j'ai retiré la case dynamic puisque je ne veux pas que la VM prends plus que 4 GB alors que je lui ai fixé cette valeur la. 
+
+![Hyper-V Switch Manager - Create VM 4](/images/intune/hyper-v/hyper-v-create-vm-4.png)
+
+J'ai sélectionné le switch que j'avais créé au début.
+
+![Hyper-V Switch Manager - Create VM 5](/images/intune/hyper-v/hyper-v-create-vm-5.png)
+
+J'ai créé le VHDX, j'ai juste mis 70 GB pour le stockage.
+
+<Callout type="warn">
+Très important, Windows 11 a besoin de minimum: 64 GB. Sinon, ça passera jamais.
+</Callout>
+
+![Hyper-V Switch Manager - Create VM 6](/images/intune/hyper-v/hyper-v-create-vm-6.png)
+
+Je sélectionne bien l'ISO que j'ai téléchargé moi même et puis j'ai cliqué sur "Finish".
+
+![Hyper-V Switch Manager - Create VM 7](/images/intune/hyper-v/hyper-v-create-vm-7.png)
+
+Avant de démarrer la VM, j'ai bien activé Secure Boot + Trusted Platform Module sinon l'installation ne passera jamais.
+
+![Hyper-V Switch Manager - Create VM 8](/images/intune/hyper-v/hyper-v-create-vm-8.png)
+
+## Démarrer la VM
+
+Une fois que la VM est créé, j'ai démarré la VM et j'ai bien cliqué sur une touche en permanent afin de booter sur l'ISO.
+
+![Hyper-V Switch Manager - Start VM 1](/images/intune/hyper-v/hyper-v-start-vm-1v2.png)
+
+J'ai séléctionné clavier AZERTY.
+
+![Hyper-V Switch Manager - Start VM 2](/images/intune/hyper-v/hyper-v-start-vm-2.png)
+
+J'ai cliqué "Install Windows 11" et coché la case.
+
+![Hyper-V Switch Manager - Start VM 3](/images/intune/hyper-v/hyper-v-start-vm-3.png)
+
+Sur cette page de demande de clé, j'ai choisi "I don't have a product key" puisque c'est une VM de test.
+
+![Hyper-V Switch Manager - Start VM 4](/images/intune/hyper-v/hyper-v-start-vm-4.png)
+
+J'ai bien sélectionné la version Pro, si je garde la version Famille ou Home => je ne pourrai pas enroler la VM dans mon lab Intune.
+
+![Hyper-V Switch Manager - Start VM 5](/images/intune/hyper-v/hyper-v-start-vm-5.png)
+
+J'ai cliqué sur Accept.
+
+![Hyper-V Switch Manager - Start VM 6](/images/intune/hyper-v/hyper-v-start-vm-6.png)
+
+J'ai cliqué sur Next.
+
+![Hyper-V Switch Manager - Start VM 7](/images/intune/hyper-v/hyper-v-start-vm-7.png)
+
+Enfin, j'ai cliqué sur Install.
+
+![Hyper-V Switch Manager - Start VM 8](/images/intune/hyper-v/hyper-v-start-vm-8.png)
+
+Après une pause café, je me tombe sur la page de renseignement du pays. 
+
+![Hyper-V Switch Manager - Start VM 9](/images/intune/hyper-v/hyper-v-start-vm-9.png)
+
+C'est bien sur cette page la ou je peux commencer un Windows Autopilot ! 
+
+<Callout type="warn">
+Très important : faites d'abord un snapshot avec "Ctrl + N". En cas de besoin, vous pourrez toujours revenir à cet état où tout est "frais".
+</Callout>
+
+![Hyper-V Switch Manager - Start VM 10](/images/intune/hyper-v/hyper-v-start-vm-10.png)

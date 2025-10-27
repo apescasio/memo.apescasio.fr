@@ -1,0 +1,38 @@
+---  
+title: تهيئة سياسة إضافة مجموعة محلية للمسؤولين في مختبر Intune
+---
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
+## إنشاء سياسة `Endpoint Security / Account Protection`
+
+بشكل افتراضي أردت أن تتضمن مجموعة "Administrators" على الأجهزة مجموعة "technicians" لذا أنشأت هذه السياسة عبر Endpoint Security > Account Protection.
+
+![Group Admin Policy Intune Lab 1](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-1.png)
+
+اخترت "المنصة" Windows و"الملف" Local user group membership.
+
+![Group Admin Policy Intune Lab 2](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-2.png)
+
+أعطيت السياسة اسماً.
+
+![Group Admin Policy Intune Lab 3](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-3.png)
+
+نقرت "Add" ثم "Select users/group" لاختيار المجموعة التي أريد إضافتها إلى مجموعة المسؤولين المحلية على الأجهزة.
+
+![Group Admin Policy Intune Lab 4](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-4.png)
+
+اخترت "GRP-IT".
+
+![Group Admin Policy Intune Lab 5](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-5.png)
+
+تركت وسم النطاق (Scope tags) بالإعداد الافتراضي.
+
+![Group Admin Policy Intune Lab 6](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-6.png)
+
+ثم اخترت المجموعة الديناميكية التي تشمل كل الأجهزة ذات وسم "FRLAB".
+
+![Group Admin Policy Intune Lab 7](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-7.png)
+
+أخيراً نقرت حفظ (Save)!
+
+![Group Admin Policy Intune Lab 8](/images/intune/intune-lab/new-grouplocaladmin-intune-lab-8.png)

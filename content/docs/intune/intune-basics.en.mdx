@@ -1,0 +1,61 @@
+---
+title: Basics of Intune
+---
+
+## What is Intune?
+
+**Microsoft Intune** is a cloud solution for mobile device management (MDM - **Mobile Device Management**) and mobile application management (MAM - **Mobile Application Management**). It allows companies to remotely manage workstations, laptops, phones, and tablets, whether they are personal (BYOD) or company-owned.
+
+With Intune, you can:
+- Deploy configurations (Wi-Fi, VPN, restrictions, etc.).
+- Push applications (Win32, MSI, store apps).
+- Apply security policies.
+- Manage Windows Update policies, define rings, and control updates.
+- Ensure device compliance through rules.
+
+Intune integrates closely with Azure Active Directory and Microsoft 365, making it a key component of Microsoft's modern management strategy.
+
+<Callout title="Key Takeaway">
+Intune is a cloud solution for device and application management, ideal for modern environments and BYOD strategies.
+</Callout>
+
+---
+
+## What is Windows Autopilot?
+
+**Windows Autopilot** is a feature complementary to Intune that allows you to prepare and automatically deploy Windows devices without using a traditional image.
+
+Specifically:
+- The new device must first be **enrolled in the Windows Autopilot service** (via a script or by the OEM).
+- An Autopilot profile is assigned to the device in Intune.
+- The technician activates the **White Glove** mode by pressing the Windows key 5 times, then selects "Provision with Windows Autopilot" to prepare the device for use.
+- The device is ready to use in just a few simple steps.
+
+Autopilot transforms the deployment process into a seamless user experience while reducing the burden on IT teams.
+
+<Callout title="Key Takeaway">
+Autopilot automates Windows deployment but requires prior device registration and profile assignment. It can be used for self-deployment or pre-provisioned by IT before delivery.
+</Callout>
+
+---
+
+## What is the difference between Intune and System Center Configuration Manager (SCCM)?
+
+**System Center Configuration Manager (formerly SCCM, now MECM)** is an older on-premise solution often used in traditional environments to manage Windows devices (inventory, OS deployment, patching, etc.).
+
+**Microsoft Intune**, on the other hand, is 100% cloud-based, focused on mobility and modern management.
+
+| Solution       | SCCM         | Intune         |
+|----------------|--------------|----------------|
+| Infrastructure | On-premise   | Cloud          |
+| OS Deployment  | Strong       | Limited (via Autopilot) |
+| Scope          | Primarily Windows | Multi-platform (iOS, Android, macOS, Windows) |
+| BYOD Scenarios | Limited      | Strongly supported |
+
+Today, both can coexist via **Microsoft Endpoint Manager**, which unifies their management in a single hybrid console.
+
+<Callout title="Key Takeaway">
+SCCM is on-premise, Intune is cloud-based. They can be used together via Microsoft Endpoint Manager to leverage the best of both worlds.
+</Callout>
+
+---

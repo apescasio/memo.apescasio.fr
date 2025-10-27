@@ -1,0 +1,484 @@
+---
+title: Basics of NodeJS & JavaScript
+---
+## Node.js: What Exactly Is It?
+
+**Node.js** is a JavaScript runtime environment that lets you run JavaScript code outside of web browsers - on servers, desktop applications, command-line tools, and more.
+
+Think of it this way:
+- **JavaScript** = The language
+- **Node.js** = The engine that runs JavaScript anywhere (not just browsers)
+
+Key characteristics of Node.js:
+- Built on **Chrome's V8 JavaScript engine** (super fast)
+- **Non-blocking, event-driven architecture** - handles many operations simultaneously
+- **Cross-platform** - Works on Windows, macOS, Linux
+- **npm ecosystem** - Massive library of reusable packages
+- **Single-threaded** but uses async operations for performance
+
+## JavaScript: What Exactly Is It?
+
+**JavaScript** is a high-level, interpreted programming language originally created for web browsers. It's the language that makes websites interactive - handling clicks, form submissions, animations, and dynamic content updates.
+
+Key characteristics of JavaScript:
+- **Dynamic and flexible** - Variables can change types, functions are first-class objects
+- **Event-driven** - Responds to user interactions (clicks, typing, etc.)
+- **Interpreted** - No compilation step needed, runs directly
+- **Multi-paradigm** - Supports functional, object-oriented, and procedural programming
+- **Weakly typed** - Variables don't need explicit type declarations
+
+<Callout title="Key Takeaway">
+JavaScript runs in browsers for frontend. Node.js brings JavaScript to servers, CLIs, and desktop apps for full-stack development.
+</Callout>
+
+---
+
+## Basic JavaScript Syntax
+
+### Variables and Data Types
+```javascript
+// Variables (let, const, var)
+const name = "Aaron";           // const = cannot be reassigned
+let age = 22;                   // let = can be reassigned, block-scoped
+var is_filipino = true;             // var = avoid this, use let/const instead
+
+// Arrays and Objects
+const servers = ["memo", "cli", "lhc", "bbb", "mundo"];
+const user = {
+    name: "Aaron",
+    age: 22,
+    servers: ["memo", "cli", "lhc", "bbb", "mundo"]
+};
+
+// JavaScript's main data types
+const text = "Hello World";        // String
+const number = 44;                 // Number (integers and floats)
+const price = 19.99;               // Number
+const active = true;               // Boolean
+const nothing = null;              // Null
+let undefined_var;                 // Undefined
+const symbol = Symbol('id');       // Symbol (unique identifier)
+```
+
+### Control Structures
+
+```javascript
+// If statements
+if (age >= 18) {
+    console.log("Adult");
+} else if (age >= 13) {
+    console.log("Teenager");
+} else {
+    console.log("Child");
+}
+
+// For loops
+for (let i = 0; i < servers.length; i++) {
+    console.log(`Server ${i + 1}: ${servers[i]}`);
+}
+
+// For...of loop (modern way for arrays)
+for (const server of servers) {
+    console.log(`Checking ${server}`);
+}
+
+// For...in loop (for object properties)
+for (const key in user) {
+    console.log(`${key}: ${user[key]}`);
+}
+
+// While loop
+let count = 0;
+while (count < 3) {
+    console.log(`Attempt ${count + 1}`);
+    count++;
+}
+```
+
+### Functions
+
+```javascript
+// Function declaration (hoisted - can be called before declaration)
+function check_server_status(server_name) {
+    console.log(`Pinging ${server_name}...`);
+    return "Online"; // Always returns a value
+}
+
+// Function expression (not hoisted)
+const check_status = function(server_name) {
+    console.log(`Pinging ${server_name}...`);
+    return "Online";
+};
+
+// Arrow function (modern ES6 syntax, more concise)
+const quick_check = (server_name) => {
+    console.log(`Quick check: ${server_name}`);
+    return "OK";
+};
+
+// Arrow function with single expression (implicit return)
+const is_online = (server_name) => server_name !== "offline";
+
+// Async function (for handling promises)
+async function async_check_status(server_name) {
+    console.log(`Async checking ${server_name}...`);
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return "Online";
+}
+
+// Call the functions
+console.log(check_server_status("memo"));    // "Online"
+console.log(is_online("memo"));            // true
+```
+
+---
+
+## Node.js Specific Features
+
+### Working with Modules
+
+```javascript
+// Built-in Node.js modules (CommonJS style)
+const fs = require('fs');           // File system
+const path = require('path');       // Path utilities
+const http = require('http');       // HTTP server
+const os = require('os');           // Operating system info
+
+// Third-party modules (install with npm first)
+const axios = require('axios');     // HTTP client
+const express = require('express'); // Web framework
+
+// ES6 modules (add "type": "module" to package.json)
+import fs from 'fs';
+import axios from 'axios';
+
+// Your own modules
+const { server_tools, logger } = require('./utils/server-tools');
+
+// Exporting from your modules (CommonJS)
+module.exports = {
+    check_server: (name) => console.log(`Checking ${name}`),
+    get_uptime: () => process.uptime()
+};
+
+// ES6 export syntax
+export const check_server = (name) => console.log(`Checking ${name}`);
+export default { check_server, get_uptime };
+```
+
+---
+
+## Asynchronous JavaScript & Node.js
+
+### Promises and Async/Await
+```javascript
+// Promise-based approach
+function fetch_user_promise(id) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (id > 0) {
+                resolve({ id, name: `User ${id}` });
+            } else {
+                reject(new Error('Invalid user ID'));
+            }
+        }, 1000);
+    });
+}
+
+// Using the promise
+fetch_user_promise(1)
+    .then(user => console.log(user))
+    .catch(error => console.error(error));
+
+// Async/await approach (cleaner syntax)
+async function fetch_user(id) {
+    try {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        if (id > 0) {
+            return { id, name: `User ${id}` };
+        } else {
+            throw new Error('Invalid user ID');
+        }
+    } catch (error) {
+        console.error('Error fetching user:', error.message);
+        return null;
+    }
+}
+
+// Using async/await
+async function main() {
+    const user = await fetch_user(1);
+    if (user) {
+        console.log(`Found: ${user.name}`);
+    }
+}
+
+main();
+```
+
+---
+
+## API Requests with Axios
+
+### Making HTTP Requests
+```javascript
+const axios = require('axios');
+
+// GET request - Fetch data
+async function fetch_users() {
+    try {
+        const response = await axios.get('https://jsonplaceholder.typicode.com/users');
+        
+        console.log(`Found ${response.data.length} users`);
+        console.log(`Status: ${response.status}`);
+        
+        // Print first user's info
+        const first_user = response.data[0];
+        console.log(`Name: ${first_user.name}`);
+        console.log(`Email: ${first_user.email}`);
+        
+        return response.data;
+    } catch (error) {
+        console.error(`Error: ${error.response?.status || error.message}`);
+        return null;
+    }
+}
+
+// Call the function
+fetch_users();
+```
+
+### POST Request - Send Data
+```javascript
+async function create_post() {
+    const new_post = {
+        title: 'My Server Status Report',
+        body: 'All servers are running normally. No issues detected.',
+        userId: 1
+    };
+
+    try {
+        const response = await axios.post(
+            'https://jsonplaceholder.typicode.com/posts',
+            new_post,
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                timeout: 5000
+            }
+        );
+
+        console.log(`✅ Created post with ID: ${response.data.id}`);
+        console.log(`Title: ${response.data.title}`);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ Error creating post: ${error.message}`);
+        return null;
+    }
+}
+
+create_post();
+```
+
+### Real-World Example: Server Monitoring Script
+```javascript
+const axios = require('axios');
+
+async function check_website_status(url) {
+    const start_time = Date.now();
+    
+    try {
+        const response = await axios.get(url, { 
+            timeout: 5000,
+            validateStatus: function (status) {
+                return status < 500; // Don't throw for 4xx errors
+            }
+        });
+        
+        const response_time = Date.now() - start_time;
+        
+        return {
+            url,
+            status_code: response.status,
+            status_text: response.statusText,
+            response_time,
+            is_up: response.status >= 200 && response.status < 400,
+            checked_at: new Date().toISOString()
+        };
+    } catch (error) {
+        return {
+            url,
+            error: error.code === 'ECONNABORTED' ? 'Timeout' : error.message,
+            is_up: false,
+            checked_at: new Date().toISOString()
+        };
+    }
+}
+
+// Monitor multiple websites
+async function monitor_websites() {
+    const websites = [
+        'https://httpbin.org/status/200',
+        'https://httpbin.org/status/404', 
+        'https://httpbin.org/status/500',
+        'https://httpbin.org/delay/2',
+        'https://this-domain-does-not-exist-12345.com'
+    ];
+
+    console.log("🌐 Website Status Report");
+    console.log("=".repeat(60));
+    console.log(`📅 ${new Date().toLocaleString()}`);
+    console.log("-".repeat(60));
+
+    // Check all websites concurrently
+    const promises = websites.map(site => check_website_status(site));
+    const results = await Promise.all(promises);
+
+    let up_count = 0;
+    let down_count = 0;
+
+    results.forEach(status => {
+        if (status.is_up) {
+            console.log(`✅ ${status.url}`);
+            console.log(`   Status: ${status.status_code} ${status.status_text}`);
+            console.log(`   Response Time: ${status.response_time}ms`);
+            up_count++;
+        } else {
+            console.log(`❌ ${status.url}`);
+            console.log(`   Error: ${status.error || `HTTP ${status.status_code}`}`);
+            down_count++;
+        }
+        console.log("");
+    });
+
+    console.log("-".repeat(60));
+    console.log(`📊 Summary: ${up_count} UP, ${down_count} DOWN`);
+    console.log(`⏰ Check completed at ${new Date().toLocaleString()}`);
+}
+
+// Run the monitoring
+monitor_websites();
+```
+
+<Callout title="Educational APIs">
+Practice with these free APIs:
+- **HTTPBin** (`httpbin.org`) - HTTP testing service with various status codes
+- **JSONPlaceholder** (`jsonplaceholder.typicode.com`) - Fake REST API for testing
+- **ReqRes** (`reqres.in`) - Real response codes and data structures
+</Callout>
+
+---
+
+## Error Handling Best Practices
+
+```javascript
+const axios = require('axios');
+
+// Comprehensive error handling
+async function robust_api_call(url, options = {}) {
+    try {
+        const response = await axios.get(url, {
+            timeout: 10000,
+            ...options
+        });
+        
+        return {
+            success: true,
+            data: response.data,
+            status: response.status
+        };
+        
+    } catch (error) {
+        let error_message = 'Unknown error occurred';
+        let error_type = 'unknown';
+        
+        if (error.code === 'ECONNABORTED') {
+            error_message = 'Request timed out';
+            error_type = 'timeout';
+        } else if (error.code === 'ECONNREFUSED') {
+            error_message = 'Connection refused - server may be down';
+            error_type = 'connection';
+        } else if (error.code === 'ENOTFOUND') {
+            error_message = 'Domain not found - check URL';
+            error_type = 'dns';
+        } else if (error.response) {
+            // Server responded with error status
+            error_message = `HTTP ${error.response.status}: ${error.response.statusText}`;
+            error_type = 'http';
+        } else if (error.request) {
+            // Network error
+            error_message = 'Network error - no response received';
+            error_type = 'network';
+        } else {
+            error_message = error.message;
+        }
+        
+        return {
+            success: false,
+            error: error_message,
+            error_type,
+            original_error: error
+        };
+    }
+}
+
+// Usage example
+async function test_error_handling() {
+    const test_urls = [
+        'https://jsonplaceholder.typicode.com/users/1',  // Should work
+        'https://jsonplaceholder.typicode.com/users/999', // 404 error
+        'https://httpbin.org/delay/15',                   // Will timeout
+        'https://non-existent-domain-12345.com'          // DNS error
+    ];
+
+    for (const url of test_urls) {
+        console.log(`\n🔍 Testing: ${url}`);
+        
+        const result = await robust_api_call(url, { timeout: 5000 });
+        
+        if (result.success) {
+            console.log(`✅ Success! Status: ${result.status}`);
+        } else {
+            console.log(`❌ Failed: ${result.error}`);
+            console.log(`   Error Type: ${result.error_type}`);
+        }
+    }
+}
+
+test_error_handling();
+```
+
+### Event Loop Understanding
+```javascript
+// Understanding async behavior in Node.js
+console.log("1. Synchronous start");
+
+setTimeout(() => {
+    console.log("4. Timeout callback (after 0ms)");
+}, 0);
+
+setImmediate(() => {
+    console.log("5. setImmediate callback");
+});
+
+process.nextTick(() => {
+    console.log("3. process.nextTick callback");
+});
+
+console.log("2. Synchronous end");
+
+// Output order:
+// 1. Synchronous start
+// 2. Synchronous end  
+// 3. process.nextTick callback
+// 4. Timeout callback (after 0ms)
+// 5. setImmediate callback
+```
+
+<Callout title="Best Practice">
+Always handle errors gracefully in production applications.
+</Callout>

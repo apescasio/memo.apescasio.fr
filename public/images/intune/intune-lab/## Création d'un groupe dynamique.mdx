@@ -1,0 +1,9 @@
+## Création d'un groupe dynamique
+
+Avant de créer un profil Autopilot, j'ai d'abord créé le groupe dynamique qui regroupera tous les autopilots devices. 
+
+![Dynamic Group Autopilot Devices](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-dynamic-group-1.png) 
+
+J'utilise la catégorie "FRLAB" donc j'ai configuré le groupe dynamique avec cette règle: `(device.devicePhysicalIds -any "_ -startsWith "[OrderID]:FRLAB")`
+
+![Dynamic Group Autopilot Devices 2](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-dynamic-group-2.png) 

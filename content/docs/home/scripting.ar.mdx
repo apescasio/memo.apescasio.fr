@@ -1,0 +1,84 @@
+---
+title: لماذا أستخدم النصوص البرمجية
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCalloutHome';
+
+## حالة استخدام
+هناك مهام، رغم كونها أساسية، تصبح بسرعة متكررة و"مستهلكة للوقت".  
+
+على سبيل المثال، خلال فترة تدريبي الأولى داخل مجموعة من الجامعات، عند استلام جهاز كمبيوتر جديد لإعداده، كان من الخطوات الشائعة تثبيت برنامج مضاد الفيروسات.  
+
+إذا اعتمدت على الطريقة اليدوية، فهي تتم كالتالي:  
+
+<DynamicCallout>
+<Steps>
+  <Step>
+    ### الوصول إلى المجلد المشترك  
+    *(~10 ثوانٍ)* حيث يوجد ملف تثبيت مضاد الفيروسات.  
+  </Step>
+  <Step>
+    ### تحديد أحدث ملف .msi  
+    *(~3 ثوانٍ)* بين الملفات.  
+  </Step>
+  <Step>
+    ### التشغيل كمسؤول  
+    *(~3 ثوانٍ)* لبدء التثبيت.  
+  </Step>
+  <Step>
+    ### النقر على "التالي" 3 مرات  
+    *(~60 ثانية)* لإنهاء التثبيت.  
+  </Step>
+</Steps>
+</DynamicCallout>
+
+## سكربت PowerShell
+
+بعد القيام بذلك عدة مرات، أدركت مدى تكرار هذه العملية وإهدارها للوقت، خاصةً عند وجود عدة أجهزة يجب إعدادها. عندها فكرت: لماذا لا أقوم بأتمتة كل هذا؟  
+
+هكذا قررت إنشاء سكربت PowerShell. هذا ما يفعله:  
+
+```ps1 {title="silentinstall.ps1"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### التحقق وإنشاء مجلد "log" إذا لزم الأمر ###
+
+$log_folder = "C:\ProgramData\Logs"
+if (-not (Test-Path -Path $log_folder)) {
+    New-Item -ItemType Directory -Path $log_folder -Force
+}
+
+### بدء التسجيل ###
+
+$date = $(Get-Date -Format 'dd-MM-yyyy_HH-mm-ss')
+Start-Transcript -Path "$log_folder\$date-Install-ANTIVIRUS.log" -Force
+
+### التحقق مما إذا كان برنامج مضاد الفيروسات مثبتاً مسبقا ###
+
+### إذا لم يكن البرنامج مثبتاً، قم بتثبيت أحدث ملف .msi ###
+
+$antivirus_folder = "C:\Program Files\ANTIVIRUS"
+if (-not (Test-Path -Path $antivirus_folder)) {
+    $all_msi = Get-ChildItem -Path "\\adds01\ANTIVIRUS\" -Filter "*.msi" | Sort-Object LastWriteTime -Descending
+    $newest = $all_msi[0].FullName
+
+    Write-Host "جاري تثبيت أحدث إصدار من مضاد الفيروسات: $newest"
+
+    ### تثبيت ملف .msi بصمت (بدون واجهة رسومية) ###
+
+    Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$newest`" /qn" -Wait
+
+    Write-Host "تم اكتمال التثبيت."
+} else {
+    Write-Host "مضاد الفيروسات مثبت بالفعل."
+}
+
+### إيقاف التسجيل ###
+
+Stop-Transcript
+
+```
+
+ببضعة أسطر من التعليمات البرمجية، حوّلتُ مهمةً متكررة إلى إجراءٍ آليٍّ بسيط.
+
+وهذا ما أحبّه في البرمجة النصية: توفير الوقت، وتقليل الأخطاء، والأهم من ذلك، زيادة كفاءة المهام.

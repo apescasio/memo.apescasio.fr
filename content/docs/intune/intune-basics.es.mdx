@@ -1,0 +1,61 @@
+---
+title: Básicos de Intune
+---
+
+## ¿Qué es Intune?
+
+**Microsoft Intune** es una solución en la cloud para la gestión de dispositivos móviles (MDM - **Mobile Device Management**) y la gestión de aplicaciones móviles (MAM - **Mobile Application Management**). Permite a las compañías gestionar remotamente estaciones de trabajo, laptops, teléfonos y tablets, ya sean personales (BYOD) o de la compañía.
+
+Con Intune, puedes:
+- Desplegar configuraciones (Wi-Fi, VPN, restricciones, etc.).
+- Instalar aplicaciones (Win32, MSI, aplicaciones de tienda).
+- Aplicar políticas de seguridad.
+- Gestionar políticas de Windows Update, definir anillos y controlar actualizaciones.
+- Asegurar el cumplimiento de dispositivos a través de reglas.
+
+Intune se integra estrechamente con Azure Active Directory y Microsoft 365, convirtiéndolo en un componente clave de la estrategia de gestión moderna de Microsoft.
+
+<Callout title="Punto Clave">
+Intune es una solución en la cloud para la gestión de dispositivos y aplicaciones, ideal para entornos modernos y estrategias BYOD.
+</Callout>
+
+---
+
+## ¿Qué es Windows Autopilot?
+
+**Windows Autopilot** es una característica complementaria a Intune que permite preparar y desplegar automáticamente dispositivos Windows sin usar una imagen tradicional.
+
+Específicamente:
+- El nuevo dispositivo debe primero estar **registrado en el servicio Windows Autopilot** (vía script o por el OEM).
+- Se asigna un perfil de Autopilot al dispositivo en Intune.
+- El técnico activa el modo **White Glove** presionando la tecla Windows 5 veces, luego selecciona "Provision with Windows Autopilot" para preparar el dispositivo para su uso.
+- El dispositivo está listo para usar en solo unos pocos pasos simples.
+
+Autopilot transforma el proceso de despliegue en una experiencia de usuario fluida mientras reduce la carga en los equipos de TI.
+
+<Callout title="Punto Clave">
+Autopilot automatiza el despliegue de Windows pero requiere registro previo del dispositivo y asignación de perfil. Puede usarse para auto-despliegue o pre-aprovisionado por TI antes de la entrega.
+</Callout>
+
+---
+
+## ¿Cuál es la diferencia entre Intune y System Center Configuration Manager (SCCM)?
+
+**System Center Configuration Manager (anteriormente SCCM, ahora MECM)** es una solución local más antigua a menudo usada en entornos tradicionales para gestionar dispositivos Windows (inventario, despliegue de SO, parches, etc.).
+
+**Microsoft Intune**, por otro lado, es 100% basado en la cloud, enfocado en movilidad y gestión moderna.
+
+| Solución       | SCCM         | Intune         |
+|----------------|--------------|----------------|
+| Infraestructura | Local        | Cloud           |
+| Despliegue de SO | Fuerte       | Limitado (vía Autopilot) |
+| Alcance        | Principalmente Windows | Multi-plataforma (iOS, Android, macOS, Windows) |
+| Escenarios BYOD | Limitado     | Fuertemente soportado |
+
+Hoy en día, ambos pueden coexistir vía **Microsoft Endpoint Manager**, que unifica su gestión en una sola consola híbrida.
+
+<Callout title="Punto Clave">
+SCCM es local, Intune es basado en la cloud. Pueden usarse juntos vía Microsoft Endpoint Manager para aprovechar lo mejor de ambos mundos.
+</Callout>
+
+---

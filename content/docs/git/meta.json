@@ -1,0 +1,6 @@
+{
+    "title": "Git",
+    "icon": "git",
+    "pages": ["index", "git-basics", "config-git", "config-git-push-from-local-to-vps-and-github"],
+    "root": true
+  }

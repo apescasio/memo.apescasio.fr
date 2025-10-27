@@ -1,0 +1,90 @@
+---
+title: Configure a clipboard
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Context
+
+I am not a teacher, this is my own, an insignificant student, Aaron (Iso) Pescasio's notes.
+
+At the beginning of my second apprenticeship within an international travel retail company, I quickly realized that some tasks were recurring—especially writing the same sentences to close out "tickets."
+
+Whether it was to indicate that a license had been added to an account, that a user had been added to a mailbox, or to notify that a printer had been successfully configured, these repetitive messages were part of my daily routine.
+
+After repeating these actions many times, I looked for a solution to save time and avoid typing errors. That’s how the idea for this PowerShell script came to life.
+
+## Step-by-step Script Breakdown
+
+<DynamicCallout>
+<Steps>
+
+<Step>
+### Preparing the Sentences ###
+Create an array containing commonly used phrases in tickets. The phrases are bilingual (French / English) to allow for quick reuse depending on context *(~4 seconds)*.
+</Step>
+
+<Step>
+### Automating Clipboard Entry ###
+Automatically loop through each phrase in the list: each one is successively copied to the system clipboard. This step allows the user to easily retrieve each message by simply pressing **Windows + V**, without having to open a document or template *(~10 seconds)*.
+</Step>
+
+<Step>
+### Adding a Pause Between Copies ###
+A 500-millisecond delay is applied between each copy to prevent multiple phrases from being overwritten too quickly in the clipboard. This slight wait time ensures the stability of each individual copy *(~12 seconds)*.
+</Step>
+
+</Steps>
+</DynamicCallout>
+
+## PowerShell Script
+
+```ps1 title="set-clipboard.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Insert all frequently used phrases ###
+
+$phrases = @(
+    "Printer added to server + test print OK.",
+    "Imprimante ajoutée au serveur d'impression + test impression OK.",
+    "Access given to the user, admin account + the password transferred to the user via mail. I remain available for any information.",
+    "Accès donné à l'utilisateur, compte administrateur + le mot de passe transféré à l'utilisateur par mail. Je reste disponible pour toute information.",
+    "OTP sent to the user via mail, link will automatically expire but not the password itself, please note it.",
+    "OTP envoyé à l'utilisateur par mail, le lien expirera automatiquement mais pas le mot de passe lui-même, veuillez svp le noter.",
+    "Access given to the user, a reboot of PC or sign out/reconnect is needed to refresh the rights.",
+    "Accès donné à l'utilisateur, un redémarrage du PC ou une déconnexion/reconnexion est nécessaire pour actualiser les droits.",
+    "The mailbox has been created, synchro time can take up to 24 hours max.",
+    "La boîte aux lettres a été créée, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The mailing list has been created, synchro time can take up to 24 hours max.",
+    "La liste de diffusion a été créée, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The user has been added to mailbox, synchro time can take up to 24 hours max.",
+    "L'utilisateur a été ajouté à la boîte aux lettres, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The user has been added to mailing list, synchro time can take up to 24 hours max.",
+    "L'utilisateur a été ajouté à la liste de diffusion, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "License has been removed from the account.",
+    "License supprimée de compte.",
+    "License has been assigned to the account.",
+    "License assignée au compte.",
+    "Hello,`n`n`n`nRegards,`nAaron",
+    "Bonjour,`n`n`n`nCordialement,`nAaron"
+)
+
+### Add each phrase to clipboard ###
+
+foreach ($phrase in $phrases) {
+    Set-Clipboard -Value $phrase
+    Start-Sleep -Milliseconds 500
+}
+```
+
+## Script Execution
+
+Before running the script, I made sure to enable the Windows clipboard by pressing "Windows + V."
+
+![Enable Windows Clipboard](/images/powershell/clipboard-enable.png)
+
+Once the script is executed, the phrases appear correctly in the clipboard. Unfortunately, according to Microsoft, it is not possible to automate the pinning of phrases. Therefore, they must be pinned manually, one by one.
+
+![Pinning Frequent Phrases](/images/powershell/clipboard-phrases.png)
+
+If the phrases are pinned, they remain available even after restarting the PC or clearing the clipboard. It is therefore not necessary to re-run the script.

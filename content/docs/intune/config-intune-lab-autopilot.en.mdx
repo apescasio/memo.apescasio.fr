@@ -1,0 +1,184 @@
+---  
+title: Configure an Autopilot profile in a lab Intune  
+---
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
+## Creating an Autopilot Profile
+
+I created a new profile by navigating to "Devices > Enrollment > Deployment profiles".
+
+![Creating an Autopilot profile](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-1.png)
+
+I named the profile and left the "No" option to avoid converting all devices to "Autopilot".
+
+![Creating an Autopilot profile 2](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-2.png)
+
+I configured the OOBE for the profile with the following settings:
+
+- **Deployment mode**: User-Driven
+- **Join to Microsoft Entra ID as**: Microsoft Entra joined (Full Cloud)
+- **Microsoft Software License Terms**: Hide
+- **Privacy settings**: Hide
+- **Hide change account options**: Hide
+- **User account type**: Standard
+- **Allow pre-provisioned deployment**: Yes
+- **Language (Region)**: Operating system default
+- **Automatically configure keyboard**: Yes
+- **Apply device name template**: Yes
+- **Enter a name**: FRLAB-%SERIAL%
+
+![Creating an Autopilot profile 3](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-3.png)
+
+For groups, I didn’t assign any for now; I’ll do that later.
+
+![Creating an Autopilot profile 4](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-4.png)
+
+The Autopilot profile was successfully created.
+
+![Creating an Autopilot profile 5](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-5.png)
+
+## First Attempt to Enroll a VM
+
+To create a dynamic group that will include all devices with the "FRLAB" category, the device must first exist in Intune.
+
+<Callout type="warn">
+During the creation of the dynamic group, Microsoft will display an error message as long as no device with the "FRLAB" category exists.
+</Callout>
+
+So, I powered on my Windows 11 VM (running on Hyper-V) and pressed `Shift + F10` to open a command prompt on the VM.
+
+![Creating an Autopilot profile 6](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-6.png)
+
+Then, I switched the terminal to PowerShell.
+
+![Creating an Autopilot profile 7](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-7.png)
+
+Next, I installed the "WindowsAutopilotInfo" script and executed the command to associate the "FRLAB" group tag with the device.
+
+```ps1
+Install-Script -Name Get-WindowsAutopilotInfo -Force
+Get-WindowsAutopilotInfo -Online -GroupTag 'FRLAB'
+```
+![Creating an Autopilot profile 8](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-8.png)
+
+After running the command "Get-WindowsAutopilotInfo -Online -GroupTag 'FRLAB'", I logged in with my global admin account and approved the request to set up an Enterprise App "MS Graph Command Line Tools".
+
+![Creating an Autopilot profile 10](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-10.png)
+
+According to the output, the VM was successfully enrolled!
+
+![Creating an Autopilot profile 11](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-11.png)
+
+The VM is also visible in the Intune console.
+
+![Creating an Autopilot profile 12](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-12.png)
+
+Now that there’s a device in Intune, I added it to the "FRLAB-FullCloud-StaticGroup" group to later assign the Autopilot profile to it.
+
+![Creating an Autopilot profile 13](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-13.png)
+
+I then assigned the "FRLAB-FullCloud-StaticGroup" group to the Autopilot profile.
+
+![Creating an Autopilot profile 14](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-14.png)
+
+After about 15 minutes of waiting, the "Profile status" changed to "Assigned", and the Autopilot profile was applied!
+
+![Creating an Autopilot profile 15](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-15.png)
+
+Once the Autopilot profile was applied, I started the "White Glove Deployment" by pressing the "Windows" key 5 times.
+<Callout type="warn">
+I had to open the VM in fullscreen because otherwise, pressing the "Windows" key 5 times didn’t work.
+</Callout>
+
+![Creating an Autopilot profile 16](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-16.png)
+
+Then I clicked on "Next".
+
+![Creating an Autopilot profile 17](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-17.png)
+
+And I got stuck with this error message.
+
+![Creating an Autopilot profile 18](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-18.png)
+
+## Error `TPM attestation timed out`
+
+According to [Microsoft’s article](https://learn.microsoft.com/en-us/autopilot/known-issues#pre-provisioning-gives-an-error-screen), it’s not possible to perform Pre-provisioning with Windows Autopilot on virtual machines (VMs).
+
+<Callout type="warn">
+This only works on physical hardware that is compatible with Windows Autopilot.
+The "TPM attestation timed out" issue is therefore normal in a Hyper-V VM.
+</Callout>
+
+## Second Attempt to Enroll a VM
+
+Even though Pre-provisioning isn’t possible on a VM, standard provisioning with Windows Autopilot is entirely feasible.
+
+First, I reverted to a previous checkpoint of my VM.
+
+![Creating an Autopilot profile 19](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-19.png)
+
+I also deleted the device from the Intune console.
+
+![Creating an Autopilot profile 20](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-20.png)
+
+I reinstalled the script and reran the Get-WindowsAutopilotInfo command.
+
+![Creating an Autopilot profile 21](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-21.png)
+
+I added the device to the group.
+
+![Creating an Autopilot profile 22](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-22.png)
+
+After 15 minutes of waiting, the "Profile status" changed to "Assigned", and I could see the "FRLAB" GroupTag.
+
+![Creating an Autopilot profile 23](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-23.png)
+
+I returned to the VM and restarted it.
+
+![Creating an Autopilot profile 27](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-27.png)
+
+After restarting, I logged in once with my account.
+
+![Creating an Autopilot profile 28](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-28.png)
+
+Then, I configured Windows Hello.
+
+![Creating an Autopilot profile 29](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-29.png)
+
+I successfully enrolled the first VM in my Intune lab!
+
+![Creating an Autopilot profile 30](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-30.png)
+
+The device is also visible in the Intune console with the name "FRLAB-%SERIAL%". The serial number wasn’t fully included due to a 15-character limit.
+
+![Creating an Autopilot profile 31](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-31.png)
+
+## Creating a Dynamic "Autopilot" Group
+
+I created a dynamic group to include all devices with the "FRLAB" category.
+
+<Callout type="warn">
+During the creation of the dynamic group, Microsoft will display an error message as long as no device with the "FRLAB" category exists. Now that I have a device with the "FRLAB" category, it works.
+</Callout>
+
+![Dynamic Group Autopilot Devices](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-dynamic-group-1.png)
+
+I used the "FRLAB" category, so I configured the dynamic group with this rule: `(device.devicePhysicalIds -any "_ -startsWith "[OrderID]:FRLAB")`
+
+![Dynamic Group Autopilot Devices 2](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-dynamic-group-2.png)
+
+I can see my first VM in it.
+
+![Dynamic Group Autopilot Devices 3](/images/intune/intune-lab/m365-business-premium-tenant-intune-lab-dynamic-group-3.png)
+
+## Assigning the Autopilot Profile to the Dynamic Group
+
+By navigating to "Devices > Enrollment > Windows Autopilot deployment profiles", I configured the "Autopilot Full Cloud" profile.
+
+![Linking Autopilot Profile to Dynamic Group 1](/images/intune/intune-lab/link-autopilot-full-cloud-to-dynamicgroup-1.png)
+
+Then, I added the dynamic group to the "Included groups".
+
+![Linking Autopilot Profile to Dynamic Group 2](/images/intune/intune-lab/link-autopilot-full-cloud-to-dynamicgroup-2.png)
+
+This means that when I enroll another VM with the "FRLAB" category, the dynamic group will automatically pick up the device, and the Autopilot profile will be assigned to it.

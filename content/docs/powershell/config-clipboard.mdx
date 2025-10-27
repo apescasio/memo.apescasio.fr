@@ -1,0 +1,91 @@
+---
+title: Configurer le presse-papiers 
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Contexte
+
+Je ne suis pas enseignant, ce sont mes propres notes, celles d'un étudiant insignifiant, Aaron (Iso) Pescasio.
+
+Au début de ma deuxième alternance chez une entreprise de travel retail internationale, je me suis rapidement rendu compte que certaines tâches revenaient fréquemment, notamment la rédaction des mêmes phrases pour clôturer des "tickets". 
+
+Que ce soit pour indiquer qu'une licence avait été ajoutée à un compte, qu'un utilisateur avait été ajouté à une boîte aux lettres, ou encore pour signaler qu'une imprimante avait été configurée avec succès, ces messages répétitifs faisaient partie de mon quotidien.
+
+À force de répéter ces actions, j'ai cherché une solution pour gagner du temps et éviter les erreurs de saisie. C'est ainsi qu'est née l'idée de ce script PowerShell. 
+
+## Déroulement du script étape par étape
+
+<DynamicCallout>
+<Steps>
+
+<Step>
+### Préparation des phrases ###
+Création d'une array (tableau) contenant des phrases fréquemment utilisées dans les tickets. Les phrases sont bilingues (français / anglais) pour permettre une réutilisation rapide selon le contexte *(~4 secondes)*.
+</Step>
+
+<Step>
+### Automatisation de la mise en mémoire ###
+Parcours automatique de chaque phrase de la liste : chacune est copiée successivement dans le presse-papiers du système. Cette étape permet à l'utilisateur de récupérer facilement chaque message en faisant simplement un **Windows + V**, sans avoir à ouvrir un document ou un modèle *(~10 secondes)*.
+</Step>
+
+<Step>
+### Ajout d'une pause entre les copies ###
+Un délai de 500 millisecondes est appliqué entre chaque copie pour éviter que plusieurs phrases ne soient écrasées trop rapidement dans le presse-papiers. Ce léger temps d’attente garantit la stabilité de la copie individuelle de chaque message *(~12 secondes)*.
+</Step>
+
+</Steps>
+</DynamicCallout>
+
+## PowerShell Script
+
+```ps1 title="set-clipboard.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Mettre toutes les phrases utilisées fréquemment ###
+
+$phrases = @(
+    "Imprimante ajoutée au serveur d'impression + test impression OK.",
+    "Printer added to server + test print OK.",
+    "Accès donné à l'utilisateur, compte administrateur + le mot de passe transféré à l'utilisateur par mail. Je reste disponible pour toute information.",
+    "Access given to the user, admin account + the password transferred to the user via mail. I remain available for any information.",
+    "OTP envoyé à l'utilisateur par mail, le lien expirera automatiquement mais pas le mot de passe lui-même, veuillez svp le noter.",
+    "OTP sent to the user via mail, link will automatically expire but not the password itself, please note it.",
+    "Accès donné à l'utilisateur, un redémarrage du PC ou une déconnexion/reconnexion est nécessaire pour actualiser les droits.",
+    "Access given to the user, a reboot of PC or sign out/reconnect is needed to refresh the rights.",
+    "La boîte aux lettres a été créée, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The mailbox has been created, synchro time can take up to 24 hours max.",
+    "La liste de diffusion a été créée, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The mailing list has been created, synchro time can take up to 24 hours max.",
+    "L'utilisateur a été ajouté à la boîte aux lettres, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The user has been added to mailbox, synchro time can take up to 24 hours max.",
+    "L'utilisateur a été ajouté à la liste de diffusion, le temps de synchronisation peut prendre jusqu'à 24 heures maximum.",
+    "The user has been added to mailing list, synchro time can take up to 24 hours max.",
+    "License supprimée de compte.",
+    "License has been removed from the account.",
+    "License assignée au compte.",
+    "License has been assigned to the account.",
+    "Hello,`n`n`n`nRegards,`nAaron",
+    "Bonjour,`n`n`n`nCordialement,`nAaron"
+)
+
+### Ajouter chaque phrase dans le presse-papiers ###
+
+foreach ($phrase in $phrases) {
+    Set-Clipboard -Value $phrase
+    Start-Sleep -Milliseconds 500
+}
+
+```
+
+## Exécution du script
+
+Avant d'exécuter le script, j'ai bien activé le presse-papiers Windows en tapant sur la touche "Windows + V". 
+
+![Activation de presse papiers Windows](/images/powershell/clipboard-enable.png)
+
+Une fois le script exécuté, les phrases apparaissent correctement dans le presse-papiers. Malheureusement, selon Microsoft, il n'est pas possible d'automatiser pour épingler les phrases. Il faut donc les épingler manuellement, une par une.
+
+![Epingler les phrases récurrentes](/images/powershell/clipboard-phrases.png)
+
+Si les phrases sont épinglées, elles restent disponibles même après un redémarrage du PC ou un "clear-all" du presse-papiers. Il n'est donc pas nécessaire de réexécuter le script.

@@ -1,0 +1,652 @@
+---  
+title: Configurer un package dans un lab Intune  
+---
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
+## Création d'une application Azure pour Intune
+
+Ce script PowerShell crée une application Azure avec les API permissions nécessaires pour interagir avec Microsoft Graph. 
+
+Il crée également un service principal, et accorde le consentement administrateur. 
+
+L'application me servira pour gérer (créer / supprimer / get) les packages Intune via PowerShell (Module IntuneWin32App).
+
+
+```ps1 title="Create-Azure-IntuneWin32App.ps1"
+###  Suppress module reinstallation errors and general warnings ###
+
+$ErrorActionPreference = "SilentlyContinue"
+
+###  Only install Graph SDK if not already present ### 
+
+if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
+    Install-Module Microsoft.Graph -Scope CurrentUser -Force -AllowClobber
+}
+
+###  Connect to Microsoft Graph as Global Admin ### 
+
+Connect-MgGraph -Scopes "Application.ReadWrite.All", "DelegatedPermissionGrant.ReadWrite.All", "Directory.ReadWrite.All"
+
+###  Reset error handling for actual logic ### 
+
+$ErrorActionPreference = "Stop"
+
+### Create the application with both redirect URIs for Mobile/Desktop ###
+
+$app = New-MgApplication -DisplayName "Azure - IntuneWin32App" -PublicClient @{
+    RedirectUris = @(
+        "https://login.microsoftonline.com/common/oauth2/nativeclient",
+        "urn:ietf:wg:oauth:2.0:oob"
+    )
+}
+
+### Create a Service Principal for the application ###
+
+$sp = New-MgServicePrincipal -AppId $app.AppId
+
+### Get Microsoft Graph Service Principal (target API) ###
+
+$graphSp = Get-MgServicePrincipal -Filter "DisplayName eq 'Microsoft Graph'"
+
+### Define required delegated permissions ###
+
+$delegatedPermissions = @(
+    "DeviceManagementApps.ReadWrite.All",
+    "DeviceManagementConfiguration.ReadWrite.All",
+    "DeviceManagementManagedDevices.PrivilegedOperations.All",
+    "DeviceManagementManagedDevices.ReadWrite.All",
+    "DeviceManagementRBAC.ReadWrite.All",
+    "DeviceManagementServiceConfig.ReadWrite.All",
+    "Directory.Read.All",
+    "Group.Read.All",
+    "Group.ReadWrite.All",
+    "openid",
+    "User.Read"
+)
+
+### Resolve permission scope IDs ###
+
+$requiredDelegatedPermissions = @()
+foreach ($perm in $delegatedPermissions) {
+    $match = $graphSp.Oauth2PermissionScopes | Where-Object { $_.Value -eq $perm }
+    if ($match) {
+        $requiredDelegatedPermissions += @{
+            Id = $match.Id
+            Type = "Scope"
+        }
+    } else {
+        Write-Warning "Permission '$perm' not found in Microsoft Graph scopes."
+    }
+}
+
+### Add permissions to the app registration ###
+
+Update-MgApplication -ApplicationId $app.Id -RequiredResourceAccess @(
+    @{
+        ResourceAppId = $graphSp.AppId
+        ResourceAccess = $requiredDelegatedPermissions
+    }
+)
+
+### Grant admin consent using raw Graph REST API ###
+
+$body = @{
+    clientId    = $sp.Id
+    consentType = "AllPrincipals"
+    principalId = $null
+    resourceId  = $graphSp.Id
+    scope       = ($delegatedPermissions -join " ")
+} | ConvertTo-Json -Depth 3
+
+Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/v1.0/oauth2PermissionGrants" -Body $body -ContentType "application/json"
+
+Write-Host "`nApp 'Azure - IntuneWin32App' created, both redirect URIs set, and admin consent granted successfully." -ForegroundColor Green
+```
+## Création d'un package Win32App
+
+Au lieu de passer par l'interface graphique du portal Intune pour créer et déployer un package d'application, ce script PowerShell permet d'automatiser entièrement le processus.
+
+Le script PowerShell `Auto-DeployIntuneWin32App.ps1`, situé dans le dossier racine `LabIntune-ChromePackage`, est conçu pour automatiser le déploiement d'applications Win32 dans Microsoft Intune. 
+
+Le dossier racine contient tous les fichiers nécessaires à l'exécution du script, notamment le fichier `config.json` pour la configuration (nom d'appli, version d'appli...), le fichier exécutable `IntuneWinAppUtil.exe` pour la création des packages .intunewin, ainsi que les sous-dossiers Package et Intunewin. 
+
+Le dossier Package contient les fichiers source de l'application, tels que les fichiers d'installation ou les scripts, tandis que le dossier Intunewin est utilisé pour stocker les packages .intunewin générés. 
+
+Ces "répertoires" structurés permet une gestion centralisée et simplifie le processus de déploiement.
+
+```ps1
+New-Item -Path "C:\LabIntune-ChromePackage\Apps\Intunewin" -ItemType Directory -Force
+New-Item -Path "C:\LabIntune-ChromePackage\Apps\Package" -ItemType Directory -Force
+```
+
+## Structure des dossiers
+<Files>
+  <Folder name="C:\LabIntune-ChromePackage" defaultOpen>
+    <Folder name="Apps" defaultOpen>
+      <Folder name="Intunewin" defaultOpen>
+        <File name="Install_ChromeBrowser.intunewin" />
+      </Folder>
+      <Folder name="Package" defaultOpen>
+        <File name="chrome.png" />
+        <File name="GoogleChromeStandaloneEnterprise64.msi" />
+        <File name="Install_ChromeBrowser.ps1" />
+        <File name="Uninstall_ChromeBrowser.ps1" />
+      </Folder>
+    </Folder>
+    <File name="Auto-DeployIntuneWin32App.ps1" />
+    <File name="config.json" />
+  </Folder>
+</Files>
+
+```js title="config.json"
+{
+    "clientId":  "c5552704-11fd-4b02-9910-c2bba101e899",
+    "tenantId":  "93bf5cc4-6277-44d9-bb70-57af85b6277e",
+    "appName":  "[FRLAB] - Google Chrome 136.0.7103.49",
+    "appDescription":  "Google Chrome",
+    "publisher":  "Google",
+    "appVersion":  "136.0.7103.49",
+    "intunewinFileName":  "Install_ChromeBrowser",
+    "installCommandLine":  "powershell.exe -ExecutionPolicy Bypass -File .\\Install_ChromeBrowser.ps1",
+    "uninstallCommandLine":  "powershell.exe -ExecutionPolicy Bypass -File .\\Uninstall_ChromeBrowser.ps1",
+    "iconPath":  "Apps\\Package\\chrome.png",
+    "detection":  {
+                      "type":  "MSI",
+                      "productcode":  "{C0A67654-8811-318B-A81F-473E4F5DA8EB}",
+                      "checkProductVersion":  false
+                  },
+    "intunewinFilePath":  "C:\\LabIntune\\LabIntune-ChromePackage\\Apps\\Intunewin\\Install_ChromeBrowser.intunewin"
+}
+
+```
+
+```ps1 title="Auto-DeployIntuneWin32App.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Fonction pour gérer les erreurs ###
+
+function Write-Log {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Message,
+        
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Info", "Warning", "Error", "Success")]
+        [string]$Level = "Info"
+    )
+    
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logMessage = "[$timestamp] [$Level] $Message"
+    
+    switch ($Level) {
+        "Info" { Write-Host $logMessage -ForegroundColor Cyan }
+        "Warning" { Write-Host $logMessage -ForegroundColor Yellow }
+        "Error" { Write-Host $logMessage -ForegroundColor Red }
+        "Success" { Write-Host $logMessage -ForegroundColor Green }
+    }
+}
+
+### Fonction pour vérifier et installer les modules requis ###
+
+function Ensure-ModuleInstalled {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ModuleName
+    )
+    
+    if (-not (Get-Module -ListAvailable -Name $ModuleName)) {
+        Write-Log "Installing module $ModuleName..." "Info"
+        try {
+            Install-Module -Name $ModuleName -Force -Scope CurrentUser
+            Write-Log "Module $ModuleName installed successfully" "Success"
+        }
+        catch {
+            Write-Log "Failed to install module $ModuleName : $_" "Error"
+            throw "Impossible to install module : $ModuleName"
+        }
+    }
+    else {
+        Write-Log "Module $ModuleName already installed" "Info"
+    }
+    
+    Import-Module $ModuleName
+}
+
+### Fonction pour créer le package .intunewin ###
+
+function Create-IntuneWinPackage {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$SourcePath,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$SetupFile,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$OutputPath,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$IntuneWinAppUtilPath
+    )
+    
+    if (-not (Test-Path $SourcePath)) {
+        throw "The source path does not exist : $SourcePath"
+    }
+    
+    if (-not (Test-Path $IntuneWinAppUtilPath)) {
+        throw "IntuneWinAppUtil.exe does not exist : $IntuneWinAppUtilPath"
+    }
+    
+    $sourceFilePath = Join-Path $SourcePath $SetupFile
+    if (-not (Test-Path $sourceFilePath)) {
+        throw "The installer file does not exist : $sourceFilePath"
+    }
+    
+    if (-not (Test-Path $OutputPath)) {
+        New-Item -Path $OutputPath -ItemType Directory -Force | Out-Null
+        Write-Log "Output folder has been created : $OutputPath" "Info"
+    }
+    
+    Write-Log "Creating the package .intunewin right now..." "Info"
+    $processArgs = "-c ""$SourcePath"" -s ""$sourceFilePath"" -o ""$OutputPath"""
+    
+    try {
+        $process = Start-Process $IntuneWinAppUtilPath -ArgumentList $processArgs -Wait -PassThru -NoNewWindow
+        
+        if ($process.ExitCode -ne 0) {
+            throw "Package creation failed with this error code $($process.ExitCode)"
+        }
+        
+        $intunewinFileName = [System.IO.Path]::GetFileNameWithoutExtension($SetupFile) + ".intunewin"
+        $intunewinFilePath = Join-Path $OutputPath $intunewinFileName
+        
+        if (-not (Test-Path $intunewinFilePath)) {
+            throw "The file .intunewin has not been created successfully : $intunewinFilePath"
+        }
+        
+        Write-Log "Package .intunewin created successfully : $intunewinFilePath" "Success"
+        return $intunewinFilePath
+    }
+    catch {
+        Write-Log "Error during package creation : $_" "Error"
+        throw "Error during package creation .intunewin"
+    }
+}
+
+### Fonction pour se connecter à Microsoft Graph ###
+
+function Connect-ToMSGraph {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$ClientId,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$TenantId,
+        
+        [Parameter(Mandatory = $false)]
+        [switch]$UseDeviceAuthentication = $true
+    )
+    
+    try {
+        Write-Log "Connecting to Microsoft Graph..." "Info"
+        Connect-MSIntuneGraph -TenantId $TenantId -ClientId $ClientId
+        Write-Log "Successfully connected to Microsoft Graph" "Success"
+    }
+    catch {
+        Write-Log "Cannot connect to Microsoft Graph : $_" "Error"
+        throw "Cannot connect to Microsoft Graph"
+    }
+}
+
+### Fonction pour déployer l'application dans Intune ###
+
+function Deploy-IntuneApp {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$IntuneWinFilePath,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$AppName,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$AppDescription,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$Publisher,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$AppVersion = [string]::Empty,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$InstallCommandLine,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$UninstallCommandLine,
+        
+        [Parameter(Mandatory = $true)]
+        [PSCustomObject]$DetectionSettings,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$Icon = [string]::Empty,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$Architecture = "x64",
+        
+        [Parameter(Mandatory = $false)]
+        [string]$MinWindowsRelease = "W11_21H2"
+    )
+    
+    if (-not (Test-Path $IntuneWinFilePath)) {
+        throw "The file .intunewin does not exist : $IntuneWinFilePath"
+    }
+    
+    try {
+        Write-Log "Setting up the Detection Rule for $AppName" "Info"
+        if ($DetectionSettings.type -eq "MSI") {
+            $detectionRule = New-IntuneWin32AppDetectionRuleMSI `
+                -ProductCode $DetectionSettings.productcode `
+                -ProductVersionOperator "notConfigured"
+        }
+        elseif ($DetectionSettings.type -eq "File") {
+            $detectionRule = New-IntuneWin32AppDetectionRuleFile `
+                -Path $DetectionSettings.path `
+                -FileOrFolder $DetectionSettings.fileorfolder `
+                -Version $DetectionSettings.version `
+                -Operator $DetectionSettings.operator `
+                -Check32BitOn64System $DetectionSettings.check32biton64system
+        }
+        elseif ($DetectionSettings.type -eq "Registry") {
+            $detectionRule = New-IntuneWin32AppDetectionRuleRegistry `
+                -KeyPath $DetectionSettings.keypath `
+                -ValueName $DetectionSettings.valuename `
+                -Check32BitOn64System $DetectionSettings.check32biton64system `
+                -DetectionType $DetectionSettings.detectiontype `
+                -StringComparisonOperator $DetectionSettings.stringcomparisonoperator `
+                -StringComparisonValue $DetectionSettings.stringcomparisonvalue `
+                -VersionComparisonOperator $DetectionSettings.versioncomparisonoperator `
+                -VersionComparisonValue $DetectionSettings.versioncomparisonvalue `
+                -IntegerComparisonOperator $DetectionSettings.integercomparisonoperator `
+                -IntegerComparisonValue $DetectionSettings.integercomparisonvalue
+        }
+        else {
+            throw "Type of detection is not supported, only MSI / File / Registry works here and you selected : $($DetectionSettings.type)"
+        }
+        
+        Write-Log "Setting up the requirement rule pour $AppName" "Info"
+        $requirementRule = New-IntuneWin32AppRequirementRule -Architecture $Architecture -MinimumSupportedWindowsRelease $MinWindowsRelease
+        
+        $returnCodes = @(
+            New-IntuneWin32AppReturnCode -ReturnCode 0 -Type "success"
+            New-IntuneWin32AppReturnCode -ReturnCode 1707 -Type "success"
+            New-IntuneWin32AppReturnCode -ReturnCode 3010 -Type "softReboot"
+            New-IntuneWin32AppReturnCode -ReturnCode 1641 -Type "hardReboot"
+            New-IntuneWin32AppReturnCode -ReturnCode 1618 -Type "retry"
+        )
+        
+        Write-Log "Deploying the actual package $AppName inside of the portal Intune..." "Info"
+        $existingApp = Get-IntuneWin32App -DisplayName $AppName -ErrorAction SilentlyContinue
+        
+        if ($existingApp) {
+            Write-Log "An application with the name '$AppName' already exists. Updating it right now..." "Warning"
+            $app = Update-IntuneWin32App -ID $existingApp.id `
+                -FilePath $IntuneWinFilePath `
+                -DisplayName $AppName `
+                -Description $AppDescription `
+                -Publisher $Publisher `
+                -AppVersion $AppVersion `
+                -InstallExperience "system" `
+                -RestartBehavior "suppress" `
+                -DetectionRule $detectionRule `
+                -RequirementRule $requirementRule `
+                -ReturnCode $returnCodes `
+                -InstallCommandLine $InstallCommandLine `
+                -UninstallCommandLine $UninstallCommandLine `
+                -Icon $Icon
+            Write-Log "Application $AppName successfully updated (ID: $($app.id))" "Success"
+        }
+        else {
+            $app = Add-IntuneWin32App -FilePath $IntuneWinFilePath `
+                -DisplayName $AppName `
+                -Description $AppDescription `
+                -Publisher $Publisher `
+                -AppVersion $AppVersion `
+                -InstallExperience "system" `
+                -RestartBehavior "suppress" `
+                -DetectionRule $detectionRule `
+                -RequirementRule $requirementRule `
+                -ReturnCode $returnCodes `
+                -InstallCommandLine $InstallCommandLine `
+                -UninstallCommandLine $UninstallCommandLine `
+                -Icon $Icon
+            Write-Log "Application $AppName deployed successfully inside of the portal Intune (ID: $($app.id))" "Success"
+        }
+        
+        return $app
+    }
+    catch {
+        Write-Log "Failed to deploy the application inside of the portal Intune $AppName : $_" "Error"
+        throw "Failed to deploy the application inside of the portal Intune"
+    }
+}
+
+### Fonction principale ###
+
+function Main {
+    $scriptRoot = if ($PSScriptRoot) { 
+        $PSScriptRoot 
+    } elseif ($MyInvocation.MyCommand.Path) { 
+        Split-Path -Parent $MyInvocation.MyCommand.Path 
+    } else {
+        Get-Location
+    }
+    
+    Write-Log "Using the root folder : $scriptRoot" "Info"
+    
+    $configPath = Join-Path $scriptRoot "config.json"
+    $pathPackage = Join-Path $scriptRoot "Apps\Package"
+    $pathIntunewin = Join-Path $scriptRoot "Apps\Intunewin"
+    $intuneWinAppUtilPath = Join-Path $scriptRoot "IntuneWinAppUtil.exe"
+    
+    if (-not (Test-Path $configPath)) {
+        Write-Log "The config.json does not exist : $configPath" "Error"
+        exit 1
+    }
+    
+    if (-not (Test-Path $intuneWinAppUtilPath)) {
+        Write-Log "IntuneWinAppUtil.exe does not exist : $intuneWinAppUtilPath" "Error"
+        exit 1
+    }
+    
+    try {
+        $config = Get-Content $configPath -Raw | ConvertFrom-Json
+        Write-Log "Configuration imported successfully" "Success"
+    }
+    catch {
+        Write-Log "Configuration has not been imported successfully : $_" "Error"
+        exit 1
+    }
+    
+    Ensure-ModuleInstalled -ModuleName "Microsoft.Graph.Intune"
+    Ensure-ModuleInstalled -ModuleName "IntuneWin32App"
+    
+    try {
+        $setupFile = "$($config.intunewinFileName).ps1"
+        $intunewinFilePath = Create-IntuneWinPackage -SourcePath $pathPackage -SetupFile $setupFile `
+                                                   -OutputPath $pathIntunewin -IntuneWinAppUtilPath $intuneWinAppUtilPath
+        
+        $configUpdated = $config | Select-Object *
+        Add-Member -InputObject $configUpdated -MemberType NoteProperty -Name "intunewinFilePath" -Value $intunewinFilePath -Force
+        $configUpdated | ConvertTo-Json | Set-Content $configPath
+        
+        $iconBase64 = [string]::Empty
+        if ($config.iconPath -and (Test-Path (Join-Path $scriptRoot $config.iconPath))) {
+            Write-Log "Importing the icon image from : $($config.iconPath)" "Info"
+            $iconPath = Join-Path $scriptRoot $config.iconPath
+            $iconBytes = [System.IO.File]::ReadAllBytes($iconPath)
+            $iconBase64 = [System.Convert]::ToBase64String($iconBytes)
+            Write-Log "Icon image converted to Base64 successfully" "Success"
+        }
+        else {
+            Write-Log "Icon image not found or not specified correctly in configuration" "Warning"
+        }
+        
+        Connect-ToMSGraph -ClientId $config.clientId -TenantId $config.tenantId -UseDeviceAuthentication
+        
+        $app = Deploy-IntuneApp -IntuneWinFilePath $intunewinFilePath `
+                              -AppName $config.appName `
+                              -AppDescription $config.appDescription `
+                              -Publisher $config.publisher `
+                              -AppVersion $config.appVersion `
+                              -InstallCommandLine $config.installCommandLine `
+                              -UninstallCommandLine $config.uninstallCommandLine `
+                              -DetectionSettings $config.detection `
+                              -Icon $iconBase64
+        
+        Write-Log "Deployment of $($config.appName) is a success" "Success"
+    }
+    catch {
+        Write-Log "An error happened during the process : $_" "Error"
+        exit 1
+    }
+}
+
+### Exécution du script principal ###
+
+Main
+```
+
+```ps1 title="Install_ChromeBrowser.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Gérer PowerShell 32 bits sur les systèmes 64 bits ###
+
+If ($ENV:PROCESSOR_ARCHITEW6432 -eq "AMD64") {
+    Try {
+        &"$ENV:WINDIR\SysNative\WindowsPowershell\v1.0\PowerShell.exe" -File $PSCOMMANDPATH
+    }
+    Catch {
+        Throw "Failed to start $PSCOMMANDPATH"
+    }
+    Exit
+}
+
+### Tester et créer le répertoire pour les journaux d'installation ###
+
+if (!(Test-Path "$($env:ProgramData)\Lab")) {
+    New-Item -Path "$($env:ProgramData)\Lab" -ItemType "Directory" | Out-Null
+}
+if (!(Test-Path "$($env:ProgramData)\Lab\Intune")) {
+    New-Item -Path "$($env:ProgramData)\Lab\Intune" -ItemType "Directory" | Out-Null
+}
+
+$date = Get-Date -UFormat "%Y%m%d-%H%M%S"
+$errorCode = 0
+
+### Démarrer la journalisation ###
+
+Start-Transcript -Path "$($env:ProgramData)\Lab\Intune\$date-Install_Chrome.log" -Force
+
+try {
+    Write-Host "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss')) - Starting Google Chrome Install"
+    
+    # Exécuter le fichier d'install MSI sans interface graphique
+    $result = Start-Process 'msiexec.exe' -ArgumentList "/I GoogleChromeStandaloneEnterprise64.msi /qn /norestart" -Wait -PassThru
+    if ($result.ExitCode -ne 0) { 
+        throw "Installation failed with exit code $($result.ExitCode)"
+    }
+
+    Write-Host "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss')) - Google Chrome installation completed successfully"
+}
+catch {
+    Write-Host "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss')) - Install in error: $($_.Exception.Message)"
+    $errorCode = 1
+}
+finally {
+    Stop-Transcript
+}
+
+Exit $errorCode
+```
+```ps1 title="Uninstall_ChromeBrowser.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Recherche de Google Chrome ###
+
+$SEARCH = 'Google Chrome'
+
+### Récupération des informations d'installation ###
+
+$INSTALLED = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, UninstallString
+$INSTALLED += Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, UninstallString
+
+### Recherche du programme ###
+
+$RESULT = $INSTALLED | Where-Object { $_.DisplayName -ne $null -and $_.DisplayName -match $SEARCH }
+
+### Création du dossier de logs si nécessaire ###
+
+if (!(Test-Path "$($env:ProgramData)\Lab")) {
+    New-Item -Path "$($env:ProgramData)\Lab" -ItemType "Directory" -Force | Out-Null
+}
+if (!(Test-Path "$($env:ProgramData)\Lab\Intune")) {
+    New-Item -Path "$($env:ProgramData)\Lab\Intune" -ItemType "Directory" -Force | Out-Null
+}
+
+$date = Get-Date -UFormat "%Y%m%d-%H%M%S"
+$errorCode = 0
+
+Start-Transcript -Path "$($env:ProgramData)\Lab\Intune\$date-Uninstall_Chrome.log" -Force
+
+### Vérification si le programme est trouvé ###
+
+if ($RESULT) {
+    Write-Host "Program found. Starting the uninstallation..."
+    
+    # Désinstallation de Google Chrome
+    if ($RESULT.UninstallString -like "msiexec*") {
+        try {
+            $ARGS = (($RESULT.UninstallString -split ' ')[1] -replace '/I', '/X ') + ' /q'
+            Start-Process msiexec.exe -ArgumentList $ARGS -Wait
+            Write-Host "Chrome has been uninstalled successfully."
+        }
+        catch {
+            Write-Error "Error during uninstallation of MSI: $_"
+            $errorCode = 1
+        }
+    } else {
+        try {
+            $UNINSTALL_COMMAND = (($RESULT.UninstallString -split '\"')[1])
+            $UNINSTALL_ARGS = (($RESULT.UninstallString -split '\"')[2]) + ' /S'
+            Start-Process $UNINSTALL_COMMAND -ArgumentList $UNINSTALL_ARGS -Wait
+            Write-Host "Chrome has been uninstalled successfully."
+        }
+        catch {
+            Write-Error "Error during uninstallation of MSI: $_"
+            $errorCode = 1
+        }
+    }
+} else {
+    Write-Warning "Program '$SEARCH' not found in the device."
+}
+
+Stop-Transcript
+Exit $errorCode
+```
+
+## Exécution du script `Auto-DeployIntuneWin32App.ps1`
+
+Après l'exécution du script, je me suis connecté sur le prompt Microsoft et cela s'est bien passé par la suite.
+
+![Package Creation Intune Lab 1](/images/intune/intune-lab/new-intunewin32app-lab-intune-1.png) 
+
+Je vois bien le package disponible dans le lab Intune.
+
+![Package Creation Intune Lab 2](/images/intune/intune-lab/new-intunewin32app-lab-intune-2.png) 
+
+J'ai configuré les "assignements" du package en cliquant sur "Edit".
+
+![Package Creation Intune Lab 3](/images/intune/intune-lab/new-intunewin32app-lab-intune-3.png) 
+
+Puis j'ai rajouté le groupe `FRLAB-FullCloud-DynamicGroup` et sauvegardé.
+
+![Package Creation Intune Lab 4](/images/intune/intune-lab/new-intunewin32app-lab-intune-4.png)

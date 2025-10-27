@@ -1,0 +1,6 @@
+{
+    "title": "Intune",
+    "icon": "intune",
+    "root": true,
+    "pages": ["index", "intune-basics", "config-vm-hyper-v-for-intune-lab", "config-intune-lab", "config-intune-lab-autopilot", "config-intune-lab-win32app-package-deployment", "config-intune-lab-endpoint-security-group-admin-local", "config-intune-lab-enrollment-vm"]
+  }

@@ -1,0 +1,6 @@
+{
+    "title": "Azure",
+    "icon": "azure",
+    "pages": ["index", "azure-basics", "config-azure-ad", "config-azure-ad-cloud-sync-to-onprem"],
+    "root": true
+  }
