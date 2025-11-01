@@ -23,7 +23,7 @@ import IconFuture from './components/icons/future';
 
 // Learning cycle configuration
 export const LEARNING_CYCLE = {
-  current: 6,
+  current: 7,
   label: {
     en: 'Repetition = Mother of Learning',
     fr: 'Répétition = Mère de l\'Apprentissage',
