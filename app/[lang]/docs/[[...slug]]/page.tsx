@@ -13,7 +13,7 @@ import { getDirname, getDocsInfo, isIndexPage } from "@/lib/utils";
 import { createElement } from "react";
 import Hero from "@/components/hero";
 import { DOCS, getTranslatedDesc } from "@/consts";
-import { getGithubLastEdit } from "fumadocs-core/content/github";
+// import { getGithubLastEdit } from "fumadocs-core/content/github";
 
 export default async function Page({
   params,
@@ -26,21 +26,20 @@ export default async function Page({
 
   const MDX = page.data.body;
 
-  const time = await getGithubLastEdit({
-    owner: "apescasio",
-    repo: "memo.apescasio.fr",
-    path: `content/docs/${page.path}`,
-  });
+  // const time = await getGithubLastEdit({
+  //   owner: "apescasio",
+  //   repo: "memo.apescasio.fr",
+  //   path: `content/docs/${page.path}`,
+  // });
   // console.log("Last edit time:", time);
   const isIndex = isIndexPage(page.path, lang);
   const dirName = getDirname(page.slugs, isIndex);
-
   return (
     <DocsPage
       toc={isIndex ? undefined : page.data.toc}
       tableOfContent={isIndex ? undefined : { style: "clerk" }}
       full={page.data.full}
-      lastUpdate={time ? new Date(time) : undefined}
+      lastUpdate={page.data.lastModified ? new Date(page.data.lastModified) : undefined}
     >
       {isIndex && dirName ? (
         <IndexHead folder={dirName} lang={lang} />

@@ -1,0 +1,40 @@
+---
+title: Configure a lab Intune
+---
+## Context
+
+I am not a teacher, this is my own, an insignificant student, Aaron (Iso) Pescasio's notes.
+
+To better understand Intune, I decided to set up an Intune lab; that is, to create my own tenant, create my own Autopilot profiles...
+
+This allowed me to explore Intune's features, such as device management, profile configuration, and application deployment.
+
+This guide details the steps I followed to configure an Intune tenant and manage devices centrally.
+
+## Creating a Tenant with Microsoft 365 Business Premium
+
+First, you need to create a [Microsoft](https://www.microsoft.com/en-us/microsoft-365/business/compare-all-microsoft-365-business-products) account, which has a completely free option.
+
+Personally, I chose the 30-day free trial of "Microsoft 365 Business Premium" to gain access to Intune.
+
+![30-day free trial of Microsoft 365 Business Premium](/images/intune/intune-lab/m365-business-premium-tenant-intune-start-1.png)
+
+Once everything is set up, I log in for the first time to the tenant's admin account to enable MFA.
+
+<Callout type="warn">
+For best practices, I always use a browser in private mode when logging into the admin account (to avoid keeping cache).
+</Callout>
+
+![First login to the lab account to set up MFA](/images/intune/intune-lab/m365-business-premium-tenant-intune-start-2.png)
+
+To avoid any surprises with billing, I canceled the 30-day free trial in advance.
+
+![Cancel the 30-day free trial](/images/intune/intune-lab/m365-business-premium-tenant-intune-start-3.png)
+
+After a few clicks and about 3 minutes of waiting, I had an Intune lab and an Azure tenant ready.
+
+![Intune lab and Azure tenant ready](/images/intune/intune-lab/m365-business-premium-tenant-intune-start-4.png)
+
+The only account I have is properly assigned the Microsoft 365 Business Premium license, which includes Intune and Azure AD Premium P1.
+
+![Microsoft 365 Business Premium license](/images/intune/intune-lab/m365-business-premium-tenant-intune-start-5.png)

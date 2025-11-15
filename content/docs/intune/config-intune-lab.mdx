@@ -1,0 +1,41 @@
+---
+title: Configurer un lab Intune
+---
+## Contexte
+
+Je ne suis pas enseignant, ce sont mes propres notes, celles d'un étudiant insignifiant, Aaron (Iso) Pescasio.
+
+Pour mieux comprendre Intune, j'ai décidé de mettre en place un lab Intune; donc créer mon propre tenant, créer mes propres profils Autopilot...
+
+Cela m'a permis d'explorer les fonctionnalités d'Intune, comme la gestion des appareils, la configuration des profils, et le déploiement d'applications.
+
+Ce guide détaille les étapes que j'ai suivies pour configurer un tenant Intune et gérer les appareils de manière centralisée.
+
+## Création d'un tenant avec Microsoft 365 Business Premium
+
+Tout d'abord, il faut créer un compte [Microsoft](https://www.microsoft.com/fr-fr/microsoft-365/business/compare-all-microsoft-365-business-products), ce qui a une option totalement gratuite. 
+
+Personellement, j'ai pris l'offre 30 jours gratuit de "Microsoft 365 Business Premium" pour avoir accès à Intune.
+
+![30 jours gratuit de Microsoft 365 Business Premium](/images/intune/intune-lab/m365-business-premium-tenant-intune-start-1.png) 
+
+Une fois que tout est configuré, je me connecte pour la première fois sur le compte admin du tenant afin de mettre du MFA.
+
+<Callout type="warn">
+Pour les best-practices, j'utilise toujours un navigateur en mode privé lorsque je me connecte sur le compte admin (pour ne pas garder du cache).
+</Callout>
+
+![Première connexion sur le compte lab pour mettre en place du MFA](/images/intune/intune-lab/m365-business-premium-tenant-intune-start-2.png) 
+
+Et pour éviter toute surprise avec la facturation, j'ai annulé l’essai gratuit de 30 jours en avance.
+
+![Annuler l'essai gratuit de 30 jours](/images/intune/intune-lab/m365-business-premium-tenant-intune-start-3.png) 
+
+Après quelques clics et 3 minutes~ d'attentes, j'ai un lab Intune et un tenant Azure de prêts. 
+
+![Lab Intune et tenant Azure OK](/images/intune/intune-lab/m365-business-premium-tenant-intune-start-4.png) 
+
+Le seul compte que j'ai dispose bien de la licence Microsoft 365 Business Premium, qui inclut Intune et Azure AD Premium P1. 
+
+![License Microsoft 365 Business Premium](/images/intune/intune-lab/m365-business-premium-tenant-intune-start-5.png) 
+

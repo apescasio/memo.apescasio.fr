@@ -4,6 +4,7 @@
     "cycles",
     "powershell",
     "bash",
-    "azure"
+    "azure",
+    "intune"
   ]
 }
