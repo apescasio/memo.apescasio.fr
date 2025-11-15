@@ -1,0 +1,162 @@
+---
+title: Configure NGINX on a VPS
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Context
+
+I am not a teacher, this is my own, an insignificant student, Aaron (Iso) Pescasio's notes.
+
+To practice using Linux, I created this script to simplify setting up an NGINX server on a VPS in order to host a website.
+
+## Step-by-step Script Breakdown
+<DynamicCallout>
+<Steps>
+<Step>
+### Install NGINX ###
+
+Install the `nginx` web server, essential for hosting a static website *(~10 seconds)*.
+</Step>
+
+<Step>
+### Define Domain Name ###
+
+Choose the domain name to be used for the website configuration *(~1 second)*.
+</Step>
+
+<Step>
+### Set Web Directory Permissions ###
+
+Grant permissions to the current user to manage the website content *(~1 second)*.
+</Step>
+
+<Step>
+### Create Website Directory Structure ###
+
+Create the `/var/www/domainname/public` structure to host the website files *(~2 seconds)*.
+</Step>
+
+<Step>
+### Add a Test Page ###
+
+Add a `index.html` test file to verify the site is up and running *(~1 second)*.
+</Step>
+
+<Step>
+### Remove Default Configs ###
+
+Delete NGINX’s default configuration files to avoid conflicts *(~2 seconds)*.
+</Step>
+
+<Step>
+### Create a Custom NGINX Config ###
+
+Write a custom server block for the domain name pointing to the right directory *(~3 seconds)*.
+</Step>
+
+<Step>
+### Enable the Configuration ###
+
+Create a symbolic link in `sites-enabled`, then test and reload NGINX *(~3 seconds)*.
+</Step>
+
+<Step>
+### Install Certbot ###
+
+Install `certbot` with NGINX support to generate an SSL certificate *(~10 seconds)*.
+</Step>
+
+<Step>
+### Generate SSL Certificate ###
+
+Run `certbot` to automatically generate and apply a Let's Encrypt HTTPS certificate *(~30 seconds)*.
+</Step>
+
+<Step>
+### Test Renewal ###
+
+Show an informational message and run a test for automatic certificate renewal *(~5 seconds)*.
+</Step>
+</Steps>
+</DynamicCallout>
+
+## Bash Script
+
+```bash title="config-nginx-vps.sh"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Script to host a website using NGINX and secure it with HTTPS via Certbot ###
+
+### Install NGINX web server ###
+
+sudo apt install nginx -y
+
+### Set the domain name to use for the site ###
+
+domain_name='apescasio.fr'
+
+### Assign ownership of /var/www to the current user ###
+
+sudo chown $USER:$USER /var/www -R
+
+### Navigate to the base directory for web content ###
+
+cd /var/www
+
+### Create the site directories: root + public folder ###
+
+mkdir $domain_name && mkdir $domain_name/public
+
+### Navigate to the site's public directory ###
+
+cd $domain_name/public
+
+### Create a test index file to verify the site is online ###
+
+echo 'Test' >> index.html
+
+### Remove default NGINX configuration files ###
+
+sudo rm /etc/nginx/sites-available/default
+sudo rm /etc/nginx/sites-enabled/default
+
+### Create a new NGINX configuration file for the site ###
+
+sudo sh -c "echo 'server {
+listen 80;
+server_name $domain_name www.$domain_name;
+
+root /var/www/$domain_name/public;
+index index.html;
+
+location / {
+try_files \$uri \$uri/ =404;
+error_page 404 /404/index.html;
+}
+}' > /etc/nginx/sites-available/$domain_name.conf"
+
+### Enable the NGINX site configuration via a symbolic link ###
+
+sudo ln -s /etc/nginx/sites-available/$domain_name.conf /etc/nginx/sites-enabled/
+
+### Test NGINX configuration and reload if valid ###
+
+sudo nginx -t && sudo systemctl reload nginx
+
+### Install Certbot to obtain an SSL certificate via NGINX ###
+
+sudo apt-get install python3-certbot-nginx -y
+
+### Generate Let's Encrypt SSL certificate and auto-configure NGINX ###
+
+sudo certbot --nginx -d $domain_name -d www.$domain_name
+
+### Informational message about SSL certificate validity ###
+
+echo "Let's Encrypt SSL certificate is only valid for 90 days. Testing SSL certificate renewal process."
+
+### Test the automatic certificate renewal process ###
+
+sudo certbot renew --dry-run
+```

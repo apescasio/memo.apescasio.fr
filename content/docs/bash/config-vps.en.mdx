@@ -1,0 +1,191 @@
+---
+title: Setting up a VPS
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Context
+
+I am not a teacher, this is my own, an insignificant student, Aaron (Iso) Pescasio's notes.
+
+To practice with Linux, I decided to create this script that will prepare and secure a brand-new VPS (rented from Netcup).
+
+Thanks to snapshots, I was able to test the script's execution multiple times and revert to a fresh VPS each time, allowing me to conduct tests safely.
+
+## Step-by-step Script Breakdown
+
+<DynamicCallout>
+<Steps>
+<Step>
+### Server initialization ###
+Connect to the VPS via SSH as root, then update the package list and packages to ensure a clean and up-to-date environment *(~3 seconds)*.
+</Step>
+
+<Step>
+### Installation of essential tools ###
+Install essential packages like `ufw` for the firewall, `fail2ban` for protection against attacks, and `nginx` to host a website *(~15 seconds)*.
+</Step>
+
+<Step>
+### Securing the root account ###
+Change the password of the `root` account to enhance security *(~5 seconds)*.
+</Step>
+
+<Step>
+### Time zone configuration ###
+Update the time zone to Paris for better log readability and time consistency *(~2 seconds)*.
+</Step>
+
+<Step>
+### Terminal customization ###
+Download a customized `.bashrc` including aliases and command timestamping in the history for a more ergonomic environment *(~5 seconds)*.
+</Step>
+
+<Step>
+### Strengthening SSH security ###
+Change the default SSH port to a non-standard port (49152–65535), disable root login, and set up automatic disconnection after 120 seconds of inactivity *(~5 seconds)*.
+</Step>
+
+<Step>
+### Creating a personal user account ###
+Create a non-root account with sudo privileges, add it to the SSH whitelist to restrict access to authorized users only *(~5 seconds)*.
+</Step>
+
+<Step>
+### Firewall configuration ###
+Allow the new SSH port and web traffic for Nginx, then enable the `ufw` firewall to block everything else *(~5 seconds)*.
+</Step>
+
+<Step>
+### Fix for NGINX bug ###
+Add a special configuration to avoid a common error when starting NGINX on some VPS *(~5 seconds)*.
+</Step>
+
+<Step>
+### Fail2ban configuration for SSH ###
+Create the log file `/var/log/auth_fail2ban.log` if needed, then configure a specific jail for SSH to protect against brute-force attacks *(~10 seconds)*.
+</Step>
+
+<Step>
+### Switching to the user account ###
+Log in with the new user account, marking the end of root configuration and the start of secure VPS management *(~3 seconds)*.
+</Step>
+</Steps>
+</DynamicCallout>
+
+## Bash Script
+```sh title="config-vps.sh"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### 1. Script to prepare and secure a VPS ###
+
+### Prerequisites: -Linux VPS, -SSH connection, -'root' access ###
+
+### After connecting to the VPS with SSH, I log in as 'root': 'sudo su' ###
+
+### Update the package list ###
+
+apt update
+
+### Update the packages themselves ###
+
+apt upgrade -y
+
+### Install all packages needed to secure my VPS and host my website ###
+
+apt install -y wget ufw fail2ban nginx ### (fail2ban, I keep the default config) ###
+
+### Create the fail2ban log file ###
+
+touch /var/log/auth_fail2ban.log
+
+### Create a specific jail for SSH ###
+
+cat <<EOL > /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port = ssh
+logpath = /var/log/auth_fail2ban.log
+maxretry = 5
+bantime = 3600
+EOL
+
+### Restart the fail2ban service ###
+
+systemctl enable fail2ban && systemctl restart fail2ban
+
+### Change the password for the 'root' account ###
+
+echo "Enter a new password for the 'root' account"
+passwd
+
+### Update the VPS timezone ###
+
+timedatectl set-timezone Europe/Paris
+
+### Update my .bashrc (what I added: my shortcuts, changes to the history command to display the date next to executed commands) ###
+
+#cd ~
+#mv /etc/bash.bashrc /etc/bash.bashrc.backup
+#wget -O /etc/bash.bashrc https://raw.githubusercontent.com/ApecioU/configfiles/main/bash.bashrc
+#source /etc/bash.bashrc
+
+### Change the default SSH listening port ###
+
+while true; do
+    read -p "Enter a number between 49152 and 65535: " port
+    if [[ "$port" -ge 49152 && "$port" -le 65535 ]]; then ### For added security, use a number between 49152 and 65535. ###
+        echo "Valid port: $port"
+        break
+    else
+        echo "Invalid port. Please enter a number between 49152 and 65535."
+    fi
+done
+
+sed -i "s/^#Port 22/Port $port/" /etc/ssh/sshd_config
+
+### Note that you will need to specify the new port for every SSH connection to your server, e.g.: ###
+### ssh username@VPS_IPv4 -p NewPort ###
+
+### Disable 'root' login in the SSH config ###
+
+sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config
+
+### Disconnect the user after 120s of inactivity ###
+
+sed -i 's/^#ClientAliveInterval 0/ClientAliveInterval 120/' /etc/ssh/sshd_config
+
+### Define a variable for creating a personal account ###
+
+read -p "Enter a username for creating a personal account: " perso
+
+### Modify the SSH config to specify the usernames allowed to use SSH; all other users are blocked ###
+
+echo "AllowUsers $perso" | sudo tee -a /etc/ssh/sshd_config
+
+### Restart the service to apply changes ###
+
+systemctl restart sshd
+
+### Before enabling the ufw firewall, allow SSH connections on the selected port ###
+
+ufw allow $port/tcp && ufw allow 'Nginx Full'  ### This command allows SSH and HTTP+S connections on the selected ports; all other ports are blocked :) ###
+
+### Fix the 'Invalid argument' issue with NGINX on first installation ###
+
+mkdir /etc/systemd/system/nginx.service.d
+printf "[Service]\nExecStartPost=/bin/sleep 0.1\n" > /etc/systemd/system/nginx.service.d/override.conf
+systemctl daemon-reload
+systemctl restart nginx
+
+### Now we can enable the firewall after allowing the new SSH port ###
+
+ufw enable
+
+### Create a personal account and add it to the 'sudo' group ###
+
+sudo useradd -m -s /bin/bash -G sudo $perso && echo "Enter a password for $perso" && passwd $perso && sudo usermod -c "$perso" $perso
+
+### Log in with the personal account ###
+
+su $perso

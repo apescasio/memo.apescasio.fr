@@ -1,0 +1,189 @@
+---
+title: Configurer un VPS
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Contexte
+
+Je ne suis pas enseignant, ce sont mes propres notes, celles d'un étudiant insignifiant, Aaron (Iso) Pescasio.
+
+Pour m'entrainer avec Linux, j'ai décidé de créer ce script qui préparera et sécurisera un VPS tout neuf (que je loue chez Netcup). 
+
+Grâce aux snapshots, j'ai été en mesure de tester l'exécution du script plusieurs fois et de revenir à chaque fois à un VPS tout neuf, ce qui m'a permis d'effectuer des tests en toute sécurité.
+## Déroulement du script étape par étape
+
+<DynamicCallout>
+<Steps>
+<Step>
+### Initialisation du serveur ###
+Connexion au VPS via SSH en tant que root, puis mise à jour de la liste et des paquets pour s’assurer d’un environnement propre et à jour *(~3 secondes)*.
+</Step>
+
+<Step>
+### Installation des outils essentiels ###
+Installation de paquets indispensables comme `ufw` pour le pare-feu, `fail2ban` pour la protection contre les attaques, et `nginx` pour héberger un site web *(~15 secondes)*.
+</Step>
+
+<Step>
+### Sécurisation du compte root ###
+Changement du mot de passe du compte `root` pour renforcer la sécurité *(~5 secondes)*.
+</Step>
+
+<Step>
+### Configuration du fuseau horaire ###
+Mise à jour du fuseau horaire vers Paris pour une meilleure lisibilité des logs et cohérence horaire *(~2 secondes)*.
+</Step>
+
+<Step>
+### Personnalisation du terminal ###
+Téléchargement d’un `.bashrc` personnalisé incluant des alias et l’horodatage des commandes dans l’historique pour un environnement plus ergonomique *(~5 secondes)*.
+</Step>
+
+<Step>
+### Renforcement de la sécurité SSH ###
+Modification du port SSH par défaut vers un port non standard (49152–65535), désactivation de la connexion root, et mise en place d’une déconnexion automatique après 120 secondes d’inactivité *(~5 secondes)*.
+</Step>
+
+<Step>
+### Création d’un compte utilisateur personnel ###
+Création d’un compte non-root avec privilèges sudo, ajout à la whitelist SSH pour restreindre l’accès aux seuls utilisateurs autorisés *(~5 secondes)*.
+</Step>
+
+<Step>
+### Configuration du pare-feu ###
+Autorisation du nouveau port SSH et du trafic web pour Nginx, puis activation du pare-feu `ufw` pour bloquer tout le reste *(~5 secondes)*.
+</Step>
+
+<Step>
+### Fix pour le bug NGINX ###
+Ajout d’une configuration spéciale pour éviter une erreur courante au démarrage de NGINX sur certains VPS *(~5 secondes)*.
+</Step>
+
+<Step>
+### Configuration de fail2ban pour SSH ###
+Création du fichier de log `/var/log/auth_fail2ban.log` si nécessaire, puis configuration d’un jail spécifique pour SSH afin de protéger contre les attaques par force brute *(~10 secondes)*.
+</Step>
+
+<Step>
+### Passage au compte utilisateur ###
+Connexion avec le nouveau compte utilisateur, ce qui marque la fin de la configuration root et le début d’une gestion sécurisée du VPS *(~3 secondes)*.
+</Step>
+</Steps>
+</DynamicCallout>
+## Bash Script
+```sh title="config-vps.sh"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### 1. Script pour préparer et sécuriser un VPS ###
+
+### Prérequis: -VPS sous Linux, -Connexion SSH, -Accès 'root' ###
+
+### Après avoir connecté sur le VPS avec ssh, je me connecte avec le compte 'root' : 'sudo su' ###
+
+### Je mets à jour la liste des paquets ###
+
+apt update
+
+### Je mets à jour des paquets à proprement parler ###
+
+apt upgrade -y
+
+### J'installe tous les paquets que j'aurai besoin pour sécuriser mon VPS et l'utiliser pour héberger mon site web ###
+
+apt install -y wget ufw fail2ban nginx ### (fail2ban je laisse la config par défaut) ###
+
+### Création du fichier de log fail2ban ###
+
+touch /var/log/auth_fail2ban.log
+
+### Création d'un jail spécifique pour SSH ###
+
+cat <<EOL > /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port = ssh
+logpath = /var/log/auth_fail2ban.log
+maxretry = 5
+bantime = 3600
+EOL
+
+### Redémarrage du service fail2ban ###
+
+systemctl enable fail2ban && systemctl restart fail2ban
+
+### Je modifie le mot de passe de mon compte 'root' ###
+
+echo "Entrez un nouveau mot de passe pour le compte 'root'"
+passwd
+
+### Je mets à jour le timezone de mon VPS ###
+
+timedatectl set-timezone Europe/Paris
+
+### Je mets à jour mon .bashrc (ce que j'ai ajouté: mes raccourcis, mes modifications concernant la commande history pour qu'ils affichent la date à coté de la commande executé) ###
+
+cd ~
+mv /etc/bash.bashrc /etc/bash.bashrc.backup
+wget -O /etc/bash.bashrc https://raw.githubusercontent.com/ApecioU/configfiles/main/bash.bashrc
+source /etc/bash.bashrc
+
+### Je modifie le port d'écoute SSH par défaut ###
+
+while true; do
+    read -p "Enter a number between 49152 and 65535: " port
+    if [[ "$port" -ge 49152 && "$port" -le 65535 ]]; then ### Pour plus de sécurité, utilisez un numéro entre 49152 et 65535. ###
+        echo "Valid port: $port"
+        break
+    else
+        echo "Invalid port. Please enter a number between 49152 and 65535."
+    fi
+done
+
+sed -i "s/^#Port 22/Port $port/" /etc/ssh/sshd_config
+
+### N'oubliez pas que vous devrez indiquer le nouveau port à chaque demande de connexion SSH à votre serveur, par exemple : ###
+### ssh nomdutilisateur@IPv4_de_votre_VPS -p NouveauPort ###
+
+### Je désactive la connexion 'root' dans la config SSH ###
+
+sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config
+
+### Après 120s d'inactivité, déconnecte l'user ###
+
+sed -i 's/^#ClientAliveInterval 0/ClientAliveInterval 120/' /etc/ssh/sshd_config
+
+### Je définis une variable pour la création d'un compte perso ###
+
+read -p "Entrez un identifiant pour la création d'un compte perso : " perso
+
+### Je modifie la config ssh pour définir le nom d'utilisateurs qui peuvent utiliser ssh ; tous les autres utilisants sont bloqués ###
+
+echo "AllowUsers $perso" | sudo tee -a /etc/ssh/sshd_config
+
+### Je redémarre le service pour que cela s'applique ###
+
+systemctl restart sshd
+
+### Avant d'activer le firewall ufw, j'autorise la connexion SSH sur le port que j'ai sélectionné ###
+
+ufw allow $port/tcp && ufw allow 'Nginx Full'  ### Cette commande permet la connexion SSH et HTTP+S sur les ports sélectionnés ; pour tous les autres ports : c'est bloqué :) ###
+
+### Régler le 'Invalid argument' de NGINX à première installation ###
+
+mkdir /etc/systemd/system/nginx.service.d
+printf "[Service]\nExecStartPost=/bin/sleep 0.1\n" > /etc/systemd/system/nginx.service.d/override.conf
+systemctl daemon-reload
+systemctl restart nginx
+
+### Maintenant on peut activer le pare-feu après avoir autorisé le nouveau port SSH ###
+
+ufw enable
+
+### Je crée un compte perso et je l'ajoute dans le groupe 'sudo' ###
+
+sudo useradd -m -s /bin/bash -G sudo $perso && echo "Entrez un mot de passe pour $perso" && passwd $perso && sudo usermod -c "$perso" $perso
+
+### Je me connecte avec mon compte perso ###
+
+su $perso
