@@ -1,0 +1,6 @@
+{
+    "title": "Cycles",
+    "icon": "cycles",
+    "pages": ["index", "soul", "kapwa", "timeline-of-my-cycles"],
+    "root": true
+  }
