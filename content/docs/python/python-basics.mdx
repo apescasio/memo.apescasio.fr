@@ -1,0 +1,247 @@
+---
+title: Bases sur Python 
+---
+## Python : Qu'est-ce que c'est exactement ?
+
+**Python** est un langage de programmation de haut niveau et interprété, connu pour sa lisibilité et sa simplicité. Il est largement utilisé pour l'automatisation, le développement web, l'analyse de données et l'administration système.
+
+Caractéristiques clés :
+- Syntaxe facile à lire
+- Interprété (pas de compilation nécessaire)
+- Multiplateforme (Windows, macOS, Linux)
+- Bibliothèque standard étendue
+- Énorme écosystème de packages tiers
+
+<Callout title="Point clé">
+Python est parfait pour les débutants et assez puissant pour les applications d'entreprise complexes.
+</Callout>
+
+---
+
+## Syntaxe de base
+
+### Variables et types de données
+```python
+### Variables (pas de déclaration nécessaire) ###
+
+name = "Aaron"
+age = 22
+is_filipino = True
+servers = ["memo", "cli", "lhc", "bbb", "mundo"]
+
+### Types de données de base ###
+
+text = "Hello World"         # Chaîne de caractères
+number = 44                  # Entier
+price = 19.99                # Flottant
+active = True                # Booléen
+```
+
+### Structures de contrôle
+
+```python
+### Instructions if ###
+
+if age >= 18:
+    print("Adulte")
+else:
+    print("Mineur")
+
+### Boucle for ###
+
+for server in servers:
+    print(f"Vérification de {server}")
+
+### Boucle while ###
+
+count = 0
+while count < 3:
+    print(f"Tentative {count + 1}")
+    count += 1
+```
+
+### Fonctions
+
+```python
+def check_server_status(server_name):
+    """Vérifier si un serveur répond"""
+    print(f"Ping de {server_name}...")
+    return "En ligne"  # Exemple simplifié
+
+### Appeler la fonction ###
+
+status = check_server_status("web01")
+print(status)
+```
+
+---
+
+## Travailler avec les modules
+
+### Installer des packages
+```bash
+### Installer des packages avec pip ###
+
+pip install requests
+pip install pandas
+pip install flask
+```
+
+### Importer des modules
+```python
+### Modules intégrés ###
+
+import os
+import json
+from datetime import datetime
+
+### Modules tiers ###
+
+import requests
+
+### Vos propres modules ###
+
+from my_utils import server_tools
+```
+
+<Callout title="Best practice">
+Utilisez toujours des environnements virtuels (`python -m venv myenv`) pour isoler les dépendances du projet.
+</Callout>
+
+---
+
+## Bases des API avec Requests
+
+### Faire des requêtes HTTP
+```python
+import requests
+import json
+
+### Requête GET - Récupérer des données ###
+
+response = requests.get('https://jsonplaceholder.typicode.com/users')
+
+if response.status_code == 200:
+    users = response.json()
+    print(f"Trouvé {len(users)} utilisateurs")
+    
+    # Afficher les infos du premier utilisateur
+    first_user = users[0]
+    print(f"Nom : {first_user['name']}")
+    print(f"Email : {first_user['email']}")
+else:
+    print(f"Erreur : {response.status_code}")
+```
+
+### Requête POST - Envoyer des données
+```python
+import requests
+
+### Créer un nouveau post ###
+
+new_post = {
+    'title': 'Statut de mon serveur',
+    'body': 'Tous les serveurs fonctionnent normalement',
+    'userId': 1
+}
+
+response = requests.post(
+    'https://jsonplaceholder.typicode.com/posts',
+    json=new_post
+)
+
+if response.status_code == 201:
+    created_post = response.json()
+    print(f"Post créé avec l'ID : {created_post['id']}")
+```
+
+### Exemple concret : Surveillance de serveur
+```python
+import requests
+from datetime import datetime
+
+def check_website_status(url):
+    """Vérifier si un site web répond"""
+    try:
+        response = requests.get(url, timeout=5)
+        return {
+            'url': url,
+            'status_code': response.status_code,
+            'response_time': response.elapsed.total_seconds(),
+            'is_up': response.status_code == 200,
+            'checked_at': datetime.now().isoformat()
+        }
+    except requests.exceptions.RequestException as e:
+        return {
+            'url': url,
+            'error': str(e),
+            'is_up': False,
+            'checked_at': datetime.now().isoformat()
+        }
+
+### Surveiller plusieurs sites web ###
+
+websites = [
+    'https://httpbin.org/status/200',
+    'https://httpbin.org/status/404',
+    'https://httpbin.org/delay/1'
+]
+
+print("Rapport de statut des sites web")
+print("-" * 50)
+
+for site in websites:
+    status = check_website_status(site)
+    
+    if status['is_up']:
+        print(f"✅ {site} - OK ({status['response_time']:.2f}s)")
+    else:
+        print(f"❌ {site} - HORS LIGNE")
+        if 'error' in status:
+            print(f"   Erreur : {status['error']}")
+```
+
+<Callout title="API éducatives">
+Essayez ces API gratuites pour vous entraîner :
+- **HTTPBin** (`httpbin.org`) - Service de test HTTP  
+- **JSONPlaceholder** (`jsonplaceholder.typicode.com`) - Fausse API REST
+- **ReqRes** (`reqres.in`) - API de test avec de vrais codes de réponse
+</Callout>
+
+---
+
+## Error Handling
+
+```python
+import requests
+
+def safe_api_call(url):
+    """Faire un appel API avec une gestion d'erreur appropriée"""
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()  # Lève HTTPError pour les mauvaises réponses
+        return response.json()
+        
+    except requests.exceptions.Timeout:
+        print("Délai d'attente de la requête dépassé")
+    except requests.exceptions.ConnectionError:
+        print("Erreur de connexion")
+    except requests.exceptions.HTTPError as e:
+        print(f"Erreur HTTP : {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Échec de la requête : {e}")
+    except json.JSONDecodeError:
+        print("Réponse JSON invalide")
+    
+    return None
+
+### Utilisation ###
+
+data = safe_api_call('https://jsonplaceholder.typicode.com/users/1')
+if data:
+    print(f"Utilisateur : {data['name']}")
+```
+
+<Callout title="Best practice">
+Incluez toujours la gestion des erreurs dans les scripts de production. Les requêtes réseau peuvent échouer pour de nombreuses raisons !
+</Callout>

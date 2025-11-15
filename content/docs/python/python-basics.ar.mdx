@@ -1,0 +1,247 @@
+---
+title: أساسيات بايثون
+---
+## بايثون: ما هي بالضبط؟
+
+**Python** هي لغة برمجة عالية المستوى ومفسَّرة معروفة بالوضوح والبساطة. تُستخدم على نطاق واسع في الأتمتة، تطوير الويب، تحليل البيانات، وإدارة الأنظمة.
+
+خصائص رئيسية:
+- صياغة سهلة القراءة
+- مفسَّرة (لا حاجة لمرحلة ترجمة Compilation)
+- متعدّدة المنصات (Windows, macOS, Linux)
+- مكتبة قياسية ضخمة
+- نظام بيئي هائل من الحزم الخارجية
+
+<Callout title="أهم فكرة">
+Python ممتازة للمبتدئين وقوية بما يكفي لتطبيقات مؤسسية معقّدة.
+</Callout>
+
+---
+
+## الصياغة الأساسية
+
+### المتغيرات وأنواع البيانات
+```python
+### المتغيرات (لا حاجة لتعريف مسبق لنوعها) ###
+
+name = "Aaron"
+age = 22
+is_filipino = True
+servers = ["memo", "cli", "lhc", "bbb", "mundo"]
+
+### أنواع البيانات الأساسية ###
+
+text = "Hello World"       # نص (String)
+number = 44                # عدد صحيح (Integer)
+price = 19.99              # عدد عشري (Float)
+active = True              # منطقي (Boolean)
+```
+
+### التراكيب التحكمية
+
+```python
+### جملة if ###
+
+if age >= 18:
+    print("Adult")
+else:
+    print("Minor")
+
+### حلقة for ###
+
+for server in servers:
+    print(f"Checking {server}")
+
+### حلقة while ###
+
+count = 0
+while count < 3:
+    print(f"Attempt {count + 1}")
+    count += 1
+```
+
+### الدوال
+
+```python
+def check_server_status(server_name):
+    """التحقق إن كان الخادم يستجيب"""
+    print(f"Pinging {server_name}...")
+    return "Online"  # مثال مبسّط
+
+### استدعاء الدالة ###
+
+status = check_server_status("web01")
+print(status)
+```
+
+---
+
+## التعامل مع الوحدات (Modules)
+
+### تثبيت الحزم
+```bash
+### تثبيت الحزم باستخدام pip ###
+
+pip install requests
+pip install pandas
+pip install flask
+```
+
+### الاستيراد
+```python
+### وحدات مدمجة ###
+
+import os
+import json
+from datetime import datetime
+
+### وحدات خارجية (طرف ثالث) ###
+
+import requests
+
+### وحداتك الخاصة ###
+
+from my_utils import server_tools
+```
+
+<Callout title="أفضل ممارسة">
+استخدم دائمًا البيئات الافتراضية (`python -m venv myenv`) لعزل تبعيات المشروع.
+</Callout>
+
+---
+
+## أساسيات واجهات API باستخدام Requests
+
+### تنفيذ طلبات HTTP
+```python
+import requests
+import json
+
+### طلب GET - جلب بيانات ###
+
+response = requests.get('https://jsonplaceholder.typicode.com/users')
+
+if response.status_code == 200:
+    users = response.json()
+    print(f"Found {len(users)} users")
+    
+    # طباعة بيانات أول مستخدم
+    first_user = users[0]
+    print(f"Name: {first_user['name']}")
+    print(f"Email: {first_user['email']}")
+else:
+    print(f"Error: {response.status_code}")
+```
+
+### طلب POST - إرسال بيانات
+```python
+import requests
+
+### إنشاء منشور جديد ###
+
+new_post = {
+    'title': 'My Server Status',
+    'body': 'All servers are running normally',
+    'userId': 1
+}
+
+response = requests.post(
+    'https://jsonplaceholder.typicode.com/posts',
+    json=new_post
+)
+
+if response.status_code == 201:
+    created_post = response.json()
+    print(f"Created post with ID: {created_post['id']}")
+```
+
+### مثال واقعي: مراقبة مواقع
+```python
+import requests
+from datetime import datetime
+
+def check_website_status(url):
+    """التحقق إن كان الموقع يستجيب"""
+    try:
+        response = requests.get(url, timeout=5)
+        return {
+            'url': url,
+            'status_code': response.status_code,
+            'response_time': response.elapsed.total_seconds(),
+            'is_up': response.status_code == 200,
+            'checked_at': datetime.now().isoformat()
+        }
+    except requests.exceptions.RequestException as e:
+        return {
+            'url': url,
+            'error': str(e),
+            'is_up': False,
+            'checked_at': datetime.now().isoformat()
+        }
+
+### مراقبة عدة مواقع ###
+
+websites = [
+    'https://httpbin.org/status/200',
+    'https://httpbin.org/status/404',
+    'https://httpbin.org/delay/1'
+]
+
+print("Website Status Report")
+print("-" * 50)
+
+for site in websites:
+    status = check_website_status(site)
+    
+    if status['is_up']:
+        print(f"✅ {site} - OK ({status['response_time']:.2f}s)")
+    else:
+        print(f"❌ {site} - DOWN")
+        if 'error' in status:
+            print(f"   Error: {status['error']}")
+```
+
+<Callout title="واجهات تعليمية">
+جرّب هذه الـ APIs المجانية للتدريب:
+- **HTTPBin** (`httpbin.org`) - خدمة اختبار HTTP  
+- **JSONPlaceholder** (`jsonplaceholder.typicode.com`) - واجهة REST وهمية
+- **ReqRes** (`reqres.in`) - واجهة اختبار مع رموز استجابة حقيقية
+</Callout>
+
+---
+
+## التعامل مع الأخطاء
+
+```python
+import requests
+
+def safe_api_call(url):
+    """تنفيذ نداء API مع معالجة سليمة للأخطاء"""
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()  # يرفع HTTPError للاستجابات غير الجيدة
+        return response.json()
+        
+    except requests.exceptions.Timeout:
+        print("Request timed out")
+    except requests.exceptions.ConnectionError:
+        print("Connection error")
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP error: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+    except json.JSONDecodeError:
+        print("Invalid JSON response")
+    
+    return None
+
+### الاستخدام ###
+
+data = safe_api_call('https://jsonplaceholder.typicode.com/users/1')
+if data:
+    print(f"User: {data['name']}")
+```
+
+<Callout title="أفضل ممارسة">
+احرص دائمًا على تضمين معالجة الأخطاء في سكربتات الإنتاج. طلبات الشبكة قد تفشل لأسباب عديدة!
+</Callout>

@@ -1,0 +1,232 @@
+---
+title: Entrenar mis PPM y mi memoria
+---
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
+## Contexto
+
+No soy profesor, estas son mis propias notas, las de un estudiante insignificante, Aaron (Iso) Pescasio.
+
+No soy doctor, estas son mis propias notas, las de un estudiante insignificante, Aaron (Iso) Pescasio.
+
+En mis días de instituto, solía reescribir **una y otra vez** mis apuntes de Histoire Géo y otras clases en el teclado.
+
+Años después, creé esta aplicación para entrenar mis palabras por minuto y mi memoria.
+
+Escribo tan rápido como puedo y mientras escribo, repito cada frase en mi cerebro.
+
+Para quienes prefieren ver [un video real que cubre todo paso a paso](https://youtube.com/@apescasio).
+
+![ALZHEIMERS-RESISTANCE-TRAINING (ART)](/images/python/art.png)
+
+## A.R.T Python App
+
+La base del código viene de [Tech with Tim](https://www.youtube.com/watch?v=NQ5i1kJAA6Y), a quien recomiendo encarecidamente ver para proyectos de Python que crear.
+
+El código de Tim está disponible en su [GitHub](https://github.com/techwithtim/WPM_Typing_Test).
+
+Los cambios que hice al código fueron:
+
+- Eliminar la selección aleatoria de frases en el archivo txt
+- Posibilidad de escapar después de cada frase
+- Hacer seguimiento de cada ciclo
+- Tener un promedio de PPM después de cada ciclo
+
+## Estructura de Carpetas
+
+<Files>
+  <Folder name="C:\Alzheimers-Resistance-Training" defaultOpen>
+    <File name="inputs.txt" />
+    <File name="train.py" />
+  </Folder>
+</Files>
+
+## A.R.T Python App Execution
+
+Si aún no has instalado Python, instálalo con este comando de PowerShell.
+
+```ps1 title="install-python"
+winget install -e --id Python.Python.3.12
+
+### VSCode Editor ###
+
+winget install -e --id Microsoft.VisualStudioCode
+```
+
+Necesitarás tener pip y el módulo `windows-curses` instalados.
+
+```ps1 title="install-pip"
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+pip --version
+pip install windows-curses
+```
+
+Luego, crea un nuevo archivo de Python y llénalo con este código.
+
+```py title="train.py"
+import curses
+from curses import wrapper
+import time
+import random
+
+def start_screen(stdscr):
+    stdscr.clear()
+    stdscr.addstr("¡Bienvenido a la Prueba de Velocidad de Escritura!")
+    stdscr.addstr("\n¡Presiona cualquier tecla para comenzar!")
+    stdscr.refresh()
+    stdscr.getkey()
+
+def display_text(stdscr, target, current, wpm=0):
+    stdscr.addstr(target)
+    stdscr.addstr(1, 0, f"PPM: {wpm}")
+
+    for i, char in enumerate(current):
+        correct_char = target[i]
+        color = curses.color_pair(1)
+        if char != correct_char:
+            color = curses.color_pair(2)
+
+        stdscr.addstr(0, i, char, color)
+
+def load_text(line_index=0):
+    with open("inputs.txt", "r") as f:
+        lines = f.readlines()
+        ### Eliminar líneas vacías ###
+        lines = [line.strip() for line in lines if line.strip()]
+        if not lines:
+            return "No se encontró texto en inputs.txt", 0
+        ### Retornar la línea en el índice actual y el número total de líneas ###
+        return lines[line_index % len(lines)], len(lines)
+
+def wpm_test(stdscr, line_index=0, cycle=1):
+    target_text, total_lines = load_text(line_index)
+    current_text = []
+    wpm = 0
+    start_time = time.time()
+    stdscr.nodelay(True)
+
+    while True:
+        time_elapsed = max(time.time() - start_time, 1)
+        wpm = round((len(current_text) / (time_elapsed / 60)) / 5)
+
+        stdscr.clear()
+        display_text(stdscr, target_text, current_text, wpm)
+        current_line = (line_index % total_lines) + 1
+        stdscr.addstr(2, 0, f"Ciclo {cycle} - Línea {current_line} de {total_lines}")
+        stdscr.refresh()
+
+        if "".join(current_text) == target_text:
+            stdscr.nodelay(False)
+            ### Calcular PPM final para esta frase ###
+            final_time = time.time() - start_time
+            final_wpm = round((len(target_text) / (final_time / 60)) / 5)
+            break
+
+        try:
+            key = stdscr.getkey()
+        except:
+            continue
+
+        if ord(key) == 27:
+            final_wpm = 0  # Si se escapó, no se registran PPM
+            break
+
+        if key in ("KEY_BACKSPACE", '\b', "\x7f"):
+            if len(current_text) > 0:
+                current_text.pop()
+        elif len(current_text) < len(target_text):
+            current_text.append(key)
+
+    return line_index + 1, cycle, final_wpm
+
+
+def main(stdscr):
+    curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_BLACK)
+
+    start_screen(stdscr)
+    line_index = 0
+    cycle = 1
+    wpm_results = []  ### Almacenar PPM para cada frase en el ciclo actual ###
+    cycle_averages = []  ### Almacenar promedio de PPM para cada ciclo completado ###
+
+    ### Obtener el número total de líneas para saber cuándo incrementar el ciclo ###
+    _, total_lines = load_text(0)
+    
+    while True:
+        line_index, cycle, phrase_wpm = wpm_test(stdscr, line_index, cycle)
+        wpm_results.append(phrase_wpm)
+
+        ### Verificar si hemos completado todas las líneas y necesitamos iniciar un nuevo ciclo ###
+        if line_index >= total_lines:
+            ### Calcular promedio para este ciclo ###
+            if wpm_results:
+                cycle_average = round(sum(wpm_results) / len(wpm_results))
+                cycle_averages.append(cycle_average)
+            
+            line_index = 0
+            cycle += 1
+            wmp_results = []  ### Reiniciar para nuevo ciclo ###
+
+        stdscr.clear()
+        stdscr.addstr(0, 0, "¡Completaste el texto! Presiona cualquier tecla para continuar...")
+        stdscr.addstr(1, 0, "Presiona ESC para salir.")
+
+        ### Mostrar promedios de ciclos si hemos completado al menos un ciclo ###
+        
+        if cycle_averages:
+            stdscr.addstr(3, 0, "Promedios de Ciclos (PPM):")
+            for i, avg in enumerate(cycle_averages):
+                stdscr.addstr(4 + i, 0, f"  Ciclo {i + 1}: {avg} PPM")
+        
+        stdscr.refresh()
+        key = stdscr.getkey()
+        
+        if ord(key) == 27:
+            break
+
+wrapper(main)
+
+```
+
+También necesitarás tener un archivo `inputs.txt` (que contenga las frases) dentro de la misma carpeta.
+
+```txt title="inputs.txt"
+Hola Mundo.
+Uno debe imaginar a Sísifo feliz.
+La repetición es simplemente la Madre del Aprendizaje.
+Esta es mi cultura, mis contribuciones open-source y mi pasión por compartir conocimiento.
+```
+
+Por último, aquí tienes una prueba de la aplicación.
+
+Convertí el archivo .mkv a .gif ya que el tamaño del archivo mkv es demasiado grande.
+
+![Entrenar PPM y Memoria - Aplicación Python](/images/python/art_execution.gif)
+
+## Post A.R.T Python App Ramblings
+
+Recientemente compré una caminadora de escritorio, así que podré entrenar mientras camino.  
+
+Según algunos estudios sobre el Alzheimer, caminar puede ayudar a mantener la salud cognitiva y a mejorar la velocidad de procesamiento.  
+
+- NBC => https://www.nbcnews.com/news/amp/rcna221024  
+- CNN => https://amp.cnn.com/cnn/2025/07/28/health/alzheimers-disease-walking-exercise-wellness  
+
+Además, tengo un abuelo que aún puede conducir un jeep a los 85 años de edad. Obviamente no conduce todos los días, pero en muy raras ocasiones—es capaz de hacerlo.  
+
+Según él, su cuerpo y su mente están sanos gracias a caminar y a comer únicamente pescado y mungo. Evita todas las demás carnes.  
+
+Mi meta con este [canal](https://youtube.com/@apescasio) es grabar los proyectos libres y de código abierto que hice para aprender un lenguaje como Python, además de IA y herramientas de Microsoft.  
+
+Como muchos han dicho: para realmente aprender un lenguaje como Python, no solo debes seguir tutoriales sino crear tus propios proyectos. Por ejemplo, seguí este tutorial de Tech with Tim para crear la aplicación WPM, y luego la transformé yo mismo en una aplicación que realmente usaría.  
+
+También utilicé otros lenguajes como JavaScript para crear MUNDO.APESCASIO.FR, con el fin de compartir mi viaje como un viajero insignificante a través de un mapa mundial 3D interactivo—un instagram, un país, una ciudad, una cultura.  
+
+Mi próximo video en septiembre será sobre la creación de ISO. Un Agente de Copilot Studio AI para el departamento de TI. Y para el departamento de RRHH, será MIDL.  
+
+Para consultas profesionales, mi correo es him@apescasio.fr !
+
+Para consultas personales, puedes contactarme a través de Discord / Instagram / Twitter, @himapescasio.  
