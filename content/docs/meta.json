@@ -5,6 +5,7 @@
     "powershell",
     "bash",
     "azure",
-    "intune"
+    "intune",
+    "git"
   ]
 }
