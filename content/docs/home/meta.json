@@ -1,0 +1,8 @@
+{
+  "title": "Home",
+  "root": true,
+  "pages": [
+    "index", "scripting"
+  ],
+  "icon": "home"
+}

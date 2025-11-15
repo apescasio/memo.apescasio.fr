@@ -1,0 +1,56 @@
+---
+title: Por qué hago scripting
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCalloutHome';
+
+## Use case
+Hay tareas que, aunque esenciales, rápidamente se vuelven repetitivas y "consumidoras de tiempo".
+
+Por ejemplo, durante mi primer aprendizaje dentro de un grupo de universidades, al recibir una nueva PC para configurar, uno de los pasos comunes era instalar un antivirus.
+
+Si te basas en el método manual, va así:
+
+<DynamicCallout>
+<Steps>
+  <Step>
+    ### Acceder a la carpeta compartida 
+    donde se encuentra el archivo de instalación del antivirus *(~10 segundos)*. 
+  </Step>
+  <Step>
+    ### Identificar el archivo .msi más reciente
+    entre los archivos *(~3 segundos)*.
+  </Step>
+  <Step>
+    ### Ejecutar como administrador 
+    para iniciar la instalación *(~3 segundos)*.
+  </Step>
+  <Step>
+    ### Hacer clic en "Siguiente" 3 veces
+    para finalizar la instalación *(~60 segundos)*.
+  </Step>
+</Steps>
+</DynamicCallout>
+
+## PowerShell Script
+
+Después de hacer esto unas cuantas veces, me di cuenta de lo repetitivo y que consume tiempo que se vuelve este proceso, especialmente cuando hay múltiples computadoras que configurar. Fue entonces cuando pensé: ¿Por qué no automatizar todo esto?
+
+Así fue como decidí crear un PowerShell Script. Esto es lo que hace:
+
+```ps1 {title="silentinstall.ps1"}
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Verificar y crear la carpeta "log" si es necesario ###
+
+$log_folder = "C:\ProgramData\Logs"
+if (-not (Test-Path -Path $log_folder)) {
+    New-Item -ItemType Directory -Path $log_folder -Force
+}
+
+### Iniciar transcripción ###
+
+$date = $(Get-Date -Format 'dd-MM-yyyy_HH-mm-ss')
+Start-Transcript -Path "$log_folder\$date-Install-ANTIVIRUS.log" -Force
+
+### Verificar si
