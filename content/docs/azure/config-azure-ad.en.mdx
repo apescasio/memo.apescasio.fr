@@ -1,0 +1,78 @@
+---
+title: Configure an Azure Active Directory
+---
+## Context
+
+I am not a teacher, this is my own, an insignificant student, Aaron (Iso) Pescasio's notes.
+
+To better understand Azure Active Directory, I decided to create my own tenant and set up an Azure AD lab.
+
+This allowed me to explore Azure AD features, such as user management, synchronization with an on-premise Active Directory, and integration with cloud applications.
+
+This guide details the steps I followed to configure an Azure AD tenant and synchronize an on-premise AD with the cloud.
+
+## Creating an Azure Tenant
+
+First, you need to create a [Microsoft Azure](https://azure.microsoft.com/en-us/pricing/purchase-options/azure-account) account, which has a completely free option.
+
+Then, go to the portal [https://portal.azure.com](https://portal.azure.com) to create a new Azure AD "tenant."
+
+![Image 1](/images/azure/1.png)  
+![Image 2](/images/azure/2.png)  
+![Image 3](/images/azure/3.png)  
+
+## Creating my first account in tenant
+
+Once in the new "tenant" on the portal (if not already done), create a new user. This account will be used to synchronize the on-premise AD with the "Azure AD" cloud.
+
+![Image 5](/images/azure/5.png)  
+![Image 6](/images/azure/6.png)  
+![Image 7](/images/azure/7.png)  
+
+Once the user is created (this will take 1 to 2 minutes), copy the user's UPN. For example: `apes@labapes.onmicrosoft.com`.
+
+## Setting Up Azure AD Connect
+
+For the installation of [Azure AD Connect](https://www.microsoft.com/en-US/download/details.aspx?id=47594), I simply used the default settings.
+
+![Image 8](/images/azure/8.png)  
+![Image 9](/images/azure/9.png)  
+![Image 10](/images/azure/10.png)  
+![Image 11](/images/azure/11.png)  
+![Image 12](/images/azure/12.png)  
+![Image 13](/images/azure/13.png)  
+![Image 14](/images/azure/14.png)  
+![Image 16](/images/azure/16.png)  
+![Image 17](/images/azure/17.png)  
+![Image 18](/images/azure/18.png)  
+![Image 19](/images/azure/19.png)  
+![Image 20](/images/azure/20.png)  
+![Image 21](/images/azure/21.png)  
+![Image 22](/images/azure/22.png)  
+![Image 23](/images/azure/23.png)  
+![Image 24](/images/azure/24.png)  
+![Image 25](/images/azure/25.png)  
+![Image 26](/images/azure/26.png)  
+![Image 27](/images/azure/27.png)  
+
+## Azure AD Connect Synchronization Service
+
+Once AAD Connect is configured, launch the "Synchronization Service" software to check the synchronization logs between the on-premise AD and Azure AD.
+
+![Image 28](/images/azure/28.png)  
+
+You should see "success" operations there. You can also verify in the Azure portal that the users have been successfully synchronized.
+
+![Image 29](/images/azure/29.png)  
+![Image 30](/images/azure/30.png)  
+
+## Creating an account in AD on-premise
+
+After these verifications, you can test creating a new user in the on-premise AD and force synchronization using the command `Start-ADSyncSyncCycle -PolicyType Delta`.
+
+![Image 31](/images/azure/31.png)  
+![Image 32](/images/azure/32.png)  
+
+Everything works correctly, and we can see the new user!
+
+![Image 33](/images/azure/33.png)

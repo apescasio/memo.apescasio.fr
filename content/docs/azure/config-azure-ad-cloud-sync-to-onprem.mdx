@@ -1,0 +1,165 @@
+---
+title: Synchroniser un compte cloud only Azure vers un Active Directory on-premise
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Contexte
+
+Je ne suis pas enseignant, ce sont mes propres notes, celles d'un étudiant insignifiant, Aaron (Iso) Pescasio.
+
+Azure AD Connect joue le rôle de passerelle entre l'Active Directory on-premise et le **tenant Azure**. 
+
+Si vous n'avez pas encore créé le compte pour X personne dans le cloud, la configuration prendra seulement 5 minutes maximum (donc créer le compte de l'AD on-premise puis une synchro delta).
+
+Cependant, un problème survient si vous avez déjà créé des utilisateurs cloud only dans Azure et que vous souhaitez les synchroniser avec l'AD on-premise.
+
+## Solution 
+
+La solution consiste tout d'abord à supprimer les doublons d'utilisateurs et à conserver les originaux. Dans ce cas, l'utilisateur original est "apes", donc l'autre doit être supprimé.
+
+![Image 34](/images/azure/34.png)
+![Image 35](/images/azure/35.png)
+
+Ensuite, j'execute ce script script PowerShell pour effectuer la synchronisation.
+
+## Déroulement du script étape par étape
+<DynamicCallout>
+<Steps>
+
+<Step>
+### Connexion à Office 365 Admin ###
+Le script demande les informations d'identification administratives et se connecte au service Microsoft Online (Office 365) en utilisant le module `MsOnline`. Cela permet d'accéder aux utilisateurs cloud pour les modifications ultérieures *(~30 secondes)*.
+</Step>
+
+<Step>
+### Désactivation temporaire de la synchronisation d'annuaire ###
+La synchronisation entre Azure AD et l'Active Directory on-premise est désactivée pour éviter tout conflit pendant la liaison des utilisateurs. Le script vérifie que la désactivation est effective avant de continuer *(~5 secondes)*.
+</Step>
+
+<Step>
+### Sélection et liaison des utilisateurs ###
+Le script affiche une grille interactive pour sélectionner un utilisateur AD local, convertit son `ObjectGUID` en `ImmutableID`, puis permet de choisir un utilisateur cloud à lier. L'`ImmutableID` est ensuite appliqué à l'utilisateur cloud pour établir la correspondance. Cette étape se répète tant que l'utilisateur souhaite lier d'autres comptes *(~60 secondes)*.
+</Step>
+
+<Step>
+### Vérification des ImmutableIDs ###
+Une fois les liaisons effectuées, le script affiche une grille listant tous les utilisateurs cloud avec leurs `ImmutableID` pour permettre une vérification visuelle des modifications *(~10 secondes)*.
+</Step>
+
+<Step>
+### Réactivation de la synchronisation ###
+La synchronisation d'annuaire est réactivée, et une synchronisation delta est lancée pour appliquer les modifications dans Azure AD. Cela garantit que les liaisons sont propagées correctement *(~15 secondes)*.
+</Step>
+
+<Step>
+### Nettoyage et fermeture ###
+Le script ferme toutes les sessions PowerShell ouvertes pour libérer les ressources. *(~3 secondes)*.
+</Step>
+
+</Steps>
+</DynamicCallout>
+## PowerShell Script
+```ps1 title="SyncCloudOnlyToAD.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Script pour synchroniser les utilisateurs cloud only avec l'AD on-premise ###
+
+$credential = Get-Credential
+
+### Importer le module Microsoft Online Services pour gérer Office 365 ###
+
+Import-Module MsOnline
+
+### Se connecter au service Microsoft Online (Office 365) avec les informations d'identification fournies ###
+
+Connect-MsolService -Credential $credential
+
+### Désactiver temporairement la synchronisation d'annuaire ###
+
+Set-MsolDirSyncEnabled -EnableDirSync $false
+
+### Vérifier si la synchronisation d'annuaire est désactivée ###
+
+$IsDirSyncEnabled = (Get-MsolCompanyInformation).DirectorySynchronizationEnabled
+
+### Vérifier si la synchronisation est désactivée et afficher un message ###
+
+If($IsDirSyncEnabled -eq $false) {Write-Host Synchronisation Active Directory Office 365 désactivée - Prêt à continuer !}
+else {Write-Host Veuillez désactiver la synchronisation Active Directory et attendre avant de quitter}
+
+### Mettre le script en pause pendant 5 secondes pour s'assurer que la désactivation est effective ###
+
+Start-Sleep -Seconds 5
+
+### Boucle pour associer les utilisateurs AD locaux aux utilisateurs cloud only ###
+do{
+    ### Récupérer tous les utilisateurs AD locaux et les afficher dans une grille pour sélection ###
+
+    $ADGuidUser = Get-ADUser -Filter * | Select Name,ObjectGUID | Sort-Object Name | Out-GridView -Title "Sélectionnez l'utilisateur AD local pour obtenir son ID immuable" -PassThru
+
+    ### Convertir l'ObjectGUID de l'utilisateur sélectionné en ImmutableID ###
+
+    $UserimmutableID = [System.Convert]::ToBase64String($ADGuidUser.ObjectGUID.tobytearray())
+
+    ### Récupérer les utilisateurs et les afficher dans une grille pour sélection ###
+
+    $OnlineUser = Get-MsolUser | Select UserPrincipalName,DisplayName,ProxyAddresses,ImmutableID | Sort-Object DisplayName | Out-GridView -Title "Sélectionnez l'utilisateur Office 365 à lier à l'utilisateur AD" -PassThru
+
+    ### Lier l'utilisateur cloud only à l'utilisateur AD local en définissant l'ImmutableID ###
+
+    Set-MSOLuser -UserPrincipalName $OnlineUser.UserPrincipalName -ImmutableID $UserimmutableID
+
+    ### Demander à l'utilisateur s'il souhaite lier un autre utilisateur ###
+
+    $Repeat = read-host Voulez-vous sélectionner un autre utilisateur ? O ou N 
+} while ($Repeat -eq "O")
+
+### Afficher tous les utilisateurs avec leurs ImmutableIDs ###
+
+Get-MsolUser | Select DisplayName,ImmutableID | Sort-Object DisplayName | Out-GridView -Title "Liste des utilisateurs avec ImmutableID affiché"
+
+### Réactiver la synchronisation d'annuaire ###
+
+Set-MsolDirSyncEnabled -EnableDirSync $true
+
+### Lancer une synchronisation delta pour appliquer les modifications ###
+
+Start-ADSyncSyncCycle -PolicyType Delta
+
+### Mettre le script en pause pendant 5 secondes pour permettre au processus de synchronisation de se compléter ###
+
+Start-Sleep -Seconds 5
+
+### Fermer toutes les sessions PowerShell ouvertes ###
+
+Get-PSSession | Remove-PSSession
+
+### Si jamais, vous recevez un mail concernant "Password Hash Synchronization heartbeat was skipped in last 120 minutes", exécutez la commande suivante ###
+### Restart-Service -Name "ADSync" : Redémarre le service Azure AD Connect ###
+### 3> $null : Supprime les sorties d'erreur ###
+# Restart-Service -Name "ADSync" 3> $null
+
+### Alternative : Redémarrez le service "Microsoft Azure AD Sync" via la console de gestion des services ###
+# Ouvrez "services.msc" et redémarrez le service "Microsoft Azure AD Sync"
+```
+## Exécution du script
+Dans la première fenêtre, sélectionnez l'utilisateur de l'AD local "apes".
+
+![Image 36](/images/azure/36.png)
+
+Puis dans la deuxième fenêtre, choisissez l'utilisateur de l'Azure AD avec lequel vous souhaitez le synchroniser.
+
+![Image 37](/images/azure/37.png)
+
+Après la synchronisation, le script vous demandera si vous souhaitez continuer à synchroniser d'autres utilisateurs ou non.
+
+![Image 38](/images/azure/38.png)
+
+Si vous entrez "N", une fenêtre affichera simplement les utilisateurs avec leurs "ImmutableId".
+
+![Image 40](/images/azure/40.png)
+
+Comme vous pouvez le constater dans l'Azure AD, l'utilisateur "apes" est maintenant synchronisé. **Yes**!
+
+![Image 39](/images/azure/39.png)

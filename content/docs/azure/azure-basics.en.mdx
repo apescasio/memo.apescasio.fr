@@ -1,0 +1,55 @@
+---
+title: Basics of Azure
+---
+## Azure: What Exactly Is It?
+
+**Azure** is Microsoft's cloud platform, offering Infrastructure as a Service (IaaS), Platform as a Service (PaaS), and Software as a Service (SaaS). It allows you to deploy, manage, and monitor resources in globally distributed datacenters.
+
+Among the most commonly used services:
+- Virtual Machines (VM),
+- Storage (Blob, File Share),
+- Virtual Networks (VNet, VPN),
+- Managed Databases (SQL, Cosmos DB),
+- Identity and Access Services (Azure AD, RBAC),
+- DevOps tools, monitoring, AI, etc.
+
+<Callout title="Key Takeaway">
+Azure is a comprehensive public cloud capable of replacing or complementing an on-premise infrastructure.
+</Callout>
+
+---
+
+## Azure Active Directory (Azure AD)
+
+**Azure AD** is Microsoft's cloud identity service. It centralizes:
+- User authentication (SSO, MFA, etc.),
+- Management of groups, roles, and permissions,
+- Integration with thousands of SaaS applications (e.g., Office 365, Salesforce, GitHub),
+- And synchronization with an on-premise Active Directory (via Azure AD Connect).
+
+It is **not** a traditional domain controller but rather a **cloud directory** based on user identities.  
+It supports standard protocols: **OAuth2, OpenID Connect, SAML, WS-Fed**.
+
+<Callout title="Common Use Case">
+Authenticating users on Office 365, managing access to internal applications, or implementing MFA via Conditional Access.
+</Callout>
+
+---
+
+## What Is an Azure Tenant?
+
+An **Azure tenant** is an isolated instance of Azure Active Directory associated with an organization.  
+It serves as a **security context** for:
+- Users,
+- Applications,
+- Groups,
+- Roles and security policies.
+
+Each tenant has:
+- A default **domain name** (`<name>.onmicrosoft.com`),
+- A **unique GUID** (`Directory (tenant) ID`),
+- And can be linked to multiple Azure subscriptions.
+
+<Callout title="Important">
+An Azure subscription can exist **within** a tenant, but a tenant can exist **without a subscription**. The two are not the same.
+</Callout>

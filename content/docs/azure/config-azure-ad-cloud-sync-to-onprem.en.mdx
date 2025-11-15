@@ -1,0 +1,167 @@
+---
+title: Sync Azure cloud only account to an on-premise Active Directory 
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import DynamicCallout from '../../../components/DynamicCallout';
+
+## Context
+
+I am not a teacher, this is my own, an insignificant student, Aaron (Iso) Pescasio's notes.
+
+Azure AD Connect acts as a gateway between the on-premises Active Directory and the **Azure tenant**.
+
+If you haven’t created the account yet for person X in the cloud, setup will only take 5 minutes max (create the AD on-prem account and perform a delta sync).
+
+However, a problem arises if you’ve already created cloud-only users in Azure and want to sync them with your on-prem AD.
+
+## Solution
+
+The solution is first to delete duplicate users and keep the originals. In this case, the original user is "apes", so the other one must be removed.
+
+![Image 34](/images/azure/34.png)
+![Image 35](/images/azure/35.png)
+
+Next, I run this PowerShell script to perform the sync.
+
+## Step-by-step Script Breakdown
+<DynamicCallout>
+<Steps>
+
+<Step>
+### Connect to Office 365 Admin ###
+The script prompts for admin credentials and connects to the Microsoft Online (Office 365) service using the `MsOnline` module. This enables access to cloud users for later modifications *(~30 seconds)*.
+</Step>
+
+<Step>
+### Temporarily Disable Directory Sync ###
+Directory synchronization between Azure AD and the local Active Directory is disabled to avoid conflicts during user linking. The script confirms the sync is effectively disabled before proceeding *(~5 seconds)*.
+</Step>
+
+<Step>
+### User Selection and Linking ###
+The script displays an interactive grid to select a local AD user, converts their `ObjectGUID` to `ImmutableID`, then allows you to select a cloud user to link. The `ImmutableID` is then applied to the cloud user to establish the match. This process repeats as long as you wish to link more accounts *(~60 seconds)*.
+</Step>
+
+<Step>
+### Check ImmutableIDs ###
+Once the linking is complete, the script shows a grid listing all cloud users with their `ImmutableID` for visual verification *(~10 seconds)*.
+</Step>
+
+<Step>
+### Reactivate Sync ###
+Directory synchronization is re-enabled and a delta sync is triggered to apply the changes in Azure AD. This ensures the links are correctly propagated *(~15 seconds)*.
+</Step>
+
+<Step>
+### Cleanup and Close ###
+The script closes all open PowerShell sessions to free up resources. *(~3 seconds)*.
+</Step>
+
+</Steps>
+</DynamicCallout>
+
+## PowerShell Script
+```ps1 title="SyncCloudOnlyToAD.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Script to sync cloud-only users with on-prem AD ###
+
+$credential = Get-Credential
+
+### Import the Microsoft Online Services module for managing Office 365 ###
+
+Import-Module MsOnline
+
+### Connect to Microsoft Online (Office 365) with the provided credentials ###
+
+Connect-MsolService -Credential $credential
+
+### Temporarily disable directory sync ###
+
+Set-MsolDirSyncEnabled -EnableDirSync $false
+
+### Check if directory sync is disabled ###
+
+$IsDirSyncEnabled = (Get-MsolCompanyInformation).DirectorySynchronizationEnabled
+
+### Confirm that sync is disabled and display message ###
+
+If($IsDirSyncEnabled -eq $false) {Write-Host Directory sync disabled - Ready to proceed!}
+else {Write-Host Please disable directory sync and wait before exiting}
+
+### Pause for 5 seconds to ensure the sync is effectively disabled ###
+
+Start-Sleep -Seconds 5
+
+### Loop to link local AD users with cloud-only users ###
+do{
+    ### Fetch all local AD users and display a selection grid ###
+
+    $ADGuidUser = Get-ADUser -Filter * | Select Name,ObjectGUID | Sort-Object Name | Out-GridView -Title "Select the local AD user to retrieve their Immutable ID" -PassThru
+
+    ### Convert the selected user's ObjectGUID to ImmutableID ###
+
+    $UserimmutableID = [System.Convert]::ToBase64String($ADGuidUser.ObjectGUID.tobytearray())
+
+    ### Fetch cloud users and display a selection grid ###
+
+    $OnlineUser = Get-MsolUser | Select UserPrincipalName,DisplayName,ProxyAddresses,ImmutableID | Sort-Object DisplayName | Out-GridView -Title "Select the Office 365 user to link with the AD user" -PassThru
+
+    ### Link the cloud-only user to the local AD user by setting the ImmutableID ###
+
+    Set-MSOLuser -UserPrincipalName $OnlineUser.UserPrincipalName -ImmutableID $UserimmutableID
+
+    ### Ask if the user wants to link another account ###
+
+    $Repeat = read-host Do you want to select another user? Y or N 
+} while ($Repeat -eq "Y")
+
+### Display all users with their ImmutableIDs ###
+
+Get-MsolUser | Select DisplayName,ImmutableID | Sort-Object DisplayName | Out-GridView -Title "List of users with ImmutableID shown"
+
+### Re-enable directory sync ###
+
+Set-MsolDirSyncEnabled -EnableDirSync $true
+
+### Trigger a delta sync to apply the changes ###
+
+Start-ADSyncSyncCycle -PolicyType Delta
+
+### Pause for 5 seconds to allow the sync process to complete ###
+
+Start-Sleep -Seconds 5
+
+### Close all open PowerShell sessions ###
+
+Get-PSSession | Remove-PSSession
+
+### If you receive an email saying "Password Hash Synchronization heartbeat was skipped in last 120 minutes", run this command ###
+### Restart-Service -Name "ADSync" : Restarts the Azure AD Connect service ###
+### 3> $null : Suppresses error outputs ###
+# Restart-Service -Name "ADSync" 3> $null
+
+### Alternative: Restart the "Microsoft Azure AD Sync" service via the Services console ###
+# Open "services.msc" and restart "Microsoft Azure AD Sync" service
+```
+## Script Execution
+
+In the first window, select the local AD user "apes".
+
+![Image 36](/images/azure/36.png)
+
+Then in the second window, choose the Azure AD user you wish to sync with.
+
+![Image 37](/images/azure/37.png)
+
+After syncing, the script will ask if you want to continue linking other users.
+
+![Image 38](/images/azure/38.png)
+
+If you type "N", a window will simply display users with their "ImmutableId".
+
+![Image 40](/images/azure/40.png)
+
+As you can see in Azure AD, the user "apes" is now synced. Yes!
+
+![Image 39](/images/azure/39.png)

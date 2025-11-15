@@ -1,0 +1,80 @@
+---
+title: Configurer un Azure Active Directory
+---
+## Contexte
+
+Je ne suis pas enseignant, ce sont mes propres notes, celles d'un étudiant insignifiant, Aaron (Iso) Pescasio.
+
+Pour mieux comprendre Azure Active Directory, j'ai décidé de créer mon propre tenant et de mettre en place un lab Azure AD.  
+
+Cela m'a permis d'explorer les fonctionnalités d'Azure AD, comme la gestion des utilisateurs, la synchronisation avec un Active Directory on-premise, et l'intégration avec des applications cloud.  
+
+Ce guide détaille les étapes que j'ai suivies pour configurer un tenant Azure AD et synchroniser un AD local avec le cloud.
+
+## Création d'un tenant Azure
+
+Tout d'abord, il faut créer un compte [Microsoft Azure](https://azure.microsoft.com/en-us/pricing/purchase-options/azure-account), ce qui a une option totalement gratuite.
+
+Ensuite, rendez-vous sur le portail [https://portal.azure.com](https://portal.azure.com) pour créer un nouveau "tenant" de type Azure AD.
+
+![Image 1](/images/azure/1.png)  
+![Image 2](/images/azure/2.png)  
+![Image 3](/images/azure/3.png)  
+
+## Création de mon premier user du tenant 
+
+Une fois dans le nouveau "tenant" sur le portail (si ce n'est pas déjà fait), créez un nouvel utilisateur. Ce compte sera utilisé pour synchroniser l'AD on-premise (local) avec le cloud "Azure AD".
+
+![Image 5](/images/azure/5.png)  
+![Image 6](/images/azure/6.png)  
+![Image 7](/images/azure/7.png)  
+
+Une fois l'utilisateur créé (cela prendra 1 à 2 minutes), copiez l'UPN de l'utilisateur. Par exemple : `apes@labapes.onmicrosoft.com`.
+
+## Mise en place d'Azure AD Connect
+
+Pour l'installation d'[Azure AD Connect](https://www.microsoft.com/en-US/download/details.aspx?id=47594), j'ai simplement utilisé les paramètres par défaut.
+
+![Image 8](/images/azure/8.png)  
+![Image 9](/images/azure/9.png)  
+![Image 10](/images/azure/10.png)  
+![Image 11](/images/azure/11.png)  
+![Image 12](/images/azure/12.png)  
+![Image 13](/images/azure/13.png)  
+![Image 14](/images/azure/14.png)  
+![Image 16](/images/azure/16.png)  
+![Image 17](/images/azure/17.png)  
+![Image 18](/images/azure/18.png)  
+![Image 19](/images/azure/19.png)  
+![Image 20](/images/azure/20.png)  
+![Image 21](/images/azure/21.png)  
+![Image 22](/images/azure/22.png)  
+![Image 23](/images/azure/23.png)  
+![Image 24](/images/azure/24.png)  
+![Image 25](/images/azure/25.png)  
+![Image 26](/images/azure/26.png)  
+![Image 27](/images/azure/27.png)  
+
+## Azure AD Connect Synchronization Service
+
+Une fois que l'AAD Connect est configuré, lancez le logiciel "Synchronization Service" pour consulter les logs de synchronisation entre l'AD local et l'Azure AD.
+
+![Image 28](/images/azure/28.png)  
+
+Vous devriez y voir des opérations "success". Vous pouvez également vérifier dans le portail d'Azure que les utilisateurs ont bien été synchronisés.
+
+![Image 29](/images/azure/29.png)  
+![Image 30](/images/azure/30.png)  
+
+## Création d'un compte depuis l'AD local 
+
+Après ces vérifications, vous pouvez tester la création d'un nouvel utilisateur dans l'AD local et forcer la synchronisation à l'aide de la commande `Start-ADSyncSyncCycle -PolicyType Delta`.
+
+![Image 31](/images/azure/31.png)  
+![Image 32](/images/azure/32.png)  
+
+Tout fonctionne correctement, on voit bien le nouveau utilisateur !
+
+![Image 33](/images/azure/33.png)  
+
+

@@ -1,0 +1,55 @@
+---
+title: Bases sur Azure
+---
+## Qu'est-ce que Azure ?
+
+**Azure** est la plateforme cloud de Microsoft, proposant des services d’infrastructure (IaaS), de plateforme (PaaS) et de logiciels (SaaS). Elle permet de déployer, gérer et superviser des ressources dans des datacenters répartis à l’échelle mondiale.
+
+Parmi les services les plus utilisés :
+- Machines virtuelles (VM),
+- Stockage (Blob, File Share),
+- Réseaux virtuels (VNet, VPN),
+- Bases de données managées (SQL, Cosmos DB),
+- Services d'identité et d’accès (Azure AD, RBAC),
+- Outils DevOps, monitorings, IA, etc.
+
+<Callout title="À retenir">
+Azure est un cloud public complet, capable de remplacer ou compléter une infrastructure on-premise.
+</Callout>
+
+---
+
+## Azure Active Directory (Azure AD)
+
+**Azure AD** est le service d’identité cloud de Microsoft. Il centralise :
+- L’authentification des utilisateurs (SSO, MFA, etc.),
+- La gestion des groupes, rôles et permissions,
+- L'intégration avec des milliers d'applications SaaS (ex : Office 365, Salesforce, GitHub),
+- Et la synchronisation avec un Active Directory on-premise (via Azure AD Connect).
+
+Ce n’est **pas** un contrôleur de domaine traditionnel, mais plutôt un **annuaire cloud** basé sur des identités utilisateurs.  
+Il supporte les protocoles standards : **OAuth2, OpenID Connect, SAML, WS-Fed**.
+
+<Callout title="Cas d’usage courant">
+Authentifier des utilisateurs sur Office 365, gérer l’accès aux applications internes, ou mettre en place du MFA via Conditional Access.
+</Callout>
+
+---
+
+## Qu’est-ce qu’un tenant Azure ?
+
+Un **tenant Azure** est une instance isolée d’Azure Active Directory associée à une organisation.  
+Il sert de **contexte de sécurité** pour :
+- Les utilisateurs,
+- Les applications,
+- Les groupes,
+- Les rôles et stratégies de sécurité.
+
+Chaque tenant possède :
+- Un **nom de domaine** par défaut (`<nom>.onmicrosoft.com`),
+- Un **GUID unique** (`Directory (tenant) ID`),
+- Et peut être lié à plusieurs abonnements Azure (subscriptions).
+
+<Callout title="Important">
+Un abonnement Azure peut exister **dans** un tenant, mais un tenant peut exister **sans abonnement**. Les deux ne sont pas la même chose.
+</Callout>
