@@ -1,0 +1,524 @@
+---
+title: Intelligent Systems Optimization
+---
+
+## Contexto
+
+« **Arise ISO. Please reset the method of authentication for Kdot.** »
+
+No soy profesor, estas son mis propias notas, las de un estudiante insignificante, Aaron (Iso) Pescasio.
+
+Mi amiga se torció la muñeca recientemente por hacer mucha gimnasia, y yo estaba recibiendo muchos mensajes de voz.
+
+Esta experiencia me inspiró a usar Voice Control en iPhone y Voice Access en Windows para ejecutar comandos de voz a través de agentes de IA en Copilot Studio, creando una forma de trabajar más intuitiva y « manos libres ».
+
+Para quienes prefieren ver [un video real que cubre todo paso a paso](https://www.youtube.com/watch?v=LW2gVkjYrAw).
+
+![Intelligent-Systems-Optimization (ISO)](/images/copilot/iso.png)
+
+## Insignificant Student
+
+Como estudiante, mi meta es ganar dinero sin gastar nada. 
+
+Así que aproveché la [prueba de 30 días de Microsoft 365 Business Premium](https://www.microsoft.com/es-es/microsoft-365/business/microsoft-365-business-premium?activetab=pivot:overviewtab) y la [prueba de 30 días de Copilot Studio](https://www.microsoft.com/en-us/thesource-developer/Event/38/sign-up-for-copilot-studio-trial%23:~:text=Sign%2520up%2520for%2520a%2520free,the%2520instructions%2520to%2520get%2520started.).
+
+Ya sea para probar un tenant de Azure, Intune o M365 Copilot AI, me las arreglo con el tiempo que tengo. 
+
+## I.S.O AI Agent Copilot Studio
+
+Para crear el agente de IA voy a copilotstudio.microsoft.com, es donde puedes gestionar tus agentes de IA. 
+
+En este vídeo, crearé un agente para el departamento de TI, al que llamaré ISO.
+
+```txt title="iso-details.txt"
+Name: ISO Mark II.
+
+Description: Purpose of ISO (Intelligent Systems Optimization) is to assist with recurring tasks in a semi-automated way—always with a human in the loop. 
+
+This will never be about replacing people or automating every step from A to Z. It’s about empowering individuals to work more efficiently, while preserving the essence of human judgment, creativity, and care.
+
+I believe in coexistence with AI, not domination by it. Just as we learn from different cultures, we can grow alongside intelligent systems. 
+
+AI can help us grow—not replace what makes us human.
+```
+
+La mayoría de las empresas usan APIs de terceros de pago para acciones como restablecer MFA (autenticación multifactor).
+
+También hay otras acciones como Restablecer contraseña, donde la IA pregunta al usuario qué correo necesita restablecimiento y a qué otro correo enviar la contraseña.
+
+Voy a rehacer Reset MFA de forma gratuita usando la API de Graph.
+
+## I.S.O AI Agent Enterprise App
+
+Para usar Graph API, creo una Aplicación Empresarial en Azure y le doy los permisos necesarios para realizar la acción Reset MFA. 
+
+Luego genero un secreto de cliente y apunto: Tenant ID + Client ID + Client Secret, porque los usaré en los flujos de trabajo de la IA. 
+
+Básicamente, en lugar de iniciar sesión en Azure y restablecer MFA manualmente => creo una aplicación que será accesible por la IA.
+
+```powershell title="iso-copilot-ai-agent.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Suprimir errores de reinstalación de módulos y advertencias generales ###
+$ErrorActionPreference = "SilentlyContinue"
+
+### Instalar el SDK de Graph solo si no está presente ###
+if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
+    Install-Module Microsoft.Graph -Scope CurrentUser -Force -AllowClobber
+}
+
+### Conectar a Microsoft Graph como Administrador Global ###
+Connect-MgGraph -Scopes "Application.ReadWrite.All", "AppRoleAssignment.ReadWrite.All", "Directory.ReadWrite.All"
+
+### Restablecer el manejo de errores para la lógica principal ###
+$ErrorActionPreference = "Stop"
+
+### Crear la aplicación ###
+$app = New-MgApplication -DisplayName "ISO AI Agent Copilot"
+
+### Crear un Service Principal para la aplicación ###
+$sp = New-MgServicePrincipal -AppId $app.AppId
+
+### Obtener el Service Principal de Microsoft Graph (API objetivo) ###
+$graphSp = Get-MgServicePrincipal -Filter "DisplayName eq 'Microsoft Graph'"
+
+### Definir los permisos de aplicación requeridos ###
+$applicationPermissions = @(
+    "UserAuthenticationMethod.Read.All",
+    "UserAuthenticationMethod.ReadWrite.All"
+)
+
+### Resolver los IDs de rol de permiso (roles de aplicación) ###
+$requiredApplicationPermissions = @()
+foreach ($perm in $applicationPermissions) {
+    $match = $graphSp.AppRoles | Where-Object { $_.Value -eq $perm -and $_.AllowedMemberTypes -contains "Application" }
+    if ($match) {
+        $requiredApplicationPermissions += @{
+            Id   = $match.Id
+            Type = "Role"
+        }
+    } else {
+        Write-Warning "Application permission '$perm' not found in Microsoft Graph AppRoles."
+    }
+}
+
+### Añadir permisos de aplicación al registro de la app ###
+Update-MgApplication -ApplicationId $app.Id -RequiredResourceAccess @(
+    @{
+        ResourceAppId  = $graphSp.AppId
+        ResourceAccess = $requiredApplicationPermissions
+    }
+)
+
+### Conceder consentimiento de administrador usando la API REST de Graph ###
+foreach ($perm in $requiredApplicationPermissions) {
+    $body = @{
+        principalId = $sp.Id
+        resourceId  = $graphSp.Id
+        appRoleId   = $perm.Id
+    } | ConvertTo-Json -Depth 3
+
+    Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$($sp.Id)/appRoleAssignments" -Body $body -ContentType "application/json"
+}
+
+Write-Host "`nApp 'ISO AI Agent Copilot' created with Application permissions (UserAuthenticationMethod.Read/ReadWrite.All) and admin consent granted successfully." -ForegroundColor Green
+```
+
+## Topics AI Agent 
+
+Todos los agentes de IA tienen lo que llamamos temas (topics) que son esencialmente flujos de trabajo.
+
+Por ejemplo, puedes crear un tema que envíe un correo si envías un mensaje específico a la IA.
+
+Para mi IA, por ahora creé 4 temas.
+
+## Topic 1 `End Conversation`
+
+Creé este tema para que, si envías el mensaje: « exit » o « quit » => la IA terminará la conversación.
+
+```yaml title="end-conversation.yaml"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent:
+    triggerQueries:
+      - exit
+      - quit
+      - stop
+      - end conversation
+      - stark@lethimcook.fr
+
+  actions:
+    - kind: SendActivity
+      id: sendActivity_zbuT5w
+      activity: Quitted conversation.
+
+    - kind: EndConversation
+      id: 38Aaio
+
+inputType: {}
+outputType: {}
+```
+
+## Topic 2 `Global Variables`
+
+Este tema sirve para almacenar valores de « Variables globales » como Tenant ID, Client ID, etc.
+
+```yaml title="global-variables.yaml"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent:
+    triggerQueries:
+      - Arise
+
+  actions:
+    - kind: SetVariable
+      id: setVariable_DD7ZyQ
+      displayName: Set tenant_id
+      variable: Global.tenant_id
+      value: fill
+
+    - kind: SetVariable
+      id: setVariable_zBkYgf
+      displayName: Set client_id
+      variable: Global.client_id
+      value: fill
+
+    - kind: SetVariable
+      id: setVariable_DZw93e
+      displayName: Set client_secret
+      variable: Global.client_secret
+      value: fill
+
+    - kind: SendActivity
+      id: sendActivity_XOIb5J
+      activity: |-
+        Hello, I'm {System.Bot.Name}, your partner in Intelligent Systems Optimization.
+
+
+        Together, we streamline the routine, so you can focus on what truly matters.
+
+
+        I’m here to help you with tasks that are:
+        - **I**ntelligent: guided by context and purpose!
+        - **S**upportive: always keeping you in control!
+        - **O**ptimized: focused on making your workflow smoother, not replacing your role!
+
+inputType: {}
+outputType: {}
+```
+
+## Topic 3 `Reset MFA`
+
+Este tema realiza la acción Reset MFA, usando las Variables Globales y Graph API. Si envías el mensaje Reset MFA, se activará este tema.
+
+```yaml title="reset-mfa.yaml"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent:
+    triggerQueries:
+      - Reset MFA
+
+  actions:
+    - kind: Question
+      id: question_upn
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.upn_mfa
+      prompt: "Enter only the UPN that needs to have their MFA reset:"
+      entity: StringPrebuiltEntity
+
+    - kind: HttpRequestAction
+      id: get_token
+      displayName: HTTP Request (Access Token)
+      method: Post
+      url: ="https://login.microsoftonline.com/"&Global.tenant_id&"/oauth2/v2.0/token"
+      headers:
+        Content-Type: application/x-www-form-urlencoded
+
+      body:
+        kind: RawRequestContent
+        contentType: application/x-www-form-urlencoded
+        content: ="client_id=" & EncodeUrl(Global.client_id) & "&scope=" & EncodeUrl("https://graph.microsoft.com/.default") & "&client_secret=" & EncodeUrl(Global.client_secret) & "&grant_type=client_credentials"
+
+      response: Topic.token_response
+      responseSchema: Any
+      errorVariable: Topic.token_error
+      responseParse: ${Topic.token_response.access_token}
+      responseVariable: Topic.token_response
+      responseVariableType: string
+
+    - kind: HttpRequestAction
+      id: ASHhXA
+      displayName: HTTP Request (Get Methods)
+      method: Get
+      url: ="https://graph.microsoft.com/v1.0/users/"&Topic.upn_mfa&"/authentication/methods"
+      headers:
+        Authorization: ="Bearer " &Topic.token_response.access_token
+
+      response: Topic.upn_list_methods
+      responseSchema:
+        kind: Record
+        properties:
+          @odata.context: String
+          value:
+            type:
+              kind: Table
+              properties:
+                @odata.type: String
+                createdDateTime: String
+                displayName: String
+                id: String
+                password: Blank
+
+    - kind: SetVariable
+      id: setVariable_pC405u
+      variable: Topic.upn_has_mfa
+      value: "=First(Filter(Topic.upn_list_methods.value,'@odata.type'=\"#microsoft.graph.microsoftAuthenticatorAuthenticationMethod\")).id"
+
+    - kind: ConditionGroup
+      id: conditionGroup_rq5Xri
+      conditions:
+        - id: conditionItem_sbRseB
+          condition: =!IsBlank(Topic.upn_has_mfa)
+          actions:
+            - kind: SendActivity
+              id: sendActivity_iGJoqj
+              activity: |-
+                The user "{Topic.upn_mfa}" currently has the following method of authentication: {First(Filter(Topic.upn_list_methods.value,'@odata.type'="#microsoft.graph.microsoftAuthenticatorAuthenticationMethod")).displayName
+                }
+
+      elseActions:
+        - kind: SendActivity
+          id: sendActivity_donjav
+          activity: The user "{Topic.upn_mfa}" currently doesn't have any method of authentication.
+
+        - kind: EndConversation
+          id: EbmiOA
+
+    - kind: HttpRequestAction
+      id: A3Do2j
+      displayName: HTTP Request (Delete)
+      method: Delete
+      url: "=\"https://graph.microsoft.com/v1.0/users/\" & Topic.upn_mfa & \"/authentication/microsoftAuthenticatorMethods/\" & First(Filter(Topic.upn_list_methods.value,'@odata.type'=\"#microsoft.graph.microsoftAuthenticatorAuthenticationMethod\")).id"
+      headers:
+        Authorization: ="Bearer " &Topic.token_response.access_token
+
+      response: Topic.upn_mfa_status
+      responseSchema: Any
+
+    - kind: SendActivity
+      id: sendActivity_a2Dahs
+      activity: MFA deleted.
+
+inputType: {}
+outputType: {}
+```
+
+## Topic 4 `Conversation Start`
+
+El cuarto tema sirve para presentar mi IA al inicio de cada conversación.
+```yaml title ="conversation-start.yaml"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnConversationStart
+  id: main
+  actions:
+    - kind: SendActivity
+      id: sendMessage_M0LuhV
+      activity:
+        text:
+          - |-
+            Hola, soy {System.Bot.Name}, tu aliado en Optimización de Sistemas Inteligentes.
+
+
+            Juntos, simplificamos lo rutinario para que puedas enfocarte en lo que realmente importa.
+
+
+            Estoy aquí para ayudarte con tareas que sean:
+            - **I**nteligentes: ¡guiadas por contexto y propósito!
+            - **S**oportivas: ¡siempre manteniéndote en control!
+            - **O**ptimizadas: ¡enfocadas en hacer tu flujo de trabajo más fluido, no en reemplazarte!
+        speak:
+          - Hola y gracias por contactar a {System.Bot.Name}. Ten en cuenta que algunas respuestas son generadas por IA y pueden requerir verificación de precisión. ¿En qué puedo ayudarte hoy?
+```
+
+## I.S.O AI Agent Execution
+
+Puedes chatear con el agente de IA en Teams yendo a Channels => Teams and Microsoft 365 Copilot => y haciendo clic en Ver agente en Teams. 
+
+Puedes compartirlo con otros usuarios haciendo clic en Opciones de disponibilidad. 
+
+Después de enviar la frase disparadora, la IA pedirá el correo del usuario cuya método de autenticación debe eliminarse. 
+
+La IA usará entonces la aplicación de Azure para autenticarse y comprobar si el usuario tiene un método o no, si lo tiene, el método se elimina. Si no se encuentra ningún método, la IA envía un mensaje diciendo eso. 
+
+Eso es todo.
+
+## Experimental Topic `Reset MFA for Kdot`
+
+En lugar de escribir manualmente el correo del usuario cada vez, creé un tema con una frase disparadora y variables específicamente para Kdot. Es muy manual y no es la mejor idea, es solo un experimento.
+
+```yaml title="reset-mfa-for-kdot.yaml"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent:
+    triggerQueries:
+      - Arise ISO. Please reset the method of authentication for Kdot
+
+  actions:
+    - kind: SetVariable
+      id: setVariable_k6VUkG
+      variable: Topic.upn_mfa
+      value: kdot@lethimcook.fr
+
+    - kind: HttpRequestAction
+      id: get_token
+      displayName: HTTP Request (Access Token)
+      method: Post
+      url: ="https://login.microsoftonline.com/"&Global.tenant_id&"/oauth2/v2.0/token"
+      headers:
+        Content-Type: application/x-www-form-urlencoded
+
+      body:
+        kind: RawRequestContent
+        contentType: application/x-www-form-urlencoded
+        content: ="client_id=" & EncodeUrl(Global.client_id) & "&scope=" & EncodeUrl("https://graph.microsoft.com/.default") & "&client_secret=" & EncodeUrl(Global.client_secret) & "&grant_type=client_credentials"
+
+      response: Topic.token_response
+      responseSchema: Any
+      errorVariable: Topic.token_error
+      responseParse: ${Topic.token_response.access_token}
+      responseVariable: Topic.token_response
+      responseVariableType: string
+
+    - kind: HttpRequestAction
+      id: ASHhXA
+      displayName: HTTP Request (Get Methods)
+      method: Get
+      url: ="https://graph.microsoft.com/v1.0/users/"&Topic.upn_mfa&"/authentication/methods"
+      headers:
+        Authorization: ="Bearer " &Topic.token_response.access_token
+
+      response: Topic.upn_list_methods
+      responseSchema:
+        kind: Record
+        properties:
+          @odata.context: String
+          value:
+            type:
+              kind: Table
+              properties:
+                @odata.type: String
+                createdDateTime: String
+                displayName: String
+                id: String
+                password: Blank
+
+    - kind: SetVariable
+      id: setVariable_pC405u
+      variable: Topic.upn_has_mfa
+      value: "=First(Filter(Topic.upn_list_methods.value,'@odata.type'=\"#microsoft.graph.microsoftAuthenticatorAuthenticationMethod\")).id"
+
+    - kind: ConditionGroup
+      id: conditionGroup_rq5Xri
+      conditions:
+        - id: conditionItem_sbRseB
+          condition: =!IsBlank(Topic.upn_has_mfa)
+          actions:
+            - kind: SendActivity
+              id: sendActivity_iGJoqj
+              activity: |-
+                The user "{Topic.upn_mfa}" currently has the following method of authentication: {First(Filter(Topic.upn_list_methods.value,'@odata.type'="#microsoft.graph.microsoftAuthenticatorAuthenticationMethod")).displayName
+                }
+
+      elseActions:
+        - kind: SendActivity
+          id: sendActivity_donjav
+          activity: The user "{Topic.upn_mfa}" currently doesn't have any method of authentication.
+
+        - kind: EndConversation
+          id: EbmiOA
+
+    - kind: HttpRequestAction
+      id: A3Do2j
+      displayName: HTTP Request (Delete)
+      method: Delete
+      url: "=\"https://graph.microsoft.com/v1.0/users/\" & Topic.upn_mfa & \"/authentication/microsoftAuthenticatorMethods/\" & First(Filter(Topic.upn_list_methods.value,'@odata.type'=\"#microsoft.graph.microsoftAuthenticatorAuthenticationMethod\")).id"
+      headers:
+        Authorization: ="Bearer " &Topic.token_response.access_token
+
+      response: Topic.upn_mfa_status
+      responseSchema: Any
+
+    - kind: SendActivity
+      id: sendActivity_a2Dahs
+      activity: MFA deleted.
+
+inputType: {}
+outputType: {}
+```
+
+## iOS Voice Control 
+
+Utilicé la funcionalidad de Vocabulario en la configuración de Voice Control de mi iPhone para ajustarlo a mi propia voz.
+
+**Settings => Accessibility => Voice Control => Vocabulary**
+
+« **Hay que imaginarse a Sísifo feliz.** »
+
+También activé el Atajo de Accesibilidad.
+
+**Settings => Accessibility => Accessibility Shortcut => Voice Control**
+
+## Windows Voice Access
+
+Tienes la misma funcionalidad en Windows con Voice Access.
+
+**Windows key => Shift => S key**
+
+## I.S.O AI Agent Restrictions on VIP Accounts
+
+Para evitar que la IA toque cuentas VIP, simplemente añadí el correo del usuario en el tema « End Conversation ». Esto significa que si alguien intenta Reset MFA de stark@lethimcook.fr => la IA terminará la conversación.
+
+## Post I.S.O AI Agent Ramblings
+
+Mi meta es la coexistencia con la IA, de la misma manera que compartimos y aprendemos de diferentes culturas en nuestro mundo. La IA puede ayudarnos a crecer—no a reemplazar lo que nos hace humanos.
+
+El mejor consejo que sigo una vez al mes es: romperlo todo y volver a reconstruirlo, una y otra vez. 
+
+Una vez al mes formateo mi PC y pongo todo de nuevo mediante PowerShell. 
+
+Una vez al mes destruyo mi lab tenant, y lo rehago todo, ya sea creando agentes Copilot o Autopilots Full Cloud de Intune. 
+
+Sigo aprendiendo en mi ciclo 6, y seguiré en el 7, 8, 9 y así sucesivamente. 
+
+La repetición es simplemente la madre del aprendizaje. 
+
+Todo lo que mostré hasta ahora sigue siendo manual, pero encontraré algo durante el final de este ciclo o en el siguiente.
+
+Para el próximo vídeo sobre IA, planeo hacer un agente Copilot para el departamento de RR.HH., centrado en preguntas frecuentes como: « ¿Cuántos días pagados de permiso puedo solicitar actualmente a mi jefe? », y así sucesivamente.
+
+Si buscas empezar con TI o IA, echa un vistazo a algunas de mis notas => https://memo.apescasio.fr ! 
+
+Para consultas profesionales, mi correo es him@apescasio.fr !
+
+Para consultas personales, puedes contactarme a través de Discord / Instagram / Twitter, @himapescasio.

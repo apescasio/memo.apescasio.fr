@@ -1,0 +1,368 @@
+---
+title: Morals Integrity Discipline Listen
+---
+
+## Context
+
+« **Arise MIDL. How many paid day-offs am I allowed?** »
+
+« **How many days am I allowed to work from home?** »
+
+I am not a teacher, this is my own, an insignificant student, Aaron (Iso) Pescasio's notes. 
+
+To learn about SharePoint and custom lists, I decided to create an AI Agent that would give me the policies of the current user's company.
+
+For those who prefer to watch [an actual video that covers everything step-by-step](https://www.youtube.com/watch?v=FkmgBL_3M8U).
+
+![Morals-Integrity-Discipline-Lisen (MIDL)](/images/copilot/midl.png)
+
+## Insignificant Student
+
+As a student, my aim is to make money, without spending any. 
+
+So I made use of the [30 days trial of Microsoft 365 Business Premium](https://www.microsoft.com/en-us/microsoft-365/business/microsoft-365-business-premium?activetab=pivot:overviewtab) and the [30 days trial of Copilot Studio](https://www.microsoft.com/en-us/thesource-developer/Event/38/sign-up-for-copilot-studio-trial%23:~:text=Sign%2520up%2520for%2520a%2520free,the%2520instructions%2520to%2520get%2520started.).
+
+Whether it be testing Azure tenant, Intune, or M365 Copilot AI, I make do with the time that I have. 
+
+## M.I.D.L AI Agent Copilot Studio
+
+To make the AI Agent, I go to copilotstudio.microsoft.com, this is where you can manage your AI agents. 
+
+In this video, I'll be creating an AI for HR department, which I'll be calling MIDL.
+
+```txt title="iso-details.txt"
+
+Name: MIDL Mark II.
+
+Description: Purpose of MIDL (Morals Integrity Discipline Listen) is to assist with recurring tasks in a semi-automated way—always with a human in the loop. 
+
+This will never be about replacing people or automating every step from A to Z. It's about empowering individuals to work more efficiently, while preserving the essence of human judgment, creativity, and care.
+
+I believe in coexistence with AI, not domination by it. Just as we learn from different cultures, we can grow alongside intelligent systems. 
+
+AI can help us grow—not replace what makes us human.
+```
+
+The AI will be using a custom list in SharePoint, to get for example => the company policies regarding paid day-offs.
+
+## M.I.D.L SharePoint Site's Custom Lists
+
+To be able to use PowerShell for SharePoint, I installed the version 7 of PowerShell.
+
+```ps1
+winget install -e --id Microsoft.PowerShell
+
+if (-not (Get-Module -ListAvailable -Name PnP.PowerShell)) {
+    Install-Module PnP.PowerShell -Scope CurrentUser -Force -AllowClobber
+}
+```
+In my fresh lab tenant, I registered a PnP application in Azure, so that I can run PowerShell commands to connect to SharePoint Online.
+
+```ps1 title="pnp-entra.ps1"
+### To connect to SharePoint Online, you need to register an application in Azure AD and give it the required permissions ###
+
+Register-PnPEntraIDApp -ApplicationName "PnP PowerShell" -Tenant LabOfApes.onmicrosoft.com
+
+### Connect to SharePoint Online ###
+
+Connect-PnPOnline -Url "https://labofapes-admin.sharepoint.com" -ClientId "fill_with_clientid_of_application" -Interactive
+
+```
+
+After connecting, I can now create the SharePoint Site => Connect to the newly created site => Create the custom list inside of the site => Fill the list up with values.
+
+```ps1 title="midl-site-custom-list.ps1"
+### Create the SharePoint Site ### 
+
+New-PnPTenantSite -Title "MIDL" `
+                  -Url "https://labofapes.sharepoint.com/sites/MIDL" `
+                  -Template "STS#3" `
+                  -Owner "fool@apescasio.fr" `
+                  -TimeZone 4 `
+                  -Lcid 1033
+
+### Connect to the SharePoint Site ###
+
+Connect-PnPOnline -Url "https://labofapes.sharepoint.com/sites/MIDL" -ClientId "fill_with_clientid_of_application" -Interactive
+
+### Create the custom list in the site ###
+
+New-PnPList -Title "company-policies" -Template GenericList
+
+### Fill the list up with columns and values ###
+
+Add-PnPField -List "company-policies" -DisplayName "Country" -InternalName "Country" -Type Text -AddToDefaultView
+Add-PnPField -List "company-policies" -DisplayName "Company" -InternalName "Company" -Type Text -AddToDefaultView
+Add-PnPField -List "company-policies" -DisplayName "PolicyType" -InternalName "PolicyType" -Type Choice -Choices "PaidDayOff","RemoteWork" -AddToDefaultView
+Add-PnPField -List "company-policies" -DisplayName "Explanation" -InternalName "Explanation" -Type Note -AddToDefaultView
+
+### FR LabOfApes - Paid Leave ###
+
+Add-PnPListItem -List "company-policies" -Values @{
+    Title = "FR-LabOfApes-PaidDayOff";
+    Country = "France";
+    Company = "LabOfApes";
+    PolicyType = "PaidDayOff";
+    Explanation = "Employees are entitled to 4 paid leave days per month of effective work with the same employer."
+}
+
+### FR LabOfApes - Remote Work ###
+
+Add-PnPListItem -List "company-policies" -Values @{
+    Title = "FR-LabOfApes-RemoteWork";
+    Country = "France";
+    Company = "LabOfApes";
+    PolicyType = "RemoteWork";
+    Explanation = "Employees are entitled to 3 days of remote work per week."
+}
+
+### US LabOfApes - Paid Leave ###
+
+Add-PnPListItem -List "company-policies" -Values @{
+    Title = "US-LabOfApes-PaidDayOff";
+    Country = "United States";
+    Company = "LabOfApes";
+    PolicyType = "PaidDayOff";
+    Explanation = "Employees are entitled to 2 paid leave days per month of effective work with the same employer."
+}
+
+### US LabOfApes - Remote Work ###
+
+Add-PnPListItem -List "company-policies" -Values @{
+    Title = "US-LabOfApes-RemoteWork";
+    Country = "United States";
+    Company = "LabOfApes";
+    PolicyType = "RemoteWork";
+    Explanation = "Employees are entitled to 1 day of remote work per week."
+}
+```
+## Topics AI Agent 
+
+Every AI Agents have what we call topics and essentially => they are workflows.
+
+For example, you can create a topic that would send someone a mail, if you send a specific message to the AI.
+
+For my AI, I ended up creating 5 topics total for now. 
+
+## Topic 1 `End Conversation`
+
+I created this topic so that, if you send the message: « exit » or « quit » => the AI will end the conversation.
+
+```yaml title="end-conversation.yaml"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent:
+    triggerQueries:
+      - exit
+      - quit
+      - stop
+      - end conversation
+
+  actions:
+    - kind: SendActivity
+      id: sendActivity_zbuT5w
+      activity: Quitted conversation.
+
+    - kind: EndConversation
+      id: 38Aaio
+
+inputType: {}
+outputType: {}
+```
+
+## Topic 2 `Global Variables`
+
+This topic is to store the values of « Global Variables » like the current user's Country, Company name and so on. 
+
+I did put my account to be used by the AI for authentication, this is obviously not best practice.
+
+In the next cycle, I'll try to make the AI use a service account instead. 
+
+```yaml title="global-variables.yaml"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent:
+    triggerQueries:
+      - Arise
+
+  actions:
+    - kind: SendActivity
+      id: sendActivity_MIDL
+      activity: |-
+        Hello {System.User.DisplayName}, I'm {System.Bot.Name}, your partner in Morals, Integrity, Discipline, and Listen.
+
+        Together, we create a workplace where people come first, and systems work smarter.
+
+        I'm here to help you with your HR-related questions and requests, guided by:
+        - **M**orals: fairness, respect, and purpose!
+        - **I**ntegrity: transparency, accuracy, and trust!
+        - **D**iscipline: consistency, reliability, and timeliness!
+        - **L**istening: attentiveness to your needs and continuous learning!
+
+inputType: {}
+outputType: {}
+```
+
+## Topic 3 `Get PaidDayOffs`
+
+This one is to get the explanation regarding the Paid Leave policy from the list in SharePoint. 
+
+I use the « Global Variables » and my account for authentication. 
+
+So if you send the trigger phrase to the AI, this specific topic would activate.
+
+In the filter, I make use of the current user's Country, Company name and PolicyType.
+ 
+```yaml title="get-paiddayoffs.yaml"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Filter => "Country eq '" & Global.UserProfile_V2.country & "' and Company eq '" & Global.UserProfile_V2.companyName & "' and PolicyType eq 'PaidDayOff'" ###
+
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent:
+    triggerQueries:
+      - How many paid day-offs am I allowed ?
+ 
+  actions:
+    - kind: SendActivity
+      id: sendActivity_OmGd7f
+      activity: |-
+        Referring to the HR's SharePoint for the organization's policies...
+        - User's Country:
+        {Global.UserProfile_V2.country}
+        - User's Company:
+        {Global.UserProfile_V2.companyName}
+        - User's Department:  {Global.UserProfile_V2.department}
+        - User's Email: {Global.UserProfile_V2.userPrincipalName}
+ 
+    - kind: SetVariable
+      id: setVariable_FwLzaa
+      variable: Topic.explanation_only
+      value: =First(Topic.GetItems.value).Explanation
+ 
+    - kind: SendActivity
+      id: sendActivity_FbLffN
+      activity: |-
+        Here's {Global.UserProfile_V2.companyName}' paid day-off policy for employees in {Global.UserProfile_V2.country}:
+        - {Topic.explanation_only}
+ 
+inputType: {}
+outputType: {}
+```
+
+## Topic 4 `Get RemoteWork`
+
+The 4th topic is to get the explanation regarding the Remote Work policy from the list in SharePoint.
+
+```yaml title="get-remotework.yaml"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Filter => "Country eq '" & Global.UserProfile_V2.country & "' and Company eq '" & Global.UserProfile_V2.companyName & "' and PolicyType eq 'RemoteWork'" ###
+
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent:
+    triggerQueries:
+      - How many days am I allowed to work from home ?
+ 
+  actions:
+    - kind: SendActivity
+      id: sendActivity_OmGd7f
+      activity: |-
+        Referring to the HR's Sharepoint for the organization's policies...
+        - User's Country:
+        {Global.UserProfile_V2.country}
+        - User's Company:
+        {Global.UserProfile_V2.companyName}
+        - User's Department:  {Global.UserProfile_V2.department}
+        - User's Email: {Global.UserProfile_V2.userPrincipalName}
+ 
+    - kind: SetVariable
+      id: setVariable_FwLzaa
+      variable: Topic.explanation_only
+      value: =First(Topic.GetItems.value).Explanation
+ 
+    - kind: SendActivity
+      id: sendActivity_FbLffN
+      activity: |-
+        Here’s {Global.UserProfile_V2.companyName}’ remote work policy for employees in {Global.UserProfile_V2.country}:
+        - {Topic.explanation_only}
+ 
+inputType: {}
+outputType: {}
+```
+## Topic 5 `Conversation Start`
+
+The last topic is to simply introduce my AI at every start of conversation.
+```yaml title="conversation-start.yaml"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnConversationStart
+  id: main
+  actions:
+    - kind: SendActivity
+      id: sendActivity_pm8Kty
+      activity: |-
+        Hello {System.User.DisplayName}, I'm {System.Bot.Name}, your partner in Morals, Integrity, Discipline, and Listen.
+
+        Together, we create a workplace where ethics meet efficiency, where people come first, and systems work smarter.
+
+        I'm here to help you with your HR-related questions and requests, guided by:
+        - **M**orals: fairness, respect, and purpose!
+        - **I**ntegrity: transparency, accuracy, and trust!
+        - **D**iscipline: consistency, reliability, and timeliness!
+        - **L**istening: attentiveness to your needs and continuous learning!
+```
+
+## M.I.D.L AI Agent Execution
+
+You can chat with the AI Agent in Teams by simply going to Channels => Teams and Microsoft 365 Copilot => and clicking on See agent in Teams. 
+
+You can share it with other users by clicking on Availability Options. 
+
+After sending the trigger phrase, the AI will then send the current user's Country, Company name, Department and Email.
+
+The AI will then check the custom list values of my SharePoint Site. 
+
+As there is a Country column that has the value "France" and a Company column that has the value "LabOfApes", the AI will simply return the value of the column "Explanation" to me.
+
+If I want another Company's policy, I'll simply add another Row and fill it up with the other Company name, Country, and so on.
+
+That's pretty much it.
+
+## Post M.I.D.L AI Agent Ramblings
+
+I'm not satisfied with the custom list, I can do better. 
+
+The best advice that I follow myself once a month, is to break it all and rebuild it all back, again and again. 
+
+Once a month, I reformat my PC and I put everything back together via PowerShell. 
+
+Once a month, I break my lab tenant, and I do everything again, whether it be creating Copilot AI Agents, or Intune Full Cloud Autopilots. 
+
+I'm still learning in my 7th cycle, and I still will be in the 8th, the 9th, and so on. 
+
+Repetition is simply the Mother of Learning. 
+
+Everything I showed so far remains manual, but I'll figure something out towards the end of this cycle or in the next.
+
+If you're looking to get started with IT or AI, feel free to check out some of my notes => https://memo.apescasio.fr ! 
+
+For professional inquiries, I'm him@apescasio.fr ! 
+
+For personal inquiries, you can get in touch with me through Discord / Instagram / Twitter, @himapescasio.
