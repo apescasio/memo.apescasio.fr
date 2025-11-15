@@ -1,0 +1,484 @@
+---
+title: أساسيات Node.js و JavaScript
+---
+## Node.js: ما هو بالضبط؟
+
+**Node.js** هو بيئة تشغيل (Runtime) للـ JavaScript تُمكّنك من تشغيل شيفرة JavaScript خارج المتصفحات—على الخوادم، وتطبيقات سطح المكتب، وأدوات سطر الأوامر، وأكثر.
+
+فكّر فيها هكذا:
+- **JavaScript** = اللغة
+- **Node.js** = المحرّك الذي يشغّل JavaScript في أي مكان (ليس في المتصفح فقط)
+
+خصائص رئيسية لـ Node.js:
+- مبني على **محرك V8 الخاص بمتصفح Chrome** (سريع جدًا)
+- **معمارية غير حاجزة (Non-blocking) ومبنية على الأحداث**—يعالج عمليات متعددة في وقت واحد
+- **متعدد المنصات**—يعمل على Windows و macOS و Linux
+- نظام **npm** ضخم—مكتبة هائلة من الحزم القابلة لإعادة الاستخدام
+- **أحادي المسار (Single-threaded)** لكن يعتمد على العمليات غير المتزامنة للأداء
+
+## JavaScript: ما هي بالضبط؟
+
+**JavaScript** لغة برمجة عالية المستوى ومفسَّرة أُنشئت في الأصل للمتصفحات. هي اللغة التي تجعل مواقع الويب تفاعلية—التعامل مع النقرات، النماذج، الحركات، وتحديثات المحتوى الديناميكي.
+
+خصائص رئيسية في JavaScript:
+- **ديناميكية ومرنة**—المتغيرات يمكن أن يتغيّر نوعها، والدوال كائنات من الدرجة الأولى
+- **مبنية على الأحداث**—تستجيب لتفاعلات المستخدم (نقر، كتابة، ...)
+- **مفسَّرة**—لا حاجة لخطوة ترجمة، تُنفَّذ مباشرةً
+- **متعددة الأنماط**—تدعم البرمجة الوظيفية والشيئية والإجرائية
+- **ضعيفة/مرنة النوعية (Weakly Typed)**—لا حاجة لتصريح صريح للنوع عند التعريف
+
+<Callout title="أهم فكرة">
+JavaScript تعمل في المتصفح للواجهة الأمامية. Node.js يجلب JavaScript إلى الخوادم وأدوات CLI وتطبيقات سطح المكتب لتطوير متكامل (Full-Stack).
+</Callout>
+
+---
+
+## صياغة JavaScript الأساسية
+
+### المتغيرات وأنواع البيانات
+```javascript
+// المتغيرات (let, const, var)
+const name = "Aaron";           // const = لا يُعاد تعيينه
+let age = 22;                   // let = يمكن إعادة تعيينه، نطاقه بلوك
+var is_filipino = true;             // var = يُفضّل تجنّبه، استخدم let/const
+
+// المصفوفات والكائنات
+const servers = ["memo", "cli", "lhc", "bbb", "mundo"];
+const user = {
+    name: "Aaron",
+    age: 22,
+    servers: ["memo", "cli", "lhc", "bbb", "mundo"]
+};
+
+// الأنواع الأساسية في JavaScript
+const text = "Hello World";        // نص (String)
+const number = 44;                 // رقم (عدد صحيح أو عشري)
+const price = 19.99;               // رقم
+const active = true;               // منطقي (Boolean)
+const nothing = null;              // قيمة فارغة (Null)
+let undefined_var;                 // غير معرّف (Undefined)
+const symbol = Symbol('id');       // رمز فريد (Symbol)
+```
+
+### التراكيب التحكمية
+
+```javascript
+// جملة if
+if (age >= 18) {
+    console.log("Adult");
+} else if (age >= 13) {
+    console.log("Teenager");
+} else {
+    console.log("Child");
+}
+
+// حلقة for تقليدية
+for (let i = 0; i < servers.length; i++) {
+    console.log(`Server ${i + 1}: ${servers[i]}`);
+}
+
+// حلقة for...of (حديثة للمصفوفات)
+for (const server of servers) {
+    console.log(`Checking ${server}`);
+}
+
+// حلقة for...in (لخصائص الكائن)
+for (const key in user) {
+    console.log(`${key}: ${user[key]}`);
+}
+
+// حلقة while
+let count = 0;
+while (count < 3) {
+    console.log(`Attempt ${count + 1}`);
+    count++;
+}
+```
+
+### الدوال
+
+```javascript
+// تعريف دالة (Hoisted - يمكن استدعاؤها قبل تعريفها)
+function check_server_status(server_name) {
+    console.log(`Pinging ${server_name}...`);
+    return "Online"; // دائمًا يعيد قيمة
+}
+
+// تعبير دالة (غير مرفوع hoisted)
+const check_status = function(server_name) {
+    console.log(`Pinging ${server_name}...`);
+    return "Online";
+};
+
+// دالة سهمية (صياغة ES6 الحديثة مختصرة)
+const quick_check = (server_name) => {
+    console.log(`Quick check: ${server_name}`);
+    return "OK";
+};
+
+// دالة سهمية ذات تعبير واحد (إرجاع ضمني)
+const is_online = (server_name) => server_name !== "offline";
+
+// دالة غير متزامنة (للتعامل مع الوعود Promises)
+async function async_check_status(server_name) {
+    console.log(`Async checking ${server_name}...`);
+    // محاكاة تأخير شبكة
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return "Online";
+}
+
+// استدعاء الدوال
+console.log(check_server_status("memo"));    // "Online"
+console.log(is_online("memo"));            // true
+```
+
+---
+
+## ميزات خاصة بـ Node.js
+
+### العمل مع الوحدات (Modules)
+
+```javascript
+// وحدات Node.js المدمجة (نمط CommonJS)
+const fs = require('fs');           // نظام الملفات
+const path = require('path');       // أدوات المسارات
+const http = require('http');       // خادم HTTP
+const os = require('os');           // معلومات النظام
+
+// وحدات طرف ثالث (ثبّتها عبر npm أولاً)
+const axios = require('axios');     // عميل HTTP
+const express = require('express'); // إطار ويب
+
+// وحدات ES6 (أضف "type": "module" إلى package.json)
+import fs from 'fs';
+import axios from 'axios';
+
+// وحداتك الخاصة
+const { server_tools, logger } = require('./utils/server-tools');
+
+// التصدير من وحداتك (CommonJS)
+module.exports = {
+    check_server: (name) => console.log(`Checking ${name}`),
+    get_uptime: () => process.uptime()
+};
+
+// صياغة تصدير ES6
+export const check_server = (name) => console.log(`Checking ${name}`);
+export default { check_server, get_uptime };
+```
+
+---
+
+## JavaScript و Node.js غير المتزامن
+
+### الوعود (Promises) و Async/Await
+```javascript
+// أسلوب يعتمد على Promise
+function fetch_user_promise(id) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (id > 0) {
+                resolve({ id, name: `User ${id}` });
+            } else {
+                reject(new Error('Invalid user ID'));
+            }
+        }, 1000);
+    });
+}
+
+// استخدام الـ Promise
+fetch_user_promise(1)
+    .then(user => console.log(user))
+    .catch(error => console.error(error));
+
+// أسلوب async/await (أوضح في القراءة)
+async function fetch_user(id) {
+    try {
+        // محاكاة نداء API
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        if (id > 0) {
+            return { id, name: `User ${id}` };
+        } else {
+            throw new Error('Invalid user ID');
+        }
+    } catch (error) {
+        console.error('Error fetching user:', error.message);
+        return null;
+    }
+}
+
+// استخدام async/await
+async function main() {
+    const user = await fetch_user(1);
+    if (user) {
+        console.log(`Found: ${user.name}`);
+    }
+}
+
+main();
+```
+
+---
+
+## طلبات API باستخدام Axios
+
+### تنفيذ طلبات HTTP
+```javascript
+const axios = require('axios');
+
+// طلب GET - جلب بيانات
+async function fetch_users() {
+    try {
+        const response = await axios.get('https://jsonplaceholder.typicode.com/users');
+        
+        console.log(`Found ${response.data.length} users`);
+        console.log(`Status: ${response.status}`);
+        
+        // طباعة بيانات أول مستخدم
+        const first_user = response.data[0];
+        console.log(`Name: ${first_user.name}`);
+        console.log(`Email: ${first_user.email}`);
+        
+        return response.data;
+    } catch (error) {
+        console.error(`Error: ${error.response?.status || error.message}`);
+        return null;
+    }
+}
+
+// استدعاء الدالة
+fetch_users();
+```
+
+### طلب POST - إرسال بيانات
+```javascript
+async function create_post() {
+    const new_post = {
+        title: 'My Server Status Report',
+        body: 'All servers are running normally. No issues detected.',
+        userId: 1
+    };
+
+    try {
+        const response = await axios.post(
+            'https://jsonplaceholder.typicode.com/posts',
+            new_post,
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                timeout: 5000
+            }
+        );
+
+        console.log(`✅ Created post with ID: ${response.data.id}`);
+        console.log(`Title: ${response.data.title}`);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ Error creating post: ${error.message}`);
+        return null;
+    }
+}
+
+create_post();
+```
+
+### مثال واقعي: سكربت مراقبة خوادم
+```javascript
+const axios = require('axios');
+
+async function check_website_status(url) {
+    const start_time = Date.now();
+    
+    try {
+        const response = await axios.get(url, { 
+            timeout: 5000,
+            validateStatus: function (status) {
+                return status < 500; // لا ترمِ استثناءً لأخطاء 4xx
+            }
+        });
+        
+        const response_time = Date.now() - start_time;
+        
+        return {
+            url,
+            status_code: response.status,
+            status_text: response.statusText,
+            response_time,
+            is_up: response.status >= 200 && response.status < 400,
+            checked_at: new Date().toISOString()
+        };
+    } catch (error) {
+        return {
+            url,
+            error: error.code === 'ECONNABORTED' ? 'Timeout' : error.message,
+            is_up: false,
+            checked_at: new Date().toISOString()
+        };
+    }
+}
+
+// مراقبة عدة مواقع
+async function monitor_websites() {
+    const websites = [
+        'https://httpbin.org/status/200',
+        'https://httpbin.org/status/404', 
+        'https://httpbin.org/status/500',
+        'https://httpbin.org/delay/2',
+        'https://this-domain-does-not-exist-12345.com'
+    ];
+
+    console.log("🌐 Website Status Report");
+    console.log("=".repeat(60));
+    console.log(`📅 ${new Date().toLocaleString()}`);
+    console.log("-".repeat(60));
+
+    // فحص كل المواقع بالتوازي
+    const promises = websites.map(site => check_website_status(site));
+    const results = await Promise.all(promises);
+
+    let up_count = 0;
+    let down_count = 0;
+
+    results.forEach(status => {
+        if (status.is_up) {
+            console.log(`✅ ${status.url}`);
+            console.log(`   Status: ${status.status_code} ${status.status_text}`);
+            console.log(`   Response Time: ${status.response_time}ms`);
+            up_count++;
+        } else {
+            console.log(`❌ ${status.url}`);
+            console.log(`   Error: ${status.error || `HTTP ${status.status_code}`}`);
+            down_count++;
+        }
+        console.log("");
+    });
+
+    console.log("-".repeat(60));
+    console.log(`📊 Summary: ${up_count} UP, ${down_count} DOWN`);
+    console.log(`⏰ Check completed at ${new Date().toLocaleString()}`);
+}
+
+// تشغيل عملية المراقبة
+monitor_websites();
+```
+
+<Callout title="واجهات تعليمية">
+تمرّن باستخدام هذه الـ APIs المجانية:
+- **HTTPBin** (`httpbin.org`) - خدمة اختبار HTTP مع رموز استجابة متنوعة
+- **JSONPlaceholder** (`jsonplaceholder.typicode.com`) - واجهة REST وهمية للاختبار
+- **ReqRes** (`reqres.in`) - رموز استجابة حقيقية وبُنى بيانات
+</Callout>
+
+---
+
+## أفضل ممارسات معالجة الأخطاء
+
+```javascript
+const axios = require('axios');
+
+// معالجة أخطاء شاملة
+async function robust_api_call(url, options = {}) {
+    try {
+        const response = await axios.get(url, {
+            timeout: 10000,
+            ...options
+        });
+        
+        return {
+            success: true,
+            data: response.data,
+            status: response.status
+        };
+        
+    } catch (error) {
+        let error_message = 'Unknown error occurred';
+        let error_type = 'unknown';
+        
+        if (error.code === 'ECONNABORTED') {
+            error_message = 'Request timed out';
+            error_type = 'timeout';
+        } else if (error.code === 'ECONNREFUSED') {
+            error_message = 'Connection refused - server may be down';
+            error_type = 'connection';
+        } else if (error.code === 'ENOTFOUND') {
+            error_message = 'Domain not found - check URL';
+            error_type = 'dns';
+        } else if (error.response) {
+            // الخادم ردّ بحالة خطأ
+            error_message = `HTTP ${error.response.status}: ${error.response.statusText}`;
+            error_type = 'http';
+        } else if (error.request) {
+            // خطأ شبكة
+            error_message = 'Network error - no response received';
+            error_type = 'network';
+        } else {
+            error_message = error.message;
+        }
+        
+        return {
+            success: false,
+            error: error_message,
+            error_type,
+            original_error: error
+        };
+    }
+}
+
+// مثال استخدام
+async function test_error_handling() {
+    const test_urls = [
+        'https://jsonplaceholder.typicode.com/users/1',  // ينبغي أن يعمل
+        'https://jsonplaceholder.typicode.com/users/999', // خطأ 404
+        'https://httpbin.org/delay/15',                   // سيتجاوز الوقت
+        'https://non-existent-domain-12345.com'          // خطأ DNS
+    ];
+
+    for (const url of test_urls) {
+        console.log(`\n🔍 Testing: ${url}`);
+        
+        const result = await robust_api_call(url, { timeout: 5000 });
+        
+        if (result.success) {
+            console.log(`✅ Success! Status: ${result.status}`);
+        } else {
+            console.log(`❌ Failed: ${result.error}`);
+            console.log(`   Error Type: ${result.error_type}`);
+        }
+    }
+}
+
+test_error_handling();
+```
+
+### فهم حلقة الأحداث (Event Loop)
+```javascript
+// فهم السلوك غير المتزامن في Node.js
+console.log("1. Synchronous start");
+
+setTimeout(() => {
+    console.log("4. Timeout callback (after 0ms)");
+}, 0);
+
+setImmediate(() => {
+    console.log("5. setImmediate callback");
+});
+
+process.nextTick(() => {
+    console.log("3. process.nextTick callback");
+});
+
+console.log("2. Synchronous end");
+
+// ترتيب الإخراج:
+// 1. Synchronous start
+// 2. Synchronous end  
+// 3. process.nextTick callback
+// 4. Timeout callback (after 0ms)
+// 5. setImmediate callback
+```
+
+<Callout title="أفضل ممارسة">
+تعامل دائمًا مع الأخطاء بطريقة مناسبة في تطبيقات الإنتاج.
+</Callout>

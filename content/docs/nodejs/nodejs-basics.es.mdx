@@ -1,0 +1,484 @@
+---
+title: Básicos de NodeJS y JavaScript
+---
+## Node.js: ¿Qué es exactamente?
+
+**Node.js** es un entorno de ejecución de JavaScript que te permite ejecutar código JavaScript fuera de los navegadores web - en servidores, aplicaciones de escritorio, herramientas de línea de comandos, y más.
+
+Piénsalo de esta manera:
+- **JavaScript** = El lenguaje
+- **Node.js** = El motor que ejecuta JavaScript en cualquier lugar (no solo navegadores)
+
+Características clave de Node.js:
+- Construido sobre **el motor JavaScript V8 de Chrome** (súper rápido)
+- **Arquitectura no bloqueante y dirigida por eventos** - maneja muchas operaciones simultáneamente
+- **Multiplataforma** - Funciona en Windows, macOS, Linux
+- **Ecosistema npm** - Biblioteca masiva de paquetes reutilizables
+- **Monohilo** pero usa operaciones asíncronas para el rendimiento
+
+## JavaScript: ¿Qué es exactamente?
+
+**JavaScript** es un lenguaje de programación de alto nivel e interpretado creado originalmente para navegadores web. Es el lenguaje que hace que los sitios web sean interactivos - manejando clics, envíos de formularios, animaciones y actualizaciones de contenido dinámico.
+
+Características clave de JavaScript:
+- **Dinámico y flexible** - Las variables pueden cambiar de tipo, las funciones son objetos de primera clase
+- **Dirigido por eventos** - Responde a interacciones del usuario (clics, escritura, etc.)
+- **Interpretado** - No necesita paso de compilación, se ejecuta directamente
+- **Multiparadigma** - Soporta programación funcional, orientada a objetos y procedimental
+- **Tipado débil** - Las variables no necesitan declaraciones de tipo explícitas
+
+<Callout title="Punto clave">
+JavaScript se ejecuta en navegadores para frontend. Node.js trae JavaScript a servidores, CLIs y aplicaciones de escritorio para desarrollo full-stack.
+</Callout>
+
+---
+
+## Sintaxis básica de JavaScript
+
+### Variables y tipos de datos
+```javascript
+// Variables (let, const, var)
+const name = "Aaron";           // const = no puede ser reasignado
+let age = 22;                   // let = puede ser reasignado, ámbito de bloque
+var is_filipino = true;             // var = evita esto, usa let/const en su lugar
+
+// Arrays y Objetos
+const servers = ["memo", "cli", "lhc", "bbb", "mundo"];
+const user = {
+    name: "Aaron",
+    age: 22,
+    servers: ["memo", "cli", "lhc", "bbb", "mundo"]
+};
+
+// Principales tipos de datos de JavaScript
+const text = "Hello World";        // String (Cadena)
+const number = 44;                 // Number (Número - enteros y flotantes)
+const price = 19.99;               // Number (Número)
+const active = true;               // Boolean (Booleano)
+const nothing = null;              // Null
+let undefined_var;                 // Undefined (Indefinido)
+const symbol = Symbol('id');       // Symbol (identificador único)
+```
+
+### Estructuras de control
+
+```javascript
+// Declaraciones if
+if (age >= 18) {
+    console.log("Adulto");
+} else if (age >= 13) {
+    console.log("Adolescente");
+} else {
+    console.log("Niño");
+}
+
+// Bucles for
+for (let i = 0; i < servers.length; i++) {
+    console.log(`Servidor ${i + 1}: ${servers[i]}`);
+}
+
+// Bucle for...of (forma moderna para arrays)
+for (const server of servers) {
+    console.log(`Verificando ${server}`);
+}
+
+// Bucle for...in (para propiedades de objeto)
+for (const key in user) {
+    console.log(`${key}: ${user[key]}`);
+}
+
+// Bucle while
+let count = 0;
+while (count < 3) {
+    console.log(`Intento ${count + 1}`);
+    count++;
+}
+```
+
+### Funciones
+
+```javascript
+// Declaración de función (elevada - puede ser llamada antes de la declaración)
+function check_server_status(server_name) {
+    console.log(`Haciendo ping a ${server_name}...`);
+    return "En línea"; // Siempre retorna un valor
+}
+
+// Expresión de función (no elevada)
+const check_status = function(server_name) {
+    console.log(`Haciendo ping a ${server_name}...`);
+    return "En línea";
+};
+
+// Función flecha (sintaxis ES6 moderna, más concisa)
+const quick_check = (server_name) => {
+    console.log(`Verificación rápida: ${server_name}`);
+    return "OK";
+};
+
+// Función flecha con expresión única (retorno implícito)
+const is_online = (server_name) => server_name !== "offline";
+
+// Función async (para manejar promesas)
+async function async_check_status(server_name) {
+    console.log(`Verificación async de ${server_name}...`);
+    // Simular retraso de red
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return "En línea";
+}
+
+// Llamar las funciones
+console.log(check_server_status("memo"));    // "En línea"
+console.log(is_online("memo"));            // true
+```
+
+---
+
+## Características específicas de Node.js
+
+### Trabajando con módulos
+
+```javascript
+// Módulos integrados de Node.js (estilo CommonJS)
+const fs = require('fs');           // Sistema de archivos
+const path = require('path');       // Utilidades de ruta
+const http = require('http');       // Servidor HTTP
+const os = require('os');           // Información del sistema operativo
+
+// Módulos de terceros (instalar con npm primero)
+const axios = require('axios');     // Cliente HTTP
+const express = require('express'); // Framework web
+
+// Módulos ES6 (agregar "type": "module" a package.json)
+import fs from 'fs';
+import axios from 'axios';
+
+// Tus propios módulos
+const { server_tools, logger } = require('./utils/server-tools');
+
+// Exportando desde tus módulos (CommonJS)
+module.exports = {
+    check_server: (name) => console.log(`Verificando ${name}`),
+    get_uptime: () => process.uptime()
+};
+
+// Sintaxis de exportación ES6
+export const check_server = (name) => console.log(`Verificando ${name}`);
+export default { check_server, get_uptime };
+```
+
+---
+
+## JavaScript asíncrono y Node.js
+
+### Promesas y Async/Await
+```javascript
+// Enfoque basado en promesas
+function fetch_user_promise(id) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (id > 0) {
+                resolve({ id, name: `Usuario ${id}` });
+            } else {
+                reject(new Error('ID de usuario inválido'));
+            }
+        }, 1000);
+    });
+}
+
+// Usando la promesa
+fetch_user_promise(1)
+    .then(user => console.log(user))
+    .catch(error => console.error(error));
+
+// Enfoque async/await (sintaxis más limpia)
+async function fetch_user(id) {
+    try {
+        // Simular llamada API
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        if (id > 0) {
+            return { id, name: `Usuario ${id}` };
+        } else {
+            throw new Error('ID de usuario inválido');
+        }
+    } catch (error) {
+        console.error('Error obteniendo usuario:', error.message);
+        return null;
+    }
+}
+
+// Usando async/await
+async function main() {
+    const user = await fetch_user(1);
+    if (user) {
+        console.log(`Encontrado: ${user.name}`);
+    }
+}
+
+main();
+```
+
+---
+
+## Peticiones API con Axios
+
+### Haciendo peticiones HTTP
+```javascript
+const axios = require('axios');
+
+// Petición GET - Obtener datos
+async function fetch_users() {
+    try {
+        const response = await axios.get('https://jsonplaceholder.typicode.com/users');
+        
+        console.log(`Encontrados ${response.data.length} usuarios`);
+        console.log(`Estado: ${response.status}`);
+        
+        // Imprimir información del primer usuario
+        const first_user = response.data[0];
+        console.log(`Nombre: ${first_user.name}`);
+        console.log(`Email: ${first_user.email}`);
+        
+        return response.data;
+    } catch (error) {
+        console.error(`Error: ${error.response?.status || error.message}`);
+        return null;
+    }
+}
+
+// Llamar la función
+fetch_users();
+```
+
+### Petición POST - Enviar datos
+```javascript
+async function create_post() {
+    const new_post = {
+        title: 'Mi reporte de estado del servidor',
+        body: 'Todos los servidores están funcionando normalmente. No se detectaron problemas.',
+        userId: 1
+    };
+
+    try {
+        const response = await axios.post(
+            'https://jsonplaceholder.typicode.com/posts',
+            new_post,
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                timeout: 5000
+            }
+        );
+
+        console.log(`✅ Post creado con ID: ${response.data.id}`);
+        console.log(`Título: ${response.data.title}`);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ Error creando post: ${error.message}`);
+        return null;
+    }
+}
+
+create_post();
+```
+
+### Ejemplo del mundo real: Script de monitoreo de servidor
+```javascript
+const axios = require('axios');
+
+async function check_website_status(url) {
+    const start_time = Date.now();
+    
+    try {
+        const response = await axios.get(url, { 
+            timeout: 5000,
+            validateStatus: function (status) {
+                return status < 500; // No lanzar error para errores 4xx
+            }
+        });
+        
+        const response_time = Date.now() - start_time;
+        
+        return {
+            url,
+            status_code: response.status,
+            status_text: response.statusText,
+            response_time,
+            is_up: response.status >= 200 && response.status < 400,
+            checked_at: new Date().toISOString()
+        };
+    } catch (error) {
+        return {
+            url,
+            error: error.code === 'ECONNABORTED' ? 'Timeout' : error.message,
+            is_up: false,
+            checked_at: new Date().toISOString()
+        };
+    }
+}
+
+// Monitorear múltiples sitios web
+async function monitor_websites() {
+    const websites = [
+        'https://httpbin.org/status/200',
+        'https://httpbin.org/status/404', 
+        'https://httpbin.org/status/500',
+        'https://httpbin.org/delay/2',
+        'https://este-dominio-no-existe-12345.com'
+    ];
+
+    console.log("🌐 Reporte de estado de sitios web");
+    console.log("=".repeat(60));
+    console.log(`📅 ${new Date().toLocaleString()}`);
+    console.log("-".repeat(60));
+
+    // Verificar todos los sitios web concurrentemente
+    const promises = websites.map(site => check_website_status(site));
+    const results = await Promise.all(promises);
+
+    let up_count = 0;
+    let down_count = 0;
+
+    results.forEach(status => {
+        if (status.is_up) {
+            console.log(`✅ ${status.url}`);
+            console.log(`   Estado: ${status.status_code} ${status.status_text}`);
+            console.log(`   Tiempo de respuesta: ${status.response_time}ms`);
+            up_count++;
+        } else {
+            console.log(`❌ ${status.url}`);
+            console.log(`   Error: ${status.error || `HTTP ${status.status_code}`}`);
+            down_count++;
+        }
+        console.log("");
+    });
+
+    console.log("-".repeat(60));
+    console.log(`📊 Resumen: ${up_count} ACTIVOS, ${down_count} INACTIVOS`);
+    console.log(`⏰ Verificación completada a las ${new Date().toLocaleString()}`);
+}
+
+// Ejecutar el monitoreo
+monitor_websites();
+```
+
+<Callout title="APIs educativas">
+Practica con estas APIs gratuitas:
+- **HTTPBin** (`httpbin.org`) - Servicio de prueba HTTP con varios códigos de estado
+- **JSONPlaceholder** (`jsonplaceholder.typicode.com`) - API REST falsa para pruebas
+- **ReqRes** (`reqres.in`) - Códigos de respuesta reales y estructuras de datos
+</Callout>
+
+---
+
+## Error Handling Best Practices
+
+```javascript
+const axios = require('axios');
+
+// Manejo comprehensivo de errores
+async function robust_api_call(url, options = {}) {
+    try {
+        const response = await axios.get(url, {
+            timeout: 10000,
+            ...options
+        });
+        
+        return {
+            success: true,
+            data: response.data,
+            status: response.status
+        };
+        
+    } catch (error) {
+        let error_message = 'Error desconocido ocurrido';
+        let error_type = 'unknown';
+        
+        if (error.code === 'ECONNABORTED') {
+            error_message = 'Tiempo de espera agotado';
+            error_type = 'timeout';
+        } else if (error.code === 'ECONNREFUSED') {
+            error_message = 'Conexión rechazada - el servidor puede estar caído';
+            error_type = 'connection';
+        } else if (error.code === 'ENOTFOUND') {
+            error_message = 'Dominio no encontrado - verificar URL';
+            error_type = 'dns';
+        } else if (error.response) {
+            // El servidor respondió con estado de error
+            error_message = `HTTP ${error.response.status}: ${error.response.statusText}`;
+            error_type = 'http';
+        } else if (error.request) {
+            // Error de red
+            error_message = 'Error de red - no se recibió respuesta';
+            error_type = 'network';
+        } else {
+            error_message = error.message;
+        }
+        
+        return {
+            success: false,
+            error: error_message,
+            error_type,
+            original_error: error
+        };
+    }
+}
+
+// Ejemplo de uso
+async function test_error_handling() {
+    const test_urls = [
+        'https://jsonplaceholder.typicode.com/users/1',  // Debería funcionar
+        'https://jsonplaceholder.typicode.com/users/999', // Error 404
+        'https://httpbin.org/delay/15',                   // Tiempo agotado
+        'https://dominio-inexistente-12345.com'          // Error DNS
+    ];
+
+    for (const url of test_urls) {
+        console.log(`\n🔍 Probando: ${url}`);
+        
+        const result = await robust_api_call(url, { timeout: 5000 });
+        
+        if (result.success) {
+            console.log(`✅ ¡Éxito! Estado: ${result.status}`);
+        } else {
+            console.log(`❌ Falló: ${result.error}`);
+            console.log(`   Tipo de error: ${result.error_type}`);
+        }
+    }
+}
+
+test_error_handling();
+```
+
+### Entendiendo el bucle de eventos
+```javascript
+// Entendiendo el comportamiento async en Node.js
+console.log("1. Inicio síncrono");
+
+setTimeout(() => {
+    console.log("4. Callback timeout (después de 0ms)");
+}, 0);
+
+setImmediate(() => {
+    console.log("5. Callback setImmediate");
+});
+
+process.nextTick(() => {
+    console.log("3. Callback process.nextTick");
+});
+
+console.log("2. Final síncrono");
+
+// Orden de salida:
+// 1. Inicio síncrono
+// 2. Final síncrono  
+// 3. Callback process.nextTick
+// 4. Callback timeout (después de 0ms)
+// 5. Callback setImmediate
+```
+
+<Callout title="Best practice">
+Siempre maneja los errores de manera elegante en aplicaciones de producción.
+</Callout>
