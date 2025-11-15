@@ -1,0 +1,119 @@
+---
+title: Search a value in several Excel files
+---
+
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import DynamicCallout from "../../../components/DynamicCallout";
+
+## Context
+
+I am not a teacher, this is my own, an insignificant student, Aaron (Iso) Pescasio's notes.
+
+During my first work/study apprenticeship, I used Excel extensively to manage the company's inventory.
+
+As the company had many Excel files, I created this script to search for a value across all of them.
+
+This script saved me time by directly returning the name of the file containing the searched value, instead of having to open each file one by one.
+
+For example, I often had to find the exact serial number of a colleague's PC. Instead of opening all the Excel files one by one, the script would directly give me the file(s) where the value was located.
+
+## Step-by-step Script Breakdown
+
+<DynamicCallout>
+
+<Steps>
+<Step>
+### Prompt for the value to search ###
+The script asks the user to enter a value (name, first name, serial number, etc.). It ensures the input is not empty before continuing *(~5 seconds)*.
+</Step>
+
+<Step>
+### Execution logging ### 
+The script logs who executed it and the exact date/time. This helps with usage tracking *(~3 seconds)*.
+</Step>
+
+<Step>
+### Copy Excel files locally ### 
+All Excel inventory files are copied to the PC's temporary folder. This allows the script to work locally without altering network files *(~10 seconds)*.
+</Step>
+
+<Step>
+### Search the value in all files ### 
+The script opens each Excel file, loops through all sheets, and searches for the entered value. If found, it displays the file name and sheet name. If found in multiple files, all are listed *(~30 seconds)*.
+</Step>
+
+<Step>
+### Cleanup ###
+After the search is completed, all copied Excel files in the temp folder are deleted to keep the PC clean *(~2 seconds)*.
+</Step>
+</Steps>
+</DynamicCallout>
+## PowerShell Script
+```ps1 title="search_inventoryExcel.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### A script to search for a name / first name / serial number in all the company's Excel inventory files
+
+### If it finds a name / first name / serial number / asset number, it will indicate the Excel file(s) and the sheet where the value is found
+
+### Log who executed the script and at what date/time
+
+$username23 = "$env:USERDOMAIN\$env:USERNAME"
+$date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
+$log23 = "$username23 a executé le script: trouver_inventaireExcel.bat le $date23"
+Add-Content -Path "\\adds01\soft\ap_script\ap_script_logs\trouver_inventaireExcel.log" -Value $log23
+
+### Ask the user for the value to search
+
+$searchValue = ""
+while ($searchValue -eq "") {
+$searchValue = Read-Host "`nPlease enter a name / first name / serial number you want to search for (cannot be empty)"
+}
+
+### Copy all Excel files to TEMP
+
+### This way, the script works locally and doesn't touch the network files
+
+Copy-Item -Path "\\adds01\inventaire\2022\Gestion Parc-informatique*.xlsx" -Destination $env:TEMP
+Copy-Item -Path "\\adds01\inventaire\2021\Gestion Parc-informatique*.xlsx" -Destination $env:TEMP
+Copy-Item -Path "\\adds01\inventaire\2020\Gestion Parc*.xlsx" -Destination $env:TEMP
+Copy-Item -Path "\\adds01\inventaire\2019\Gestion*.xlsx" -Destination $env:TEMP
+Copy-Item -Path "\\adds01\inventaire\2018\Gestion Parc\*.xlsx" -Destination $env:TEMP
+
+### Get all Excel files copied to TEMP
+
+$excelFiles = GCI "$env:TEMP\gestion\*.xlsx","$env:TEMP\dell_vostro.xlsx"
+
+### Loop through each Excel file to search for the value
+
+foreach ($file in $excelFiles) {
+    $excel = New-Object -ComObject Excel.Application
+    $workbook = $excel.Workbooks.Open($file.FullName)
+
+    $worksheets = $workbook.Worksheets
+    foreach ($worksheet in $worksheets) {
+        $range = $worksheet.UsedRange
+        $cells = $range.Cells
+        $searchResult = $cells.Find($searchValue)
+
+        if ($searchResult -ne $null) {
+
+            ### Display the file(s) and the sheet where the value is found ###
+
+            Write-Host "`nThe value '$searchValue' exists in the file: $($file.Name) on sheet $($worksheet.Name) `n"
+        }
+    }
+
+    ### Close the file and release Excel resources ###
+
+    $workbook.Close()
+    $excel.Quit()
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excel) | Out-Null
+
+}
+
+### Delete all Excel files from TEMP after the search
+
+Remove-Item -Path "$env:TEMP\gestion\*.xlsx" -Force
+
+```

@@ -1,0 +1,175 @@
+---
+title: Migrer un ancien PC vers un nouveau PC d'un salarié
+---
+
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import DynamicCallout from "../../../components/DynamicCallout";
+
+## Contexte
+
+Je ne suis pas enseignant, ce sont mes propres notes, celles d'un étudiant insignifiant, Aaron (Iso) Pescasio.
+
+Durant ma première alternance au sein d'un groupe d'universités, j'ai dû faire une trentaine de migration d'un ancien PC à un nouveau PC d'un collaborateur.
+
+J'ai donc décidé de créer ces scripts qui simplifiera et automatisera l'ensemble du processus.
+
+## Déroulement du script étape par étape
+
+<DynamicCallout>
+
+<Steps>
+
+<Step>
+  ### Journalisation de l'exécution (ancien PC) ### Crée une ligne de log avec
+  le nom d'utilisateur et la date d'exécution du script pour garder une trace de
+  la migration *(~2 secondes)*.
+</Step>
+
+<Step>
+  ### Création du dossier de migration réseau ### Vérifie si un dossier de
+  migration personnel existe sur le partage réseau. Sinon, le crée
+  automatiquement *(~3 secondes)*.
+</Step>
+
+<Step>
+  ### Export des favoris Chrome ### Vérifie si le fichier de favoris Chrome
+  existe. S’il est présent, il est copié dans le dossier de migration *(~2
+  secondes)*.
+</Step>
+
+<Step>
+  ### Export des favoris Edge ### Même principe que pour Chrome : les favoris
+  d’Edge sont copiés s’ils existent *(~2 secondes)*.
+</Step>
+
+<Step>
+  ### Export des signatures Outlook ### Si le dossier de signatures existe, son
+  contenu est sauvegardé dans le dossier réseau *(~3 secondes)*.
+</Step>
+
+<Step>
+  ### Export de la liste des imprimantes ### Récupère les imprimantes installées
+  sur l’ancien PC, puis les exporte dans un fichier `.csv` *(~2 secondes)*.
+</Step>
+
+<Step>
+  ### Journalisation de l'exécution (nouveau PC) ### Un deuxième log est créé à
+  l’exécution du script sur le nouveau PC pour assurer la traçabilité *(~2
+  secondes)*.
+</Step>
+
+<Step>
+  ### Import des favoris Chrome ### Restaure les favoris Chrome depuis le
+  dossier réseau vers le bon répertoire local *(~2 secondes)*.
+</Step>
+
+<Step>
+  ### Import des favoris Edge ### Même procédure que pour Chrome : copie les
+  favoris Edge dans le répertoire utilisateur *(~2 secondes)*.
+</Step>
+
+<Step>
+  ### Import des signatures Outlook ### Crée le dossier de signatures s’il
+  n’existe pas encore, puis y importe les fichiers sauvegardés *(~3 secondes)*.
+</Step>
+
+<Step>
+  ### Réinstallation des imprimantes ### Lit la liste des imprimantes depuis le
+  fichier `.csv` et les ajoute une par une si elles ne sont pas déjà installées
+  *(~4 secondes)*.
+</Step>
+
+</Steps>
+</DynamicCallout>
+## PowerShell Script
+```ps1 title="export_oldPC.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Un script "export" qu'on executera sur l'ancien PC pour exporter: les signatures Outlook, les imprimantes, les favoris Chrome/Edge... et les copier coller dans le disque espace personnel de stockage dans le réseau
+
+$username23 = "$env:USERDOMAIN\$env:USERNAME"
+$date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
+$log23 = "$username23 a executé le script: export_ancienPC.bat le $date23"
+Add-Content -Path "\\adds01\soft\ap_script\ap_script_logs\export_ancienPC.log" -Value $log23
+
+### Si le dossier MigrationP5_identifiant n'existe pas => Creez le mais si ça existe déjà tu me l'écris
+
+if (!(Test-Path -Path "\\adds01\personnel\$env:USERNAME\MIGRATIONP5*$env:USERNAME" -PathType Container)) {
+New-Item -Type Directory "\\adds01\personnel\$env:USERNAME\MIGRATIONP5*$env:USERNAME"
+} else {
+    Write-Output "Dossier 'MigrationP5_$env:USERNAME' existe deja"
+}
+
+### Si le fichier Bookmarks (Chrome) n'existe pas => Tu me l'écris mais si ça existe tu le copier coller dans le disque espace personnel stockage dans le réseau
+
+if (!(Test-Path -Path "$env:localappdata\Google\Chrome\User Data\Default\Bookmarks")) {
+    Write-Output "Google Chrome favoris n'existe pas "
+} else {
+    Copy-Item "$env:localappdata\Google\Chrome\User Data\Default\Bookmarks" "\\adds01\personnel\$env:USERNAME\MIGRATIONP5\_$env:USERNAME\Bookmarks_ch" -Force
+}
+
+### Si le fichier Bookmarks (Edge) n'existe pas => Tu me l'écris mais si ça existe tu le copier coller dans le disque espace personnel stockage dans le réseau
+
+if (!(Test-Path -Path "$env:localappdata\Microsoft\Edge\User Data\Default\Bookmarks")) {
+    Write-Output "Microsoft Edge favoris n'existe pas "
+} else {
+    Copy-Item "$env:localappdata\Microsoft\Edge\User Data\Default\Bookmarks" "\\adds01\personnel\$env:USERNAME\MIGRATIONP5\_$env:USERNAME\Bookmarks_ms" -Force
+}
+
+### S'il n'y a pas de signatures Outlook => Tu me l'écris mais si ça existe tu le copier coller dans le disque espace personnel stockage dans le réseau
+
+if (!(Test-Path -Path "$env:appdata\Microsoft\Signatures" -PathType Container)) {
+    Write-Output "Signatures Outlook n'existe pas"
+} else {
+    Copy-Item "$env:appdata\Microsoft\Signatures" "\\adds01\personnel\$env:USERNAME\MIGRATIONP5\_$env:USERNAME\" -Recurse -Force
+}
+
+### Export imprimantes (copier la liste d'imprimante sur l'ancien PC puis la coller dans le disque espace personnel stockage dans le réseau)
+
+get-printer "\\imprimant.share.loc\*" | Select-Object Name | Export-Csv -Path "\\adds01\personnel\$env:USERNAME\MIGRATIONP5\_$env:USERNAME\ecoleprinters.csv" -NoTypeInformation
+
+````
+
+## PowerShell Script 2
+```ps1 title="import_oldPC.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Script (à executer sur le nouveau PC) pour importer les: signatures Outlook, les imprimantes, les favoris Chrome/Edge... sur le disque de nouveau PC! ###
+
+$username23 = "$env:USERDOMAIN\$env:USERNAME"
+$date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
+$log23 = "$username23 a executé le script: import_nouveauPC.bat le $date23"
+Add-Content -Path "\\adds01\soft\ap_script\ap_script_logs\import_nouveauPC.log" -Value $log23
+
+### Import Favoris => Chrome ###
+
+Copy-Item "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Bookmarks_ch" "$env:localappdata\Google\Chrome\User Data\Default\Bookmarks" -Force
+
+### Import Favoris => Edge ###
+
+Copy-Item "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Bookmarks_ms" "$env:localappdata\Microsoft\Edge\User Data\Default\Bookmarks" -Force
+
+### Import Signatures Outlook ###
+
+if (!(Test-Path -Path "$env:appdata\Microsoft\Signatures" -PathType Container)) {
+    New-Item -Type Directory "$env:appdata\Microsoft\Signatures"
+    Copy-Item "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Signatures\*" "$env:appdata\Microsoft\Signatures" -Force
+} else {
+    Copy-Item "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\Signatures\*" "$env:appdata\Microsoft\Signatures" -Force
+}
+
+### Import imprimantes sur le nouveau PC ###
+
+$Printers = Import-Csv -Path "\\adds01\personnel\$env:USERNAME\MIGRATIONP5_$env:USERNAME\ecoleprinters.csv"
+foreach ($Printer in $Printers)
+{
+    $PrinterName = $Printer.Name
+    if (Get-Printer -Name $PrinterName 2>$null)
+    {
+        Write-Host "L'imprimante $PrinterName est deja installe!"
+    } else {
+        Add-Printer -ConnectionName $PrinterName
+    }
+}
+
+````

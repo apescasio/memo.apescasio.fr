@@ -1,0 +1,6 @@
+{
+    "title": "PowerShell",
+    "icon": "powershell",
+    "pages": ["index", "config-clipboard", "config-windows-server", "new-employee", "migrate-PC-employee", "search-excel"],
+    "root": true
+  }

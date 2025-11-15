@@ -1,0 +1,380 @@
+---
+title: Configure a laptop for a New Employee
+---
+
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import DynamicCallout from "../../../components/DynamicCallout";
+
+## Context
+
+I am not a teacher, this is my own, an insignificant student, Aaron (Iso) Pescasio's notes.
+
+During my first work/study apprenticeship at a group of universities, I had to onboard about a hundred new employees.
+
+I decided to create this script to simplify and automate the entire process.
+
+By optimizing the preparation of equipment for new hires, I was able to reduce the required time and thus have more time for other tasks.
+
+## Step-by-step Script Breakdown
+
+<DynamicCallout>
+
+<Steps>
+
+<Step>
+  ### Execution Logging ### Generates a log entry containing the user's name and
+  the script execution date, stored on a network share *(~2 seconds)*.
+</Step>
+
+<Step>
+  ### Request Employee Information ### Prompts the user to enter the first and
+  last name of the new employee. Then generates a PC name based on this
+  information *(~2 seconds)*.
+</Step>
+
+<Step>
+  ### Renaming the PC ### Suggests a name based on the entered first and last
+  name, limits it to 15 characters if necessary, requests confirmation, and then
+  renames the machine *(~10 seconds)*.
+</Step>
+
+<Step>
+  ### Antivirus Verification and Installation ### Checks if an antivirus is
+  already installed. If not, installs the latest version *(~3 seconds)*.
+</Step>
+
+<Step>
+  ### Selecting an Admin Account ### Displays a list of available admin accounts
+  to join the domain. Prompts the user to select one *(~2 seconds)*.
+</Step>
+
+<Step>
+  ### Connecting to the Domain "mydomain.fr" ### Uses the selected admin account
+  to join the PC to the domain *(~10 seconds)*.
+</Step>
+
+<Step>
+  ### Generating the Employee Identifier ### Creates a unique identifier based
+  on the first and last name, in the format expected by the domain *(~1
+  second)*.
+</Step>
+
+<Step>
+  ### Adding the User to the Local Administrators Group ### Automatically adds
+  the user to the "Administrators" group via a scheduled task that runs at the
+  next startup *(~3 seconds)*.
+</Step>
+
+<Step>
+  ### Alternative for Custom Username ### If I prefer to manually enter the
+  account to add to the administrators group, this option is provided *(~4
+  seconds)*.
+</Step>
+
+<Step>
+  ### Updating the Excel Inventory ### Updates an Excel file in a shared folder,
+  containing the PC and user information *(~3 seconds)*.
+</Step>
+
+<Step>
+  ### Generating and Printing the Loan Form ### Creates a Word form with the
+  employee and equipment information, then automatically prints it *(~4
+  seconds)*.
+</Step>
+
+</Steps>
+</DynamicCallout>
+## PowerShell Script
+```ps1 title="prep_pcintegration.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Script to simplify and automate the preparation of a laptop for integrating a new employee.
+
+### Summary of tasks:
+
+### • Install the latest version of our antivirus
+
+### • Join the PC to the correct domain "mydomain.fr"
+
+### • Add the employee's account to the local admin group
+
+### • Update the inventory (an Excel file) and print a laptop loan form for the employee
+
+### To see who executed which script at which date/time
+
+$username23 = "$env:USERDOMAIN\$env:USERNAME"
+$date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
+$log23 = "$username23 executed the script: prep_pcintegration.bat on $date23"
+Add-Content -Path "\\adds01\Integration\prep_pcintegration.log" -Value $log23
+
+### Ask the user: the first and last name of the new employee and take only the first letter of the first name followed by the last name for the PC name
+
+$global:prenom = Read-Host `n, "Enter the first name of the employee "
+$global:nom = Read-Host `n, "Enter the last name of the employee "
+$global:nom_pas_espace = $nom.Replace(" ", "")
+$global:premierelettre*fin = $prenom.Substring(0, 1)
+if ($prenom.Contains(" ")) {
+$global:prenomsplit = $prenom.Split(" ")
+$global:premierelettre = $prenomsplit | ForEach-Object { $*.Substring(0, 1) }
+$global:premierelettre_fin = $premierelettre -join ""
+}
+$pc_nom = $premierelettre_fin + $nom_pas_espace
+
+### If the full name exceeds 15 characters, take only the first 15 characters, example of a complete PC name ("APESCASIO")
+
+if ($pc_nom.length -gt 15) {
+$pc_nom15 = $pc_nom.substring(0, 15)
+$pc_nom15maj = $pc_nom15.ToUpper()
+Write-Output `n, $pc_nom15maj, "`nIf you forgot something, you can 'ctrl + C' 2 times to get out and start over"
+
+#
+
+### Rename the PC only if the user confirmed with 'o'
+
+do {
+$confirmation = Read-Host "`nDo you agree with the name of the PC?`n(Make sure to verify if a PC with the same name exists or not in the AD !"
+
+if ($confirmation -eq "o") {
+Rename-Computer -NewName $pc_nom15maj 3> $null
+}
+elseif ($confirmation -eq "n") {
+$pc_nommaj15 = Read-Host "Enter the complete name of the PC"
+Rename-Computer -NewName $pc_nommaj15 3> $null
+}
+
+else {
+Write-Host `n, "Please enter 'o' or 'n' only."
+}
+} until ( $confirmation -eq "o" -or $confirmation -eq "n")
+}
+
+### If the full name does not exceed 15 characters
+
+else {
+$pc_nommaj = $pc_nom.ToUpper()
+Write-Output `n, $pc_nommaj, "`nIf you forgot something, you can 'ctrl + C' 2 times to get out and start over"
+
+### Rename the PC only if the user confirmed with 'o'
+
+do {
+$confirmation = Read-Host "`nDo you agree with the name of the PC?`n(Make sure to verify if a PC with the same name exists or not in the AD !"
+
+if ($confirmation -eq "o") {
+Rename-Computer -NewName $pc_nommaj 3> $null
+}
+
+elseif ($confirmation -eq "n") {
+$pc_nommaj = Read-Host "Enter the complete name of the PC"
+Rename-Computer -NewName $pc_nommaj 3> $null
+}
+
+else {
+Write-Host `n, "Please enter 'o' or 'n' only."
+}
+} until ( $confirmation -eq "o" -or $confirmation -eq "n")
+
+}
+
+### Install Antivirus with the script "antivirusintegration_ap.bat" if not installed... (after antivirus installation, there will be the Antivirus folder in C:\Program Files so if it doesn't exist, it's because it's not installed)...
+
+$antivirus = "C:\Program Files\Antivirus\"
+if (Test-Path $antivirus) {
+Write-Output "Antivirus is already installed"
+}
+else {
+Write-Output "Installing the recent version of Antivirus"
+Start-Process "\\adds01\ap_script\antivirusintegration_ap.bat"
+}
+
+### Ask the user: which account to use to join the PC to the domain:
+
+$techs = [Ordered]@{
+"1" = "Administrator"
+"2" = "Tech1"
+"3" = "Tech2"
+}
+
+Write-Output $techs
+
+### Define the domain name and NETBIOS to which we will add the PC
+
+$domain_admin = "mydomain.fr"
+$domain_net = "MYDOM"
+$premierelettre_fin_minuscules = $premierelettre_fin.ToLower()
+$nom_minuscules = $nom.ToLower()
+$domain_user = "$premierelettre_fin_minuscules$nom_pas_espace"
+$sam_acc = "$domain_net\$domain_user"
+
+do {
+$choix_tech = Read-Host `n , "Choose your account"
+
+if ($techs.Contains($choix_tech)) {
+Do {
+
+Try {
+$techs_user = $techs[$choix_tech]
+
+### Add the PC to the domain with "JoinWithNewName" and "AccountCreate" options to have it in the AD with the new PC name
+
+$j = Add-Computer -DomainName $domain_admin -Credential $domain_net\$techs_user -Force -Options JoinWithNewName, AccountCreate -PassThru -ErrorAction Stop 3> $null
+
+}
+
+Catch {
+$Error[0].Exception
+}
+
+} While ( $j.HasSucceeded -ne $true )
+}
+else {
+Write-Output `n, "Please enter a number that is part of the list of technicians only."
+
+}
+} until ($techs.Contains($choix_tech))
+
+### Add the new employee's account to the local admin group
+
+Write-Output "`nThe user $sam_acc will be automatically added to the local admin group.."
+
+do {
+$confirmation_2 = Read-Host "Do you agree with this ?`nEnter 'o' for yes or 'n' to manually write the NETBIOS and username of the new employee"
+
+### If 'o' is chosen, then create a scheduled task (which runs at startup) that will automatically add the new employee's AD account to the local admin group.
+
+if ($confirmation_2 -eq "o") {
+$command_addlocal = "Add-LocalGroupMember -Group Administrators -Member $sam_acc"
+$command_deletetask = "schtasks /delete /tn 'ajouter_addminlocal' /f"
+$command_deletefile = "rm C:\ajouter_adminlocal.ps1"
+Set-Content C:\ajouter_adminlocal.ps1 -Value $command_addlocal, $command_deletetask, $command_deletefile
+$action = New-ScheduledTaskAction -Execute 'PowerShell.exe' -Argument '-ExecutionPolicy Bypass -File C:\ajouter_adminlocal.ps1'
+$trigger = New-ScheduledTaskTrigger -AtStartup
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+
+Register-ScheduledTask -TaskName 'ajouter_addminlocal' -Action $action -Trigger $trigger -Settings $settings -User System -RunLevel Highest | Out-Null
+}
+elseif ($confirmation_2 -eq "n") {
+$sam_acc_n = Read-Host "`nPlease enter the full ID of the new employee with the NETBIOS included!"
+$command_addlocal = "Add-LocalGroupMember -Group Administrators -Member $sam_acc_n"
+$command_deletetask = "schtasks /delete /tn 'ajouter_addminlocal' /f"
+$command_deletefile = "rm C:\ajouter_adminlocal.ps1"
+Set-Content C:\ajouter_adminlocal.ps1 -Value $command_addlocal, $command_deletetask, $command_deletefile
+$action = New-ScheduledTaskAction -Execute 'PowerShell.exe' -Argument '-ExecutionPolicy Bypass -File C:\ajouter_adminlocal.ps1'
+$trigger = New-ScheduledTaskTrigger -AtStartup
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+
+Register-ScheduledTask -TaskName 'ajouter_addminlocal' -Action $action -Trigger $trigger -Settings $settings -User System -RunLevel Highest | Out-Null
+
+}
+else {
+Write-Host `n, "Please enter 'o' or 'n' only."
+
+}
+} until ($confirmation_2 -eq "o" -or $confirmation_2 -eq "n")
+
+### After renaming the PC + domain integration, we will now update the Excel inventory
+
+### Set the provider in a variable to retrieve it later for the Word PC loan form
+
+$fournisseur = Get-WmiObject -Class win32_bios | Select -ExpandProperty Manufacturer
+
+### For Lenovo, add an "S" at the beginning of the serial number because in Excel files, Lenovo serial numbers always start with "S"
+
+if ($fournisseur -eq "LENOVO" ) {
+$global:serial = Get-WmiObject -Class win32_bios | Select -ExpandProperty serialnumber
+$global:s = "S"
+$global:serial = $s + $serial
+}
+
+# If it's not a LENOVO, there's nothing to do.
+
+else {
+$global:serial = Get-WmiObject -Class win32_bios | Select -ExpandProperty serialnumber
+$global:serial = "$global:serial"
+
+}
+
+Write-Output "`nAfter renaming the PC and joining it to the administrative domain, we will now update the Excel inventory. `n`nThe serial number of the PC is: $serial"
+
+### Ask the user: the year of the asset number (which is visible on the label under the laptop)
+
+$immobs = [Ordered]@{
+"1" = "2022\DELL_Inventory.xlsx"
+"2" = "2021\DELL_Inventory.xlsx"
+"3" = "2020\Gestion Parc-Lenovo.xlsx"
+}
+
+Write-Output $immobs
+
+### The path to the Excel inventory files and the employee variable to update the Excel file with the full name of the employee
+
+$global:employe = $nom.ToUpper() + " " + $prenom.substring(0, 1).ToUpper() + $prenom.substring(1).toLower()
+$sharedfolder_inventory = "\\adds01\Stock"
+
+### Function to update the Excel file that is in a network share ONLY IF no user has it open, if it's already open by another user, the script does nothing.
+
+function Save-ExcelDataLoop {
+[CmdletBinding()]
+param ()
+
+do {
+
+### Ask to select the year of the asset number
+
+$choix_immob = Read-Host "Choose the year of the asset number `n"
+if ($immobs.Contains($choix_immob)) {
+$choix_immob_fin = $immobs[$choix_immob]
+$global:absolute = "$sharedfolder_inventory\$choix_immob_fin"
+[IO.File]::OpenWrite($absolute).Close()
+
+### Open the Excel file, then update the new inventory with the following format: Full name + PC name
+
+$excel = New-Object -ComObject Excel.Application
+$excel.Visible = $false
+$workbook = $excel.Workbooks.Open($absolute)
+$worksheet = $workbook.Sheets.Item(1)
+
+$cell = $worksheet.Range("A1").EntireRow
+$lastRow = $worksheet.Cells($worksheet.Rows.Count, 1).End(-4162).Row + 1
+$worksheet.Cells.Item($lastRow, 1).Value = $employe
+$worksheet.Cells.Item($lastRow, 2).Value = $pc_nommaj
+$worksheet.Cells.Item($lastRow, 3).Value = $serial
+$workbook.Save()
+$workbook.Close()
+
+}
+else {
+Write-Host "Please select a valid year."
+}
+} until ($immobs.Contains($choix_immob))
+}
+
+Save-ExcelDataLoop
+
+### Print the form for the laptop loan
+
+### Ask the user for the printer to use
+
+$printer = Read-Host "`nWhich printer to use for printing the laptop loan form?"
+$filename = "\\adds01\Stock\PC Loan Forms\PC_Loan_Form_Template.docx"
+$doc = New-Object -ComObject Word.Application
+$doc.Visible = $false
+$document = $doc.Documents.Open($filename)
+
+### Find and replace fields in the Word document
+
+$find = $document.Content.Find
+$find.Execute("{Name}", $employe)
+$find.Execute("{PC_Name}", $pc_nommaj)
+$find.Execute("{Serial}", $serial)
+
+### Print the Word document to the selected printer
+
+$document.PrintOut([Type]::Missing, [Type]::Missing, [Type]::Missing, [Type]::Missing, [Type]::Missing, [Type]::Missing, [Type]::Missing, [Type]::Missing, [Type]::Missing, $printer)
+
+### Finish
+
+Write-Output "`nThe laptop loan form has been printed! `nTask Completed."
+
+```
+
+```

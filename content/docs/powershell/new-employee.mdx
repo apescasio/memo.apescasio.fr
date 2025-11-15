@@ -1,0 +1,526 @@
+---
+title: Configurer un PC portable pour un nouveau salarié
+---
+
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import DynamicCallout from "../../../components/DynamicCallout";
+
+## Contexte
+
+Je ne suis pas enseignant, ce sont mes propres notes, celles d'un étudiant insignifiant, Aaron (Iso) Pescasio.
+
+Durant ma première alternance au sein d'un groupe d'universités, j'ai dû faire une centaine d'intégration de nouveaux salariés.
+
+J'ai donc décidé de créer ce script qui simplifiera et automatisera l'ensemble du processus.
+
+En optimisant la préparation de l'équipement pour les nouveaux arrivants, j'ai pu réduire le temps nécessaire et ainsi disposer de plus de temps pour d'autres tâches.
+
+## Déroulement du script étape par étape
+
+<DynamicCallout>
+
+<Steps>
+
+<Step>
+  ### Journalisation de l'exécution ### Génère une ligne de log contenant le nom
+  de l'utilisateur et la date d'exécution du script, stockée sur un partage
+  réseau *(~2 secondes)*.
+</Step>
+
+<Step>
+  ### Demande des informations de l'employé ### Invite l'utilisateur à entrer le
+  prénom et le nom du nouvel employé. Génère ensuite un nom de PC basé sur ces
+  informations *(~2 secondes)*.
+</Step>
+
+<Step>
+  ### Renommage du PC ### Propose un nom basé sur le prénom et le nom saisis,
+  limite à 15 caractères si besoin, demande confirmation puis renomme la machine
+  *(~10 secondes)*.
+</Step>
+
+<Step>
+  ### Vérification et installation de l'antivirus ### Vérifie si un antivirus
+  est déjà installé. Sinon, lance l’installation de la dernière version *(~3
+  secondes)*.
+</Step>
+
+<Step>
+  ### Sélection d’un compte admin ### Affiche une liste de comptes admins
+  disponibles pour rejoindre le domaine. Invite l’utilisateur à en sélectionner
+  un *(~2 secondes)*.
+</Step>
+
+<Step>
+  ### Connexion au domaine « mydomain.fr » ### Utilise le compte admin choisi
+  pour joindre le PC au domaine *(~10 secondes)*.
+</Step>
+
+<Step>
+  ### Génération de l'identifiant de l'employé ### Crée un identifiant unique en
+  fonction du prénom et nom, au format attendu par le domaine *(~1 seconde)*.
+</Step>
+
+<Step>
+  ### Ajout de l'utilisateur dans le groupe Administrateurs local ### Ajoute
+  automatiquement l'utilisateur dans le groupe « Administrateurs » via une tâche
+  planifiée qui s'exécute au prochain démarrage *(~3 secondes)*.
+</Step>
+
+<Step>
+  ### Alternative en cas de nom d'utilisateur personnalisé ### Si je préfère
+  saisir manuellement le compte à ajouter au groupe administrateurs, propose ce
+  choix *(~4 secondes)*.
+</Step>
+
+<Step>
+  ### Mise à jour de l’inventaire Excel ### Met à jour un fichier Excel dans un
+  dossier partagé, contenant les informations du PC et de l’utilisateur *(~3
+  secondes)*.
+</Step>
+
+<Step>
+  ### Génération et impression du formulaire de prêt ### Crée un formulaire Word
+  avec les informations du salarié et de l’équipement, puis l’imprime
+  automatiquement *(~4 secondes)*.
+</Step>
+
+</Steps>
+</DynamicCallout>
+## PowerShell Script
+```ps1 title="prep_pcintegration.ps1"
+### © Aaron (Iso) Pescasio / www.apescasio.fr ###
+
+### Script pour simplifier et automatiser la préparation d'un PC portable pour l'intégration d'un nouveau salarié.
+
+### Résumé des tâches:
+
+### • Installer le plus récent version de notre anti-virus
+
+### • Mettre le PC dans le bon domaine « mydomain.fr »
+
+### • Ajouter le compte de l’employé dans le groupe d’admin local
+
+### • Mettre à jour l’inventaire (un fichier Excel) et imprimer un formulaire de prêt de PC portable pour l’employé
+
+### Pour voir tel personne a executé tel script à telle date/heure
+
+$username23 = "$env:USERDOMAIN\$env:USERNAME"
+$date23 = Get-Date -Format "dd/MM/yyyy à HH:mm:ss"
+$log23 = "$username23 a executé le script: prep_pcintegration.bat le $date23"
+Add-Content -Path "\\adds01\Integration\prep_pcintegration.log" -Value $log23
+
+### Demander à l'utilisateur : le nom et prenom de nouvel employe et prends seulement la 1ère lettre du prénom suivi du nom de famille pour le nom du PC
+
+$global:prenom = Read-Host `n, "Enter the first name of the employee "
+$global:nom = Read-Host `n, "Enter the last name of the employee "
+$global:nom_pas_espace = $nom.Replace(" ", "")
+$global:premierelettre*fin = $prenom.Substring(0, 1)
+if ($prenom.Contains(" ")) {
+$global:prenomsplit = $prenom.Split(" ")
+$global:premierelettre = $prenomsplit | ForEach-Object { $*.Substring(0, 1) }
+$global:premierelettre_fin = $premierelettre -join ""
+}
+$pc_nom = $premierelettre_fin + $nom_pas_espace
+
+### Si le nom complet dépasse 15 caracteres, prend seulement les 15 premiers caracteres, ex d'un nom PC complet ("APESCASIO")
+
+if ($pc_nom.length -gt 15) {
+$pc_nom15 = $pc_nom.substring(0, 15)
+$pc_nom15maj = $pc_nom15.ToUpper()
+Write-Output `n, $pc_nom15maj, "`nIf you forgot something, you can 'ctrl + C' 2 times to get out and start over"
+
+#
+
+### Renomme le PC seulement si l'utilisateur à confirmé avec 'o'
+
+do {
+$confirmation = Read-Host "`nDo you agree with the name of the PC?`n(Make sure to verify if a PC with the same name exists or not in the AD !"
+
+if ($confirmation -eq "o") {
+Rename-Computer -NewName $pc_nom15maj 3> $null
+}
+elseif ($confirmation -eq "n") {
+$pc_nommaj15 = Read-Host "Enter the complete name of the PC"
+Rename-Computer -NewName $pc_nommaj15 3> $null
+}
+
+else {
+Write-Host `n, "Please enter 'o' or 'n' only."
+}
+} until ( $confirmation -eq "o" -or $confirmation -eq "n")
+}
+
+### Si le nom complet ne dépasse pas 15 caracteres
+
+else {
+$pc_nommaj = $pc_nom.ToUpper()
+Write-Output `n, $pc_nommaj, "`nIf you forgot something, you can 'ctrl + C' 2 times to get out and start over"
+
+### Renomme le PC seulement si l'utilisateur à confirmé avec 'o'
+
+do {
+$confirmation = Read-Host "`nDo you agree with the name of the PC?`n(Make sure to verify if a PC with the same name exists or not in the AD !"
+
+if ($confirmation -eq "o") {
+Rename-Computer -NewName $pc_nommaj 3> $null
+}
+
+elseif ($confirmation -eq "n") {
+$pc_nommaj = Read-Host "Enter the complete name of the PC"
+Rename-Computer -NewName $pc_nommaj 3> $null
+}
+
+else {
+Write-Host `n, "Please enter 'o' or 'n' only."
+}
+} until ( $confirmation -eq "o" -or $confirmation -eq "n")
+
+}
+
+### Installer Antivirus avec le script "antivirusintegration_ap.bat" si c'est pas installé... (après l'installation de antivirus, il y aura le dossier Antivirus dans le C:\Program Files donc s'il n'existe pas c'est parce que c'est pas installé)...
+
+$antivirus = "C:\Program Files\Antivirus\"
+if (Test-Path $antivirus) {
+Write-Output "Antivirusis already installed"
+}
+else {
+Write-Output "Installing the recent version of Antivirus"
+Start-Process "\\adds01\ap_script\antivirusintegration_ap.bat"
+}
+
+### Demander a l'utilisateur : quel compte a utiliser pour mettre le PC dans le domaine :
+
+$techs = [Ordered]@{
+"1" = "Administrateur"
+"2" = "Tech1"
+"3" = "Tech2"
+}
+
+Write-Output $techs
+
+### Définir le nom de domaine et le NETBIOS auquel nous ajouterons le PC
+
+$domain_admin = "mydomain.fr"
+$domain_net = "MYDOM"
+$premierelettre_fin_minuscules = $premierelettre_fin.ToLower()
+$nom_minuscules = $nom.ToLower()
+$domain_user = "$premierelettre_fin_minuscules$nom_pas_espace"
+$sam_acc = "$domain_net\$domain_user"
+
+do {
+$choix_tech = Read-Host `n , "Choose your account"
+
+if ($techs.Contains($choix_tech)) {
+Do {
+
+Try {
+$techs_user = $techs[$choix_tech]
+
+### Ajouter le PC dans le domaine avec les options "JoinWithNewName" et "AccountCreate" pour l'avoir dans l'AD avec le nouveau nom PC
+
+$j = Add-Computer -DomainName $domain_admin -Credential $domain_net\$techs_user -Force -Options JoinWithNewName, AccountCreate -PassThru -ErrorAction Stop 3> $null
+
+}
+
+Catch {
+$Error[0].Exception
+}
+
+} While ( $j.HasSucceeded -ne $true )
+}
+else {
+Write-Output `n, "Please enter a number that is part of the list of technicians only."
+
+}
+} until ($techs.Contains($choix_tech))
+
+### Ajouter le compte de nouvel employé dans le groupe d'admin local
+
+Write-Output "`nThe user $sam_acc will be automatically added to the local admin group.."
+
+do {
+$confirmation_2 = Read-Host "Do you agree with this ?`nEnter 'o' for yes or 'n' to write manually the NETBIOS and the username of the new employee"
+
+### Si 'o' est choisi, alors créez une tâche planifiée (qui s'exécute au démarrage) qui ajoutera automatiquement le nouveau compte AD de l'employé au groupe administrateur local.
+
+if ($confirmation_2 -eq "o") {
+$command_addlocal = "Add-LocalGroupMember -Group Administrateurs -Member $sam_acc"
+$command_deletetask = "schtasks /delete /tn 'ajouter_addminlocal' /f"
+$command_deletefile = "rm C:\ajouter_adminlocal.ps1"
+Set-Content C:\ajouter_adminlocal.ps1 -Value $command_addlocal, $command_deletetask, $command_deletefile
+$action = New-ScheduledTaskAction -Execute 'PowerShell.exe' -Argument '-ExecutionPolicy Bypass -File C:\ajouter_adminlocal.ps1'
+$trigger = New-ScheduledTaskTrigger -AtStartup
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+
+Register-ScheduledTask -TaskName 'ajouter_addminlocal' -Action $action -Trigger $trigger -Settings $settings -User System -RunLevel Highest | Out-Null
+}
+elseif ($confirmation_2 -eq "n") {
+$sam_acc_n = Read-Host "`nVeuillez entrer l'identifiant complet de nouveau employe avec le NETBIOS inclus!"
+$command_addlocal = "Add-LocalGroupMember -Group Administrateurs -Member $sam_acc_n"
+$command_deletetask = "schtasks /delete /tn 'ajouter_addminlocal' /f"
+$command_deletefile = "rm C:\ajouter_adminlocal.ps1"
+Set-Content C:\ajouter_adminlocal.ps1 -Value $command_addlocal, $command_deletetask, $command_deletefile
+$action = New-ScheduledTaskAction -Execute 'PowerShell.exe' -Argument '-ExecutionPolicy Bypass -File C:\ajouter_adminlocal.ps1'
+$trigger = New-ScheduledTaskTrigger -AtStartup
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+
+Register-ScheduledTask -TaskName 'ajouter_addminlocal' -Action $action -Trigger $trigger -Settings $settings -User System -RunLevel Highest | Out-Null
+
+}
+else {
+Write-Host `n, "Please enter 'o' or 'n' only."
+
+}
+} until ($confirmation_2 -eq "o" -or $confirmation_2 -eq "n")
+
+### Apres le renommage de PC + integration au domaine administratif, on va maintenant mettre a jour l'inventaire Excel
+
+### Mettre le fournisseur dans une variable pour le récupérer à la fin pour le fichier Word de pret PC portable
+
+$fournisseur = Get-WmiObject -Class win32_bios | Select -ExpandProperty Manufacturer
+
+### Pour les Lenovo, il faut ajouter un "S" au debut de numero de serie car dans les fichiers Excel, les numero de serie des Lenovos commencent tous avec un "S"
+
+if ($fournisseur -eq "LENOVO" ) {
+$global:serial = Get-WmiObject -Class win32_bios | Select -ExpandProperty serialnumber
+$global:s = "S"
+$global:serial = $s + $serial
+}
+
+# S'il ne s'agit pas d'un LENOVO, il y a rien à faire.
+
+else {
+$global:serial = Get-WmiObject -Class win32_bios | Select -ExpandProperty serialnumber
+$global:serial = "$global:serial"
+
+}
+
+Write-Output "`nAfter renaming the PC and joining it to the administrative domain, we will now update the Excel inventory. `n`nThe serial number of the PC is: $serial"
+
+### Demander a l'utilisateur : l'annee de numero d'immobilisation (qui est visible sur l'étiquette en dessous de PC portable)
+
+$immobs = [Ordered]@{
+"1" = "2022\DELL_Inventory.xlsx"
+"2" = "2021\DELL_Inventory.xlsx"
+"3" = "2020\Gestion Parc-Lenovo.xlsx"
+}
+
+Write-Output $immobs
+
+### Le chemin des fichiers Excel (inventaire) et la variable employe pour mettre à jour le fichier Excel avec le nom complet de l'employe
+
+$global:employe = $nom.ToUpper() + " " + $prenom.substring(0, 1).ToUpper() + $prenom.substring(1).toLower()
+$sharedfolder_inventory = "\\adds01\Stock"
+
+### Fonction pour mettre à jour le fichier Excel qui se trouve dans un partage réseau SEULEMENT SI aucun utilisateur l'a ouvert, si c'est déjà ouvert par un autre utilisateur, le script fait rien.
+
+function Save-ExcelDataLoop {
+[CmdletBinding()]
+param ()
+
+do {
+
+### Demande de sélectionner l'année du numéro d'immobilisation
+
+$choix_immob = Read-Host "Choose the year of the asset number `n"
+if ($immobs.Contains($choix_immob)) {
+$choix_immob_fin = $immobs[$choix_immob]
+$global:absolute = "$sharedfolder_inventory\$choix_immob_fin"
+[IO.File]::OpenWrite($absolute).Close()
+
+### Si le fichier sélectionné est "2020\Gestion Parc-Lenovo.xlsx", nous précisons que la colonne pour le nom de l'employé utilisant le PC est la 2ème colonne, la colonne 3 pour les modèles, la colonne 5 pour le numéro de série du PC, et la colonne 6 pour le numéro d'immobilisation du PC.
+
+### Nous définissons également le nom de la feuille Excel qui est "2020PC".
+
+if ($choix_immob_fin -eq "2020\Gestion Parc-Lenovo.xlsx") {
+$excelFile = "$sharedfolder_inventory\$choix_immob_fin"
+$objExcel = New-Object -ComObject Excel.Application
+$WorkBook = $objExcel.Workbooks.Open($excelFile)
+$worksheet = $WorkBook.Sheets.Item("2020PC")
+$rowCount = $worksheet.UsedRange.Rows.Count
+$nom_colonne = 2
+$model_colonne = 3
+$serial_colonne = 5
+$immob_colonne = 6
+
+for ($i = 2; $i -le $rowCount; $i++) {
+
+### Vérifie si une cellule dans le fichier Excel contient bien le numéro de série de l'ordinateur
+
+if ($worksheet.Cells($i, $serial_colonne).Value2 -match "$serial") {
+
+### Récupération de la donnée à l'intérieur de la cellule "nom employé" dans le fichier Excel
+
+$nom_actualcell = $worksheet.Cells($i, $nom_colonne).Value2
+
+### Récupération de la donnée à l'intérieur des cellules "numéro d'immobilisation" et "modèle"
+
+$global:immob_word = $worksheet.Cells($i, $immob_colonne).Value2
+$global:model_word = $worksheet.Cells($i, $model_colonne).Value2
+
+### Si la cellule de la colonne "nom employé" est vide, cela signifie que l'ordinateur n'appartient à aucun salarié, donc le script mettra à jour la cellule avec le nom de l'employé
+
+if ([string]::IsNullOrEmpty($nom_actualcell) -or $nom_actualcell -eq "PC ADMINISTRATIFS " -or $nom_actualcell -eq "PC ADMINISTRATIFS") {
+$worksheet.Cells($i, $nom_colonne).Value2 = "$employe"
+}
+else {
+
+### Si la cellule "nom employé" n'est pas vide, nous ajoutons " > $employe" pour ne pas écraser le contenu existant, qui pourrait être un ancien employé ou autre
+
+$keep_oldname = $worksheet.Cells($i, $nom_colonne).Value2
+$worksheet.Cells($i, $nom_colonne).Value2 = $keep_oldname + " > $employe"
+}
+
+}
+}
+
+$WorkBook.Save()
+$WorkBook.Close()
+
+}
+
+### "Pour tous les autres fichiers Excel, le nom de la page est 'PC' "
+
+else {
+$excelFile = "$sharedfolder_inventory\$choix_immob_fin"
+$objExcel = New-Object -ComObject Excel.Application
+$WorkBook = $objExcel.Workbooks.Open($excelFile)
+$worksheet = $WorkBook.sheets.item("PC")
+$rowCount = $worksheet.usedrange.rows.count
+$nom_colonne = 2
+$model_colonne = 3
+$serial_colonne = 5
+$immob_colonne = 6
+
+for ($i = 2; $i -le $rowCount; $i++) {
+if ($worksheet.Cells($i, $serial_colonne).Value2 -match "$serial") {
+
+$nom_actualcell = $worksheet.Cells($i, $nom_colonne).Value2
+$global:immob_word = $worksheet.Cells($i, $immob_colonne).Value2
+$global:model_word = $worksheet.Cells($i, $model_colonne).Value2
+
+if ([string]::IsNullOrEmpty($nom_actualcell)) {
+$worksheet.Cells($i, $nom_colonne).Value2 = "$employe"
+
+}
+else {
+$keep_oldname = $worksheet.Cells($i, $nom_colonne).Value2
+$worksheet.Cells($i, $nom_colonne).Value2 = $keep_oldname + " > $employe"
+}
+
+}
+}
+
+$WorkBook.Save()
+$WorkBook.Close()
+}
+
+}
+else {
+Write-Output `n, "Please select a number that is in the list"
+}
+} until ($immobs.Contains($choix_immob))
+}
+
+### Si le fichier Excel a bien été mis à jour, on continue avec la création du formulaire de pret de PC portable pour le nouvel employé
+
+try {
+Save-ExcelDataLoop
+
+$source = "\\adds01\ap_other\Word_dont_touch\Word_forscript.docx"
+$destination = "\\adds01\ap*other\Word_dont_touch\form*{0}.docx"
+$destination = [string]::Format($destination, $nom)
+
+# PARTIE WORD
+
+### On commence en faisant une copie de formulaire de pret avec le nom ajouté dans le nom du fichier "form_nomfamille.docx"
+
+Copy-Item -Path $source -Destination $destination
+
+$Word = New-Object -ComObject Word.Application
+
+$WordFiles = Get-ChildItem $destination
+
+### La copie de formulaire de pret contient cette phrase "A l'attention de" qu'on remplacera avec "A l'attention de : variable $employé (le nom complet de nouvel employé)
+
+$FindText1 = "To:"
+$ReplaceText1 = "To: $employe"
+
+### La copie de formulaire de pret contient ce mot "Marque:" qu'on remplacera avec "Marque variable $fournisseur" (la marque de PC)
+
+$FindText2 = "Manufacturer:"
+$ReplaceText2 = "Manufacturer: $fournisseur"
+
+### La copie de formulaire de pret contient ce mot "modele" qu'on remplacera avec "modele variable $global:model_word" (le modèle du PC)
+
+$FindText3 = "modele"
+$ReplaceText3 = "$global:model_word"
+
+### La copie de formulaire de pret contient ce mot "serial" qu'on remplacera avec "serial variable $serial" (le num série du PC)
+
+$FindText4 = "serial"
+$ReplaceText4 = "$serial"
+
+### La copie de formulaire de pret contient ce mot "immo" qu'on remplacera avec "immo variable $global:immob_word" (le numéro d'immobilisation du PC)
+
+$FindText5 = "immo"
+$ReplaceText5 = "$global:immob_word"
+
+$MatchCase = $false
+$MatchWholeWorld = $true
+$MatchWildcards = $false
+$MatchSoundsLike = $false
+$MatchAllWordForms = $false
+$Forward = $false
+$Wrap = 1
+$Format = $false
+$Replace = 2
+foreach ($WordFile in $WordFiles) {
+$Document = $Word.Documents.Open($WordFile.FullName)
+$Document.Content.Find.Execute($FindText1, $MatchCase, $MatchWholeWorld, $MatchWildcards, $MatchSoundsLike, $MatchAllWordForms, $Forward, $Wrap, $Format, $ReplaceText1, $Replace)
+$Document.Content.Find.Execute($FindText2, $MatchCase, $MatchWholeWorld, $MatchWildcards, $MatchSoundsLike, $MatchAllWordForms, $Forward, $Wrap, $Format, $ReplaceText2, $Replace)
+$Document.Content.Find.Execute($FindText3, $MatchCase, $MatchWholeWorld, $MatchWildcards, $MatchSoundsLike, $MatchAllWordForms, $Forward, $Wrap, $Format, $ReplaceText3, $Replace)
+$Document.Content.Find.Execute($FindText4, $MatchCase, $MatchWholeWorld, $MatchWildcards, $MatchSoundsLike, $MatchAllWordForms, $Forward, $Wrap, $Format, $ReplaceText4, $Replace)
+$Document.Content.Find.Execute($FindText5, $MatchCase, $MatchWholeWorld, $MatchWildcards, $MatchSoundsLike, $MatchAllWordForms, $Forward, $Wrap, $Format, $ReplaceText5, $Replace)
+$Document.Close($True)
+}
+
+$Word.Quit()
+
+}
+
+### Si un autre utilisateur a déjà le fichier Excel ouvert, le script fait rien pour ne pas causer des conflits !!
+
+catch {
+
+# S'il y a des erreurs
+
+if ($\_.Exception.Message -like "_because it is being used by another process_") {
+"Another user has the Excel file open, please update the inventory manually later."
+}
+else {
+Write-Output "Another user has the Excel file open, please update the inventory manually later. "
+}
+}
+
+### Redémarrer seulement le PC si l'utilisateur à déplacé le PC dans la bonne OU
+
+do {
+$deplacer = Read-Host "Have you moved the PC to the correct OU ?" `n, "Enter 'o' for yes and 'n' for no"
+
+if ($deplacer -eq 'o') {
+Restart-Computer -Force
+}
+elseif ($deplacer -eq 'n') {
+Write-Output "Please move the PC to the correct OU and then enter 'o' for yes..."
+}
+
+else {
+Write-Host `n, "Please enter 'o' or 'n' only."
+}
+} until ($deplacer -eq 'o')
+
+```
+
+```

@@ -31,7 +31,7 @@ export default async function Page({
     repo: "memo.apescasio.fr",
     path: `content/docs/${page.path}`,
   });
-  console.log("Last edit time:", time);
+  // console.log("Last edit time:", time);
   const isIndex = isIndexPage(page.path, lang);
   const dirName = getDirname(page.slugs, isIndex);
 
