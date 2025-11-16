@@ -47,7 +47,7 @@ export function baseOptions(locale: string): BaseLayoutProps {
         text: "LinkedIn",
         url: "https://www.linkedin.com/in/aaron-pescasio",
         icon: (
-          <span style={{ transform: "scale(1.3)" }}>
+          <span style={{ marginLeft: "-7px", transform: "scale(1.3)" }}>
             <IconLinkedin />
           </span>
         ),
@@ -58,7 +58,7 @@ export function baseOptions(locale: string): BaseLayoutProps {
         text: "Instagram",
         url: "https://www.instagram.com/himapescasio",
         icon: (
-          <span style={{ transform: "scale(1.2)" }}>
+          <span style={{ marginLeft: "-7px", transform: "scale(1.2)" }}>
             <IconInstagram />
           </span>
         ),
@@ -69,7 +69,7 @@ export function baseOptions(locale: string): BaseLayoutProps {
         text: "GitHub",
         url: "https://github.com/apescasio",
         icon: (
-          <span style={{ transform: "scale(1.3)" }}>
+          <span style={{ marginLeft: "-7px", transform: "scale(1.3)" }}>
             <IconGitHub />
           </span>
         ),
