@@ -12,15 +12,15 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://memo.apescasio.fr"),
-  title: "Memo",
+  title: "Handbook of an admin.",
   description: "cd /docs",
-  keywords: ['notes', 'handbook', 'docs', 'tech', 'apescasio'],
+  keywords: ['notes', 'handbook', 'docs', 'tech', 'memoire', 'apescasio'],
   openGraph: {
     type: 'website',
     url: "https://memo.apescasio.fr",
-    title: "Memo",
+    title: "Handbook of an admin.",
     description: "cd /docs",
-    siteName: "Memo",
+    siteName: "memo.apescasio.fr",
     images: [
       {
         url: `https://memo.apescasio.fr/images/memo-128.png`,
