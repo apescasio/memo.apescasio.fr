@@ -7,4 +7,5 @@ export const config = {
   // Matcher ignoring `/_next/`, `/api/` and common static assets in `public`
   // Excludes `/images`, `favicon.ico`, and Next.js internal routes
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico|images).*)'],
+
 };

@@ -4,60 +4,31 @@ import { RootProvider } from "fumadocs-ui/provider/next";
 import { Inter } from "next/font/google";
 import { defineI18nUI } from "fumadocs-ui/i18n";
 import { i18n } from "@/lib/i18n";
+import { Metadata } from 'next';
 
 const inter = Inter({
   subsets: ["latin"],
 });
 
-export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
-  const { lang } = await params;
-
-  const titles: Record<string, string> = {
-    fr: "Mémoire d'un admin.",
-    es: "Manual del admin.",
-    ar: "دليل المسؤول.",
-    en: "Handbook of an admin.",
-  };
-
-  const title = titles[lang] ?? titles.en;
-
-  const description = "cd /docs";
-  const baseUrl = "https://memo.apescasio.fr";
-  const imageUrl = `${baseUrl}/images/memo-128.png`;
-
-  return {
-    metadataBase: new URL(baseUrl),
-
-    title,
-    description,
-    keywords: [
-      "admin", "docs", "documentation", "code", "open-source", "handbook",
-      "system", "network", "azure", "intune", "admin-sys", "memoire", "copilot", "ai", "ai agents", "apescasio"
+export const metadata: Metadata = {
+  metadataBase: new URL("https://memo.apescasio.fr"),
+  title: "Memo",
+  description: "cd /docs",
+  keywords: ['notes', 'handbook', 'docs', 'tech', 'apescasio'],
+  openGraph: {
+    type: 'website',
+    url: "https://memo.apescasio.fr",
+    title: "Memo",
+    description: "cd /docs",
+    siteName: "Memo",
+    images: [
+      {
+        url: `https://memo.apescasio.fr/images/memo-128.png`,
+        alt: "Memo",
+      },
     ],
-
-    openGraph: {
-      type: "website",
-      url: "/",
-      title,
-      description,
-      siteName: "memo.apescasio.fr",
-      images: [{ url: imageUrl, alt: title }],
-    },
-
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [imageUrl],
-    },
-
-    icons: {
-      icon: imageUrl,
-      apple: imageUrl,
-      shortcut: imageUrl,
-    },
-  };
-}
+  },
+};
 
 const { provider } = defineI18nUI(i18n, {
   translations: {
@@ -109,10 +80,7 @@ export default async function Layout({
 
   return (
     <html lang={lang} className={inter.className} suppressHydrationWarning>
-      <head>
-        <link rel="shortcut icon" type="image/x-icon" href="/images/memo-128.png" />
 
-      </head>
       <body className="flex flex-col min-h-screen">
         <RootProvider i18n={provider(lang)}>{children}</RootProvider>
       </body>
