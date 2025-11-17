@@ -9,6 +9,56 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = await params;
+
+  const titles: Record<string, string> = {
+    fr: "Mémoire d'un admin.",
+    es: "Manual del admin.",
+    ar: "دليل المسؤول.",
+    en: "Handbook of an admin.",
+  };
+
+  const title = titles[lang] ?? titles.en;
+
+  const description = "cd /docs";
+  const baseUrl = "https://memo.apescasio.fr";
+  const imageUrl = `${baseUrl}/images/memo-128.png`;
+
+  return {
+    metadataBase: new URL(baseUrl),
+
+    title,
+    description,
+    keywords: [
+      "admin", "docs", "documentation", "code", "open-source", "handbook",
+      "system", "network", "azure", "intune", "admin-sys", "apescasio"
+    ],
+
+    openGraph: {
+      type: "website",
+      url: "/",
+      title,
+      description,
+      siteName: "memo.apescasio.fr",
+      images: [{ url: imageUrl, alt: title }],
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+    },
+
+    icons: {
+      icon: imageUrl,
+      apple: imageUrl,
+      shortcut: imageUrl,
+    },
+  };
+}
+
 const { provider } = defineI18nUI(i18n, {
   translations: {
     es: {
