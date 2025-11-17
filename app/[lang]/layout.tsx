@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     description,
     keywords: [
       "admin", "docs", "documentation", "code", "open-source", "handbook",
-      "system", "network", "azure", "intune", "admin-sys", "apescasio"
+      "system", "network", "azure", "intune", "admin-sys", "memoire", "copilot", "ai", "ai agents", "apescasio"
     ],
 
     openGraph: {
@@ -109,6 +109,10 @@ export default async function Layout({
 
   return (
     <html lang={lang} className={inter.className} suppressHydrationWarning>
+      <head>
+        <link rel="shortcut icon" type="image/x-icon" href="/images/memo-128.png" />
+
+      </head>
       <body className="flex flex-col min-h-screen">
         <RootProvider i18n={provider(lang)}>{children}</RootProvider>
       </body>
