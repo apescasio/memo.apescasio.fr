@@ -21,6 +21,11 @@ import IconPowerBi from './components/icons/powerbi';
 import IconMundo from './components/icons/mundo';
 import IconFuture from './components/icons/future';
 
+export const APP_NAME = 'Handbook of an admin.';
+export const APP_DESC = 'cd /docs';
+export const WEB_URL = 'https://memo.apescasio.fr';
+export const SITE_NAME = 'memo.apescasio.fr';
+
 // Learning cycle configuration
 export const LEARNING_CYCLE = {
   current: 7,

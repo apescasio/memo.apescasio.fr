@@ -5,26 +5,27 @@ import { Inter } from "next/font/google";
 import { defineI18nUI } from "fumadocs-ui/i18n";
 import { i18n } from "@/lib/i18n";
 import { Metadata } from 'next';
+import { APP_DESC, APP_NAME, SITE_NAME, WEB_URL } from '@/consts';
 
 const inter = Inter({
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://memo.apescasio.fr"),
-  title: "Handbook of an admin.",
-  description: "cd /docs",
+  metadataBase: new URL(WEB_URL),
+  title: APP_NAME,
+  description: APP_DESC,
   keywords: ['notes', 'handbook', 'docs', 'tech', 'memoire', 'apescasio'],
   openGraph: {
     type: 'website',
-    url: "https://memo.apescasio.fr",
-    title: "Handbook of an admin.",
-    description: "cd /docs",
-    siteName: "memo.apescasio.fr",
+    url: WEB_URL,
+    title: APP_NAME,
+    description: APP_DESC,
+    siteName: SITE_NAME,
     images: [
       {
         url: `https://memo.apescasio.fr/images/memo-128.png`,
-        alt: "Memo",
+        alt: APP_NAME,
       },
     ],
   },
