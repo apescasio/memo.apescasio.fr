@@ -9,58 +9,6 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
-  const { lang } = await params;
-
-  const isFrench = lang === 'fr';
-  const isSpanish = lang === 'es';
-  const isArabic = lang === 'ar';
-
-  return {
-    metadataBase: new URL('https://memo.apescasio.fr'),
-    title: isFrench
-      ? "Mémoire d'un admin."
-      : isSpanish
-        ? "Manual del admin."
-        : isArabic
-          ? 'دليل المسؤول.'
-          : 'Handbook of an admin.',
-    description: isFrench ? 'cd /docs' : isSpanish ? 'cd /docs' : isArabic ? 'cd /docs' : 'cd /docs',
-    keywords: isFrench
-      ? ['mémoire', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook', 'system', 'network', 'azure', 'intune', 'admin-sys', 'apescasio']
-      : isSpanish
-        ? ['memoria', 'admin', 'docs', 'documentación', 'código', 'código-abierto', 'manual', 'sistema', 'red', 'azure', 'intune', 'admin-sys', 'apescasio']
-        : isArabic
-          ? ['دليل', 'مشرف', 'مستندات', 'توثيق', 'كود', 'مفتوح المصدر', 'نظام', 'شبكة', 'azure', 'intune', 'apescasio']
-          : ['memory', 'admin', 'docs', 'documentation', 'code', 'open-source', 'handbook', 'system', 'network', 'azure', 'intune', 'admin-sys', 'apescasio'],
-    openGraph: {
-      type: 'website',
-      url: '/',
-      title: isFrench
-        ? "Mémoire d'un admin."
-        : isSpanish
-          ? "Manual del admin."
-          : isArabic
-            ? 'دليل المسؤول.'
-            : 'Handbook of an admin.',
-      description: isFrench ? 'cd /docs' : isSpanish ? 'cd /docs' : isArabic ? 'cd /docs' : 'cd /docs',
-      siteName: isFrench ? "memo.apescasio.fr" : 'memo.apescasio.fr',
-      images: [
-        {
-          url: '/images/memo-128.png',
-          alt: isFrench
-            ? "Mémoire d'un admin."
-            : isSpanish
-              ? "Manual del admin."
-              : isArabic
-                ? 'دليل المسؤول.'
-                : 'Handbook of an admin.',
-        },
-      ],
-    },
-  };
-}
-
 const { provider } = defineI18nUI(i18n, {
   translations: {
     es: {
