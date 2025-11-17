@@ -20,61 +20,72 @@ J'ai donc décidé de créer ces scripts qui simplifiera et automatisera l'ensem
 <Steps>
 
 <Step>
-  ### Journalisation de l'exécution (ancien PC) ### Crée une ligne de log avec
+  ### Journalisation de l'exécution (ancien PC) ### 
+  Crée une ligne de log avec
   le nom d'utilisateur et la date d'exécution du script pour garder une trace de
   la migration *(~2 secondes)*.
 </Step>
 
 <Step>
-  ### Création du dossier de migration réseau ### Vérifie si un dossier de
+  ### Création du dossier de migration réseau ### 
+  Vérifie si un dossier de
   migration personnel existe sur le partage réseau. Sinon, le crée
   automatiquement *(~3 secondes)*.
 </Step>
 
 <Step>
-  ### Export des favoris Chrome ### Vérifie si le fichier de favoris Chrome
+  ### Export des favoris Chrome ### 
+  Vérifie si le fichier de favoris Chrome
   existe. S’il est présent, il est copié dans le dossier de migration *(~2
   secondes)*.
 </Step>
 
 <Step>
-  ### Export des favoris Edge ### Même principe que pour Chrome : les favoris
+  ### Export des favoris Edge ### 
+  Même principe que pour Chrome : les favoris
   d’Edge sont copiés s’ils existent *(~2 secondes)*.
 </Step>
 
 <Step>
-  ### Export des signatures Outlook ### Si le dossier de signatures existe, son
+  ### Export des signatures Outlook ### 
+  Si le dossier de signatures existe, son
   contenu est sauvegardé dans le dossier réseau *(~3 secondes)*.
 </Step>
 
 <Step>
-  ### Export de la liste des imprimantes ### Récupère les imprimantes installées
+  ### Export de la liste des imprimantes ### 
+  Récupère les imprimantes installées
   sur l’ancien PC, puis les exporte dans un fichier `.csv` *(~2 secondes)*.
 </Step>
 
 <Step>
-  ### Journalisation de l'exécution (nouveau PC) ### Un deuxième log est créé à
+  ### Journalisation de l'exécution (nouveau PC) ### 
+  Un deuxième log est créé à
   l’exécution du script sur le nouveau PC pour assurer la traçabilité *(~2
   secondes)*.
 </Step>
 
 <Step>
-  ### Import des favoris Chrome ### Restaure les favoris Chrome depuis le
+  ### Import des favoris Chrome ### 
+  Restaure les favoris Chrome depuis le
   dossier réseau vers le bon répertoire local *(~2 secondes)*.
 </Step>
 
 <Step>
-  ### Import des favoris Edge ### Même procédure que pour Chrome : copie les
+  ### Import des favoris Edge ### 
+  Même procédure que pour Chrome : copie les
   favoris Edge dans le répertoire utilisateur *(~2 secondes)*.
 </Step>
 
 <Step>
-  ### Import des signatures Outlook ### Crée le dossier de signatures s’il
+  ### Import des signatures Outlook ### 
+  Crée le dossier de signatures s’il
   n’existe pas encore, puis y importe les fichiers sauvegardés *(~3 secondes)*.
 </Step>
 
 <Step>
-  ### Réinstallation des imprimantes ### Lit la liste des imprimantes depuis le
+  ### Réinstallation des imprimantes ### 
+  Lit la liste des imprimantes depuis le
   fichier `.csv` et les ajoute une par une si elles ne sont pas déjà installées
   *(~4 secondes)*.
 </Step>

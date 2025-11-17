@@ -19,58 +19,69 @@ So, I decided to create these scripts to simplify and automate the entire proces
 <Steps>
 
 <Step>
-  ### Execution Logging (Old PC) ### Creates a log entry with the username and
+  ### Execution Logging (Old PC) ### 
+  Creates a log entry with the username and
   the date of execution to keep a record of the migration *(~2 seconds)*.
 </Step>
 
 <Step>
-  ### Create Network Migration Folder ### Checks if a personal migration folder
+  ### Create Network Migration Folder ### 
+  Checks if a personal migration folder
   exists on the network share. If not, it creates one automatically *(~3
   seconds)*.
 </Step>
 
 <Step>
-  ### Export Chrome Bookmarks ### Checks if the Chrome bookmarks file exists. If
+  ### Export Chrome Bookmarks ### 
+  Checks if the Chrome bookmarks file exists. If
   it does, it gets copied to the migration folder *(~2 seconds)*.
 </Step>
 
 <Step>
-  ### Export Edge Bookmarks ### Same principle as Chrome: Edge bookmarks are
+  ### Export Edge Bookmarks ### 
+  Same principle as Chrome: Edge bookmarks are
   copied if they exist *(~2 seconds)*.
 </Step>
 
 <Step>
-  ### Export Outlook Signatures ### If the signature folder exists, its contents
+  ### Export Outlook Signatures ### 
+  If the signature folder exists, its contents
   are saved in the network folder *(~3 seconds)*.
 </Step>
 
 <Step>
-  ### Export Printer List ### Fetches the printers installed on the old PC and
+  ### Export Printer List ### 
+  Fetches the printers installed on the old PC and
   exports them to a `.csv` file *(~2 seconds)*.
 </Step>
 
 <Step>
-  ### Execution Logging (New PC) ### A second log entry is created when the
+  ### Execution Logging (New PC) ### 
+  A second log entry is created when the
   script is run on the new PC to ensure traceability *(~2 seconds)*.
 </Step>
 
 <Step>
-  ### Import Chrome Bookmarks ### Restores Chrome bookmarks from the network
+  ### Import Chrome Bookmarks ### 
+  Restores Chrome bookmarks from the network
   folder to the correct local directory *(~2 seconds)*.
 </Step>
 
 <Step>
-  ### Import Edge Bookmarks ### Same procedure as Chrome: copies Edge bookmarks
+  ### Import Edge Bookmarks ### 
+  Same procedure as Chrome: copies Edge bookmarks
   to the user directory *(~2 seconds)*.
 </Step>
 
 <Step>
-  ### Import Outlook Signatures ### Creates the signatures folder if it doesn’t
+  ### Import Outlook Signatures ### 
+  Creates the signatures folder if it doesn’t
   exist yet, then imports the saved files *(~3 seconds)*.
 </Step>
 
 <Step>
-  ### Reinstall Printers ### Reads the printer list from the `.csv` file and
+  ### Reinstall Printers ### 
+  Reads the printer list from the `.csv` file and
   installs each one if it’s not already installed *(~4 seconds)*.
 </Step>
 

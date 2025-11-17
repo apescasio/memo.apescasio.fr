@@ -19,61 +19,72 @@ Así que decidí crear estos scripts para simplificar y automatizar todo el proc
 <Steps>
 
 <Step>
-  ### Registro de Ejecución (PC Antigua) ### Crea una entrada de registro con el
+  ### Registro de Ejecución (PC Antigua) ### 
+  Crea una entrada de registro con el
   nombre de usuario y la fecha de ejecución para mantener un registro de la
   migración *(~2 segundos)*.
 </Step>
 
 <Step>
-  ### Crear Carpeta de Migración en Red ### Verifica si existe una carpeta
+  ### Crear Carpeta de Migración en Red ### 
+  Verifica si existe una carpeta
   personal de migración en el recurso compartido de red. Si no existe, la crea
   automáticamente *(~3 segundos)*.
 </Step>
 
 <Step>
-  ### Exportar Marcadores de Chrome ### Verifica si existe el archivo de
+  ### Exportar Marcadores de Chrome ### 
+  Verifica si existe el archivo de
   marcadores de Chrome. Si existe, lo copia a la carpeta de migración *(~2
   segundos)*.
 </Step>
 
 <Step>
-  ### Exportar Marcadores de Edge ### Mismo principio que Chrome: los marcadores
+  ### Exportar Marcadores de Edge ### 
+  Mismo principio que Chrome: los marcadores
   de Edge se copian si existen *(~2 segundos)*.
 </Step>
 
 <Step>
-  ### Exportar Firmas de Outlook ### Si la carpeta de firmas existe, su
+  ### Exportar Firmas de Outlook ### 
+  Si la carpeta de firmas existe, su
   contenido se guarda en la carpeta de red *(~3 segundos)*.
 </Step>
 
 <Step>
-  ### Exportar Lista de Impresoras ### Obtiene las impresoras instaladas en la
+  ### Exportar Lista de Impresoras ### 
+  Obtiene las impresoras instaladas en la
   PC antigua y las exporta a un archivo `.csv` *(~2 segundos)*.
 </Step>
 
 <Step>
-  ### Registro de Ejecución (PC Nueva) ### Se crea una segunda entrada de
+  ### Registro de Ejecución (PC Nueva) ### 
+  Se crea una segunda entrada de
   registro cuando el script se ejecuta en la PC nueva para asegurar la
   trazabilidad *(~2 segundos)*.
 </Step>
 
 <Step>
-  ### Importar Marcadores de Chrome ### Restaura los marcadores de Chrome desde
+  ### Importar Marcadores de Chrome ### 
+  Restaura los marcadores de Chrome desde
   la carpeta de red al directorio local correcto *(~2 segundos)*.
 </Step>
 
 <Step>
-  ### Importar Marcadores de Edge ### Mismo procedimiento que Chrome: copia los
+  ### Importar Marcadores de Edge ### 
+  Mismo procedimiento que Chrome: copia los
   marcadores de Edge al directorio del usuario *(~2 segundos)*.
 </Step>
 
 <Step>
-  ### Importar Firmas de Outlook ### Crea la carpeta de firmas si aún no existe,
+  ### Importar Firmas de Outlook ### 
+  Crea la carpeta de firmas si aún no existe,
   luego importa los archivos guardados *(~3 segundos)*.
 </Step>
 
 <Step>
-  ### Reinstalar Impresoras ### Lee la lista de impresoras del archivo `.csv` e
+  ### Reinstalar Impresoras ### 
+  Lee la lista de impresoras del archivo `.csv` e
   instala cada una si no está ya instalada *(~4 segundos)*.
 </Step>
 

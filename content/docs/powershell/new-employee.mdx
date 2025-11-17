@@ -22,65 +22,76 @@ En optimisant la préparation de l'équipement pour les nouveaux arrivants, j'ai
 <Steps>
 
 <Step>
-  ### Journalisation de l'exécution ### Génère une ligne de log contenant le nom
+  ### Journalisation de l'exécution ### 
+  Génère une ligne de log contenant le nom
   de l'utilisateur et la date d'exécution du script, stockée sur un partage
   réseau *(~2 secondes)*.
 </Step>
 
 <Step>
-  ### Demande des informations de l'employé ### Invite l'utilisateur à entrer le
+  ### Demande des informations de l'employé ### 
+  Invite l'utilisateur à entrer le
   prénom et le nom du nouvel employé. Génère ensuite un nom de PC basé sur ces
   informations *(~2 secondes)*.
 </Step>
 
 <Step>
-  ### Renommage du PC ### Propose un nom basé sur le prénom et le nom saisis,
+  ### Renommage du PC ### 
+  Propose un nom basé sur le prénom et le nom saisis,
   limite à 15 caractères si besoin, demande confirmation puis renomme la machine
   *(~10 secondes)*.
 </Step>
 
 <Step>
-  ### Vérification et installation de l'antivirus ### Vérifie si un antivirus
+  ### Vérification et installation de l'antivirus ### 
+  Vérifie si un antivirus
   est déjà installé. Sinon, lance l’installation de la dernière version *(~3
   secondes)*.
 </Step>
 
 <Step>
-  ### Sélection d’un compte admin ### Affiche une liste de comptes admins
+  ### Sélection d’un compte admin ### 
+  Affiche une liste de comptes admins
   disponibles pour rejoindre le domaine. Invite l’utilisateur à en sélectionner
   un *(~2 secondes)*.
 </Step>
 
 <Step>
-  ### Connexion au domaine « mydomain.fr » ### Utilise le compte admin choisi
+  ### Connexion au domaine « mydomain.fr » ### 
+  Utilise le compte admin choisi
   pour joindre le PC au domaine *(~10 secondes)*.
 </Step>
 
 <Step>
-  ### Génération de l'identifiant de l'employé ### Crée un identifiant unique en
+  ### Génération de l'identifiant de l'employé ### 
+  Crée un identifiant unique en
   fonction du prénom et nom, au format attendu par le domaine *(~1 seconde)*.
 </Step>
 
 <Step>
-  ### Ajout de l'utilisateur dans le groupe Administrateurs local ### Ajoute
+  ### Ajout de l'utilisateur dans le groupe Administrateurs local ### 
+  Ajoute
   automatiquement l'utilisateur dans le groupe « Administrateurs » via une tâche
   planifiée qui s'exécute au prochain démarrage *(~3 secondes)*.
 </Step>
 
 <Step>
-  ### Alternative en cas de nom d'utilisateur personnalisé ### Si je préfère
+  ### Alternative en cas de nom d'utilisateur personnalisé ### 
+  Si je préfère
   saisir manuellement le compte à ajouter au groupe administrateurs, propose ce
   choix *(~4 secondes)*.
 </Step>
 
 <Step>
-  ### Mise à jour de l’inventaire Excel ### Met à jour un fichier Excel dans un
+  ### Mise à jour de l’inventaire Excel ### 
+  Met à jour un fichier Excel dans un
   dossier partagé, contenant les informations du PC et de l’utilisateur *(~3
   secondes)*.
 </Step>
 
 <Step>
-  ### Génération et impression du formulaire de prêt ### Crée un formulaire Word
+  ### Génération et impression du formulaire de prêt ### 
+  Crée un formulaire Word
   avec les informations du salarié et de l’équipement, puis l’imprime
   automatiquement *(~4 secondes)*.
 </Step>
