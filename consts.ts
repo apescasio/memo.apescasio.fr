@@ -28,7 +28,7 @@ export const SITE_NAME = 'memo.apescasio.fr';
 
 // Learning cycle configuration
 export const LEARNING_CYCLE = {
-  current: 7,
+  current: 8,
   label: {
     en: 'Repetition = Mother of Learning',
     fr: 'Répétition = Mère de l\'Apprentissage',
